@@ -107,10 +107,13 @@ class User extends Authenticatable
             ->all();
     }
 
-    /** Personal del club: super administrador o con algún rol en alguna entidad. */
+    /**
+     * Personal del club: super administrador (aunque todavía no haya entidades, para crear la primera)
+     * o con algún rol en alguna entidad.
+     */
     public function canAccessAdmin(): bool
     {
-        return $this->is_active && $this->adminOrganizationIds() !== [];
+        return $this->is_active && ($this->isSuperAdmin() || $this->adminOrganizationIds() !== []);
     }
 
     public function canAccessPortal(): bool

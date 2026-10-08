@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Enums\MemberStatus;
 use App\Models\ContactMessage;
 use App\Models\Member;
+use App\Models\Organization;
 use App\Models\User;
 
 /** Menú lateral del panel de administración, filtrado por permisos del usuario. */
@@ -16,6 +17,7 @@ final class AdminMenu
         $groups = [
             ['title' => null, 'items' => [
                 ['label' => 'Tablero', 'route' => 'admin.dashboard', 'icon' => 'dashboard', 'active' => 'admin.dashboard'],
+                ['label' => 'Manual de uso', 'route' => 'admin.help', 'icon' => 'help'],
             ]],
             ['title' => 'Socios', 'items' => [
                 ['label' => 'Socios', 'route' => 'admin.members.index', 'icon' => 'users', 'can' => 'socios.ver', 'active' => 'admin.members.*',
@@ -60,11 +62,15 @@ final class AdminMenu
             ]],
         ];
 
+        // Sin entidad activa (instalación desde cero) solo se ofrece crear la primera y la ayuda.
+        $withoutOrganization = Organization::current() === null;
+
         return collect($groups)
             ->reject(fn (array $group) => ($group['gym'] ?? false) && ! uses_gym())
-            ->map(function (array $group) use ($user) {
+            ->map(function (array $group) use ($user, $withoutOrganization) {
                 $group['items'] = collect($group['items'])
                     ->filter(fn (array $item) => ! isset($item['can']) || $user->can($item['can']))
+                    ->filter(fn (array $item) => ! $withoutOrganization || in_array($item['route'], ['admin.organizations', 'admin.help'], true))
                     ->map(function (array $item) {
                         $item['badge'] = isset($item['badge']) ? ($item['badge'])() : null;
                         $item['active'] = request()->routeIs($item['active'] ?? $item['route']);

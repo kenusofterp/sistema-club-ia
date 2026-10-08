@@ -6,7 +6,7 @@
     <form wire:submit="save" class="grid gap-6 xl:grid-cols-3">
         <div class="card grid gap-5 p-6 xl:col-span-2">
             <x-field label="Título" for="title" error="title" required>
-                <input id="title" wire:model.blur="title" class="form-input text-lg">
+                <input id="title" wire:model.live.blur="title" class="form-input text-lg">
             </x-field>
             <x-field label="URL" for="slug" error="slug" required help="/noticias/{{ $slug ?: '...' }}">
                 <input id="slug" wire:model="slug" class="form-input">

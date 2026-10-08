@@ -70,7 +70,7 @@ class Index extends Component
         }
     }
 
-    public function save(OrganizationProvisioner $provisioner): void
+    public function save(OrganizationProvisioner $provisioner)
     {
         $this->authorize('plataforma');
         $this->domain = strtolower(trim($this->domain));
@@ -90,6 +90,11 @@ class Index extends Component
             return;
         }
 
+        $isFirst = ! $this->editingId && Organization::withTrashed()->doesntExist();
+        if ($isFirst) {
+            $data['is_default'] = true;
+        }
+
         $org = DB::transaction(function () use ($data) {
             if ($data['is_default']) {
                 Organization::query()->update(['is_default' => false]);
@@ -103,6 +108,14 @@ class Index extends Component
         }
 
         $this->showForm = false;
+
+        // Primera entidad de la instalación: se pasa directamente a administrarla.
+        if ($isFirst && $org->is_active) {
+            session()->flash('success', "Entidad «{$org->name}» creada. ¡Ya podés empezar a cargar datos!");
+
+            return $this->manage($org->id);
+        }
+
         $this->notify($this->editingId ? 'Entidad actualizada.' : "Entidad «{$org->name}» creada con su configuración, sitio web y datos iniciales.");
     }
 

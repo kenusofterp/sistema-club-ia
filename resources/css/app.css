@@ -104,3 +104,60 @@
         @apply mb-4 leading-relaxed;
     }
 }
+
+/* Manual de uso (Administración › Ayuda) */
+@layer components {
+    .manual section + section {
+        @apply mt-10 border-t border-slate-100 pt-8;
+    }
+    .manual h2 {
+        @apply mb-3 font-display text-xl font-bold text-slate-900;
+    }
+    .manual h3 {
+        @apply mt-6 mb-2 font-semibold text-slate-900;
+    }
+    .manual p {
+        @apply mb-3;
+    }
+    .manual a:not([class]) {
+        @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 hover:decoration-brand-600;
+    }
+    .manual ul {
+        @apply mb-3 list-disc space-y-1 pl-6;
+    }
+    .manual code {
+        @apply rounded bg-slate-100 px-1.5 py-0.5 text-[13px] text-slate-800;
+    }
+    .manual ol.steps {
+        @apply mb-3 space-y-2;
+        counter-reset: step;
+    }
+    .manual ol.steps > li {
+        @apply relative pl-9;
+        counter-increment: step;
+    }
+    .manual ol.steps > li::before {
+        @apply absolute top-0 left-0 grid size-6 place-items-center rounded-full bg-brand-600 text-xs font-bold text-white;
+        content: counter(step);
+    }
+    .manual .glossary dt {
+        @apply mt-3 font-semibold text-slate-900;
+    }
+    .manual .glossary dd {
+        @apply text-slate-600;
+    }
+    .manual-table {
+        @apply my-3 min-w-full divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 text-sm;
+    }
+    .manual-table th {
+        @apply bg-slate-50 px-3 py-2 text-left font-semibold text-slate-700;
+    }
+    .manual-table td {
+        @apply px-3 py-2 align-top;
+    }
+}
+
+@media print {
+    .manual figure button { box-shadow: none; }
+    .manual section { break-inside: avoid-page; }
+}

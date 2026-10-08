@@ -67,7 +67,10 @@
                 <p class="hidden truncate text-sm font-medium text-slate-500 md:block">{{ $title ?? '' }}</p>
             </div>
             <div class="flex items-center gap-2">
-                <a href="{{ $currentOrganization?->url() ?? route('home') }}" target="_blank" class="btn-ghost btn-sm hidden sm:inline-flex"><x-icon name="external" class="size-4" /> Ver sitio</a>
+                <a href="{{ route('admin.help') }}" wire:navigate class="btn-ghost btn-sm" title="Manual de uso"><x-icon name="help" class="size-4" /><span class="hidden sm:inline"> Ayuda</span></a>
+                @if ($currentOrganization)
+                    <a href="{{ $currentOrganization->url() }}" target="_blank" class="btn-ghost btn-sm hidden sm:inline-flex"><x-icon name="external" class="size-4" /> Ver sitio</a>
+                @endif
                 <div class="relative" x-data="{ open: false }" x-on:click.outside="open = false">
                     <button type="button" class="flex items-center gap-2 rounded-full p-1 pr-2 hover:bg-slate-100" x-on:click="open = !open">
                         @if (auth()->user()->avatarUrl())

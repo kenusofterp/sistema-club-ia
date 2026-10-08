@@ -1,6 +1,7 @@
 <div>
     <x-page-header :title="'Hola, '.explode(' ', auth()->user()->name)[0]" :subtitle="ucfirst(now()->translatedFormat('l j \d\e F \d\e Y'))">
         <x-slot:actions>
+            <a href="{{ route('admin.help') }}" wire:navigate class="btn-secondary"><x-icon name="help" class="size-4" /> Ayuda</a>
             @can('pagos.registrar')
                 <a href="{{ route('admin.payments.create') }}" wire:navigate class="btn-primary"><x-icon name="banknotes" class="size-4" /> Registrar pago</a>
             @endcan
@@ -15,6 +16,19 @@
             <p class="text-slate-600">Bienvenido/a al sistema. Usá el menú lateral para acceder a las secciones habilitadas para tu rol.</p>
         </div>
     @else
+        @if ($activeMembers === 0 && $pendingMembers === 0)
+            <div class="mb-4 flex flex-col gap-4 rounded-xl border border-brand-200 bg-brand-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-start gap-3">
+                    <x-icon name="sparkles" class="size-6 shrink-0 text-brand-600" />
+                    <div>
+                        <p class="font-semibold text-brand-900">¿Recién empezás? Seguí los primeros pasos</p>
+                        <p class="text-sm text-brand-800">Configurá el club, revisá las categorías y cargá tu primer socio. El manual te guía paso a paso con ejemplos.</p>
+                    </div>
+                </div>
+                <a href="{{ route('admin.help') }}#primeros-pasos" wire:navigate class="btn-primary shrink-0"><x-icon name="help" class="size-4" /> Abrir el manual</a>
+            </div>
+        @endif
+
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <x-stat-card label="Socios activos" :value="number_format($activeMembers, 0, ',', '.')" icon="users"
                          :hint="$pendingMembers ? $pendingMembers.' solicitudes pendientes' : 'Sin solicitudes pendientes'"

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Support\SettingsCatalog;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
@@ -31,9 +32,13 @@ class Setting extends Model
     {
         $organizationId = Organization::currentId();
 
-        // Sin entidad actual no hay configuración que leer (se usan los valores por defecto).
+        // Sin entidad actual (p. ej. instalación sin entidades) se usan los valores por defecto del catálogo,
+        // salvo las imágenes, que solo existen una vez que se crea una entidad.
         if (! $organizationId) {
-            return [];
+            return collect(SettingsCatalog::definitions())
+                ->reject(fn (array $definition) => $definition['type'] === 'image')
+                ->pluck('value', 'key')
+                ->all();
         }
 
         return Cache::rememberForever(self::cacheKey($organizationId), function () {

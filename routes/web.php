@@ -51,6 +51,7 @@ Route::post('/salir', LogoutController::class)->middleware('auth')->name('logout
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])->group(function () {
     Route::get('/', Admin\Dashboard::class)->name('dashboard');
     Route::get('/perfil', Admin\Profile::class)->name('profile');
+    Route::get('/ayuda', Admin\Help::class)->name('help');
     Route::post('/entidad', [OrganizationSwitchController::class, 'admin'])->name('organization.switch');
     Route::get('/entidades', Admin\Organizations\Index::class)->name('organizations')->middleware('can:plataforma');
 

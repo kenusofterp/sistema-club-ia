@@ -7,7 +7,7 @@
         <div class="space-y-6 xl:col-span-2">
             <div class="card grid gap-5 p-6 md:grid-cols-2">
                 <x-field label="Nombre" for="name" error="name" required>
-                    <input id="name" wire:model.blur="name" class="form-input">
+                    <input id="name" wire:model.live.blur="name" class="form-input">
                 </x-field>
                 <x-field label="URL (slug)" for="slug" error="slug" required help="Dirección en la web: /actividades/{{ $slug ?: '...' }}">
                     <input id="slug" wire:model="slug" class="form-input">

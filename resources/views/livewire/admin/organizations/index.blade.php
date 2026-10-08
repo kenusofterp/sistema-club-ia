@@ -5,6 +5,18 @@
         </x-slot:actions>
     </x-page-header>
 
+    @if ($organizations->isEmpty())
+        <div class="card">
+            <x-empty-state icon="building" title="Bienvenido/a: todavía no hay ninguna entidad"
+                           description="El primer paso es crear el club o gimnasio que vas a administrar. Se genera con su configuración, sitio web y datos base, y después podés editar todo.">
+                <div class="mt-4 flex flex-wrap justify-center gap-2">
+                    <button type="button" wire:click="create" class="btn-primary"><x-icon name="plus" class="size-4" /> Crear la primera entidad</button>
+                    <a href="{{ route('admin.help') }}" wire:navigate class="btn-secondary"><x-icon name="help" class="size-4" /> Ver el manual de uso</a>
+                </div>
+            </x-empty-state>
+        </div>
+    @endif
+
     <div class="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
         @foreach ($organizations as $org)
             <div @class(['card flex flex-col', 'opacity-60' => ! $org->is_active || $org->trashed(), 'ring-2 ring-brand-500' => $org->id === $currentOrganization?->id]) wire:key="org-{{ $org->id }}">
@@ -39,7 +51,7 @@
     <x-modal wire:model="showForm" :title="$editingId ? 'Editar entidad' : 'Nueva entidad'" max-width="max-w-lg">
         <form wire:submit="save" id="org-form" class="grid gap-4">
             <x-field label="Nombre" for="name" error="name" required>
-                <input id="name" wire:model.blur="name" class="form-input" placeholder="Ej.: Club Atlético del Sur">
+                <input id="name" wire:model.live.blur="name" class="form-input" placeholder="Ej.: Club Atlético del Sur">
             </x-field>
             <x-field label="Tipo" for="type" error="type" required help="Define los módulos: cuota social y actividades (club), planes y membresías (gimnasio) o ambos.">
                 <select id="type" wire:model="type" class="form-input">

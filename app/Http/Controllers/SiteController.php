@@ -11,12 +11,18 @@ use App\Models\Page;
 use App\Models\Plan;
 use App\Models\Post;
 use App\Models\SiteSection;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class SiteController extends Controller
 {
-    public function home(): View
+    public function home(): View|RedirectResponse
     {
+        // Instalación sin entidades todavía: no hay sitio que mostrar.
+        if (! Organization::current()) {
+            return redirect()->route('login');
+        }
+
         $sections = SiteSection::active()->get();
         $types = $sections->pluck('type');
 
