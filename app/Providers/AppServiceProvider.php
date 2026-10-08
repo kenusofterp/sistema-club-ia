@@ -14,6 +14,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
@@ -34,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Carbon::setLocale(config('app.locale'));
+
+        if ($proxies = config('app.trusted_proxies')) {
+            TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
 
         // Windows: OpenSSL necesita su archivo de configuración para generar las claves EC del cifrado de las push.
         if (PHP_OS_FAMILY === 'Windows' && ! getenv('OPENSSL_CONF') && is_file($conf = dirname(PHP_BINARY).'\\extras\\ssl\\openssl.cnf')) {

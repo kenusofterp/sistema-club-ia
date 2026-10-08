@@ -2,7 +2,6 @@
 
 use App\Models\Organization;
 use App\Models\Setting;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\Rules\Unique;
@@ -42,7 +41,8 @@ if (! function_exists('money')) {
 if (! function_exists('storage_url')) {
     function storage_url(?string $path): ?string
     {
-        return $path ? Storage::disk('public')->url($path) : null;
+        // Relativa al dominio del pedido (cada entidad puede tener su dominio); en consola usa APP_URL.
+        return $path ? asset('storage/'.ltrim($path, '/')) : null;
     }
 }
 

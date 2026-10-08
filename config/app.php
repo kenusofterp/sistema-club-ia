@@ -68,6 +68,12 @@ return [
     'timezone' => env('APP_TIMEZONE', 'UTC'),
 
     /*
+    | Proxy o túnel HTTPS delante de la app (Cloudflare, Nginx…): se confía en sus encabezados
+    | X-Forwarded-* para generar URLs https. "*" = todos, o IPs separadas por coma. Vacío = ninguno.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------

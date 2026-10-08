@@ -8,7 +8,6 @@ use App\Support\SettingsCatalog;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['group', 'key', 'value', 'type', 'label', 'help', 'sort_order'])]
 class Setting extends Model
@@ -87,6 +86,6 @@ class Setting extends Model
     {
         $path = static::get($key);
 
-        return $path ? Storage::disk('public')->url($path) : null;
+        return storage_url($path);
     }
 }
