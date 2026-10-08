@@ -1,0 +1,124 @@
+<div>
+    <x-page-header :title="$member ? 'Editar socio' : 'Nuevo socio'" :subtitle="$member?->fullName()">
+        <x-slot:breadcrumb><a href="{{ route('admin.members.index') }}" wire:navigate class="hover:text-brand-700">Socios</a> /</x-slot:breadcrumb>
+    </x-page-header>
+
+    <form wire:submit="save" class="space-y-6">
+        <div class="card p-6">
+            <h2 class="mb-5 font-semibold text-slate-900">Datos personales</h2>
+            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                <x-field label="Nombre" for="first_name" error="first_name" required>
+                    <input id="first_name" wire:model="first_name" class="form-input">
+                </x-field>
+                <x-field label="Apellido" for="last_name" error="last_name" required>
+                    <input id="last_name" wire:model="last_name" class="form-input">
+                </x-field>
+                <div class="grid grid-cols-3 gap-3">
+                    <x-field label="Tipo" for="document_type" error="document_type">
+                        <select id="document_type" wire:model="document_type" class="form-input">
+                            @foreach (\App\Models\Member::DOCUMENT_TYPES as $value => $label)
+                                <option value="{{ $value }}">{{ $value }}</option>
+                            @endforeach
+                        </select>
+                    </x-field>
+                    <x-field label="Documento" for="document_number" error="document_number" required class="col-span-2">
+                        <input id="document_number" wire:model="document_number" class="form-input">
+                    </x-field>
+                </div>
+                <x-field label="Fecha de nacimiento" for="birth_date" error="birth_date" required>
+                    <input id="birth_date" type="date" wire:model="birth_date" class="form-input">
+                </x-field>
+                <x-field label="Género" for="gender" error="gender">
+                    <select id="gender" wire:model="gender" class="form-input">
+                        <option value="">Sin especificar</option>
+                        @foreach (\App\Models\Member::GENDERS as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </x-field>
+                <x-field label="Categoría" for="member_category_id" error="member_category_id" required>
+                    <select id="member_category_id" wire:model="member_category_id" class="form-input">
+                        <option value="">Seleccionar…</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }} — {{ money($category->monthly_fee) }} ({{ $category->ageRangeLabel() }})</option>
+                        @endforeach
+                    </select>
+                </x-field>
+                <x-field label="Fecha de ingreso" for="admission_date" error="admission_date">
+                    <input id="admission_date" type="date" wire:model="admission_date" class="form-input">
+                </x-field>
+                <div class="md:col-span-2">
+                    <x-image-upload model="photo" :file="$photo" :current="$member?->photoUrl()" label="Foto (para el carnet)" aspect="aspect-square" help="JPG o PNG, máximo 3 MB." />
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="mb-5 font-semibold text-slate-900">Contacto</h2>
+            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                <x-field label="Correo electrónico" for="email" error="email" help="Necesario para el acceso al portal y recibos.">
+                    <input id="email" type="email" wire:model="email" class="form-input">
+                </x-field>
+                <x-field label="Teléfono" for="phone" error="phone">
+                    <input id="phone" wire:model="phone" class="form-input">
+                </x-field>
+                <x-field label="Dirección" for="address" error="address">
+                    <input id="address" wire:model="address" class="form-input">
+                </x-field>
+                <x-field label="Localidad" for="city" error="city">
+                    <input id="city" wire:model="city" class="form-input">
+                </x-field>
+                <x-field label="Contacto de emergencia" for="emergency_contact_name" error="emergency_contact_name">
+                    <input id="emergency_contact_name" wire:model="emergency_contact_name" class="form-input">
+                </x-field>
+                <x-field label="Teléfono de emergencia" for="emergency_contact_phone" error="emergency_contact_phone">
+                    <input id="emergency_contact_phone" wire:model="emergency_contact_phone" class="form-input">
+                </x-field>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="mb-1 font-semibold text-slate-900">Grupo familiar</h2>
+            <p class="mb-5 text-sm text-slate-500">Si es integrante del grupo familiar de otro socio, indicá el titular.</p>
+            <div class="grid gap-5 md:grid-cols-2">
+                <x-field label="Socio titular" for="holder_search" error="holder_id">
+                    <div class="relative">
+                        <input id="holder_search" wire:model.live.debounce.300ms="holder_search" class="form-input" placeholder="Buscar titular…" @disabled($holder_id) autocomplete="off">
+                        @if ($holder_id)
+                            <button type="button" wire:click="clearHolder" class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-red-600"><x-icon name="x" class="size-4" /></button>
+                        @endif
+                        @if ($holders->isNotEmpty())
+                            <ul class="absolute z-10 mt-1 w-full overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-slate-200">
+                                @foreach ($holders as $holder)
+                                    <li><button type="button" wire:click="selectHolder({{ $holder->id }})" class="w-full px-3 py-2 text-left text-sm hover:bg-slate-50">{{ $holder->sortableName() }} <span class="text-slate-400">· N° {{ $holder->member_number }}</span></button></li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                </x-field>
+                <x-field label="Parentesco" for="relationship" error="relationship">
+                    <input id="relationship" wire:model="relationship" class="form-input" placeholder="Cónyuge, hijo/a…" @disabled(! $holder_id)>
+                </x-field>
+            </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="mb-5 font-semibold text-slate-900">Observaciones</h2>
+            <div class="grid gap-5 md:grid-cols-2">
+                <x-field label="Información médica relevante" for="medical_notes" error="medical_notes" help="Alergias, condiciones, apto físico. Solo visible para el personal.">
+                    <textarea id="medical_notes" wire:model="medical_notes" rows="3" class="form-input"></textarea>
+                </x-field>
+                <x-field label="Notas internas" for="notes" error="notes">
+                    <textarea id="notes" wire:model="notes" rows="3" class="form-input"></textarea>
+                </x-field>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <a href="{{ $member ? route('admin.members.show', $member) : route('admin.members.index') }}" wire:navigate class="btn-secondary">Cancelar</a>
+            <button type="submit" class="btn-primary" wire:loading.attr="disabled">
+                <x-icon name="check" class="size-4" /> {{ $member ? 'Guardar cambios' : 'Registrar socio' }}
+            </button>
+        </div>
+    </form>
+</div>

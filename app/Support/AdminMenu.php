@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Support;
+
+use App\Enums\MemberStatus;
+use App\Models\ContactMessage;
+use App\Models\Member;
+use App\Models\User;
+
+/** Menú lateral del panel de administración, filtrado por permisos del usuario. */
+final class AdminMenu
+{
+    /** @return array<int, array{title: string|null, items: array<int, array<string, mixed>>}> */
+    public static function for(User $user): array
+    {
+        $groups = [
+            ['title' => null, 'items' => [
+                ['label' => 'Tablero', 'route' => 'admin.dashboard', 'icon' => 'dashboard', 'active' => 'admin.dashboard'],
+            ]],
+            ['title' => 'Socios', 'items' => [
+                ['label' => 'Socios', 'route' => 'admin.members.index', 'icon' => 'users', 'can' => 'socios.ver', 'active' => 'admin.members.*',
+                    'badge' => fn () => Member::where('status', MemberStatus::Pending)->count() ?: null],
+                ['label' => 'Categorías', 'route' => 'admin.categories', 'icon' => 'tag', 'can' => 'categorias.gestionar'],
+                ['label' => 'Control de acceso', 'route' => 'admin.access', 'icon' => 'qr', 'can' => 'acceso.registrar'],
+            ]],
+            ['title' => 'Actividades', 'items' => [
+                ['label' => 'Actividades', 'route' => 'admin.activities.index', 'icon' => 'trophy', 'can' => 'actividades.ver', 'active' => 'admin.activities.*'],
+                ['label' => 'Inscripciones', 'route' => 'admin.enrollments', 'icon' => 'clipboard', 'can' => 'inscripciones.gestionar'],
+            ]],
+            ['title' => 'Tesorería', 'items' => [
+                ['label' => 'Cuotas y cargos', 'route' => 'admin.fees', 'icon' => 'document', 'can' => 'cuotas.ver'],
+                ['label' => 'Pagos', 'route' => 'admin.payments.index', 'icon' => 'banknotes', 'can' => 'pagos.ver', 'active' => 'admin.payments.*'],
+            ]],
+            ['title' => 'Gimnasio', 'gym' => true, 'items' => [
+                ['label' => 'Planes de socios', 'route' => 'admin.gym.subscriptions', 'icon' => 'id-card', 'can' => 'suscripciones.gestionar'],
+                ['label' => 'Planes y precios', 'route' => 'admin.gym.plans', 'icon' => 'tag', 'can' => 'planes.gestionar'],
+            ]],
+            ['title' => 'Instalaciones', 'items' => [
+                ['label' => 'Instalaciones', 'route' => 'admin.facilities', 'icon' => 'building', 'can' => 'instalaciones.gestionar'],
+                ['label' => 'Reservas', 'route' => 'admin.reservations', 'icon' => 'calendar', 'can' => 'reservas.ver'],
+            ]],
+            ['title' => 'Comunicación', 'items' => [
+                ['label' => 'Mensajes', 'route' => 'admin.messages', 'icon' => 'inbox', 'can' => 'mensajes.ver',
+                    'badge' => fn () => ContactMessage::unread()->count() ?: null],
+                ['label' => 'Avisos a socios', 'route' => 'admin.announcements', 'icon' => 'megaphone', 'can' => 'avisos.gestionar'],
+            ]],
+            ['title' => 'Sitio web', 'items' => [
+                ['label' => 'Identidad y contacto', 'route' => 'admin.site.settings', 'icon' => 'globe', 'can' => 'sitio.gestionar'],
+                ['label' => 'Portada (hero)', 'route' => 'admin.site.hero', 'icon' => 'photo', 'can' => 'sitio.gestionar'],
+                ['label' => 'Secciones', 'route' => 'admin.site.sections', 'icon' => 'list', 'can' => 'sitio.gestionar'],
+                ['label' => 'Noticias', 'route' => 'admin.site.posts.index', 'icon' => 'newspaper', 'can' => 'sitio.gestionar', 'active' => 'admin.site.posts.*'],
+                ['label' => 'Páginas', 'route' => 'admin.site.pages', 'icon' => 'document', 'can' => 'sitio.gestionar'],
+            ]],
+            ['title' => 'Administración', 'items' => [
+                ['label' => 'Entidades', 'route' => 'admin.organizations', 'icon' => 'building', 'can' => 'plataforma'],
+                ['label' => 'Usuarios', 'route' => 'admin.users', 'icon' => 'user', 'can' => 'usuarios.gestionar'],
+                ['label' => 'Roles y permisos', 'route' => 'admin.roles', 'icon' => 'key', 'can' => 'roles.gestionar'],
+                ['label' => 'Auditoría', 'route' => 'admin.audit', 'icon' => 'shield', 'can' => 'auditoria.ver'],
+                ['label' => 'Configuración del club', 'route' => 'admin.settings', 'icon' => 'cog', 'can' => 'configuracion.gestionar'],
+            ]],
+        ];
+
+        return collect($groups)
+            ->reject(fn (array $group) => ($group['gym'] ?? false) && ! uses_gym())
+            ->map(function (array $group) use ($user) {
+                $group['items'] = collect($group['items'])
+                    ->filter(fn (array $item) => ! isset($item['can']) || $user->can($item['can']))
+                    ->map(function (array $item) {
+                        $item['badge'] = isset($item['badge']) ? ($item['badge'])() : null;
+                        $item['active'] = request()->routeIs($item['active'] ?? $item['route']);
+
+                        return $item;
+                    })
+                    ->values()
+                    ->all();
+
+                return $group;
+            })
+            ->filter(fn (array $group) => $group['items'] !== [])
+            ->values()
+            ->all();
+    }
+}
