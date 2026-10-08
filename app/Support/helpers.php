@@ -19,6 +19,16 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('activity_label')) {
+    /** Nombre configurable de las actividades en la entidad actual (Actividad, Nivel, Grupo…). */
+    function activity_label(bool $plural = false): string
+    {
+        return $plural
+            ? (string) (setting('activities.label_plural') ?: 'Actividades')
+            : (string) (setting('activities.label_singular') ?: 'Actividad');
+    }
+}
+
 if (! function_exists('money')) {
     function money(float|int|string|null $amount): string
     {

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\OrganizationSwitchController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\PwaController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SiteController;
@@ -42,6 +43,12 @@ Route::middleware('guest')->group(function () {
     Route::get('/restablecer-contrasena/{token}', Auth\ResetPassword::class)->name('password.reset');
 });
 Route::post('/salir', LogoutController::class)->middleware('auth')->name('logout');
+
+// Notificaciones push del teléfono (PWA).
+Route::middleware(['auth', 'throttle:20,1'])->group(function () {
+    Route::post('/push/suscribir', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::post('/push/desuscribir', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -86,7 +93,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
         Route::get('/', Admin\Lessons\Calendar::class)->middleware('can:agenda.ver');
         Route::get('/packs', Admin\Lessons\Packs::class)->name('.packs')->middleware('can:agenda.gestionar');
         Route::get('/cobros', Admin\Lessons\Account::class)->name('.account')->middleware('can:cobros.propios');
+        Route::get('/hoy', Admin\Lessons\Today::class)->name('.today')->middleware('can:agenda.ver');
+        Route::get('/cobrar', Admin\Lessons\Collect::class)->name('.collect')->middleware('can:cobros.niveles');
+        Route::get('/efectivo', Admin\Lessons\Cash::class)->name('.cash')->middleware('can:cobros.niveles');
     });
+    Route::get('/comprobantes', Admin\Receipts\Index::class)->name('receipts')->middleware('can:comprobantes.revisar');
+    Route::get('/rendiciones', Admin\Settlements\Index::class)->name('settlements')->middleware('can:rendiciones.gestionar');
 
     // Instalaciones
     Route::get('/instalaciones', Admin\Facilities\Index::class)->name('facilities')->middleware('can:instalaciones.gestionar');

@@ -105,7 +105,7 @@
                                     'line-through opacity-50' => $lesson->status === \App\Enums\LessonStatus::Cancelled,
                                 ])>
                                     <span class="tabular-nums">{{ substr($lesson->start_time, 0, 5) }}</span>
-                                    <span class="hidden sm:inline">{{ $lesson->students->count() === 1 ? $lesson->students->first()->last_name : $lesson->students->count().' al.' }}</span>
+                                    <span class="hidden sm:inline">{{ $lesson->activity?->name ?? ($lesson->students->count() === 1 ? $lesson->students->first()->last_name : $lesson->students->count().' al.') }}</span>
                                 </button>
                             @endforeach
                             @if ($dayLessons->count() > 3)
@@ -179,9 +179,9 @@
                                     <span class="flex items-center gap-1 font-semibold">
                                         @if ($lesson->status === \App\Enums\LessonStatus::Given)<x-icon name="check" class="size-3 shrink-0" />@endif
                                         <span class="tabular-nums">{{ substr($lesson->start_time, 0, 5) }}</span>
-                                        <span class="truncate">{{ $lesson->students->count() === 1 ? $lesson->students->first()->fullName() : ($lesson->students->isEmpty() ? 'Sin alumnos' : $lesson->students->count().' alumnos') }}</span>
+                                        <span class="truncate">{{ $lesson->title() }}</span>
                                     </span>
-                                    <span class="block truncate opacity-80">{{ $scope === 'todas' ? $lesson->organization->name.' · ' : '' }}{{ $lesson->facility->name }}</span>
+                                    <span class="block truncate opacity-80">{{ $scope === 'todas' ? $lesson->organization->name.' · ' : '' }}{{ $lesson->placeName() }}</span>
                                     @if ($instructorOptions->isNotEmpty() && $instructorFilter === '')
                                         <span class="block truncate opacity-80">{{ $lesson->instructor->name }}</span>
                                     @endif
@@ -322,7 +322,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <p class="font-semibold text-slate-900">{{ ucfirst($detail->date->translatedFormat('l j \d\e F')) }} · {{ $detail->timeRange() }}</p>
-                        <p class="text-sm text-slate-500">{{ $detail->organization->name }} · {{ $detail->facility->name }} · {{ $detail->instructor->name }}</p>
+                        <p class="text-sm text-slate-500">{{ $detail->organization->name }} · {{ $detail->placeName() }} · {{ $detail->instructor->name }}</p>
                         @if ($detail->series_id)
                             <p class="mt-1 text-xs text-slate-500"><x-icon name="refresh" class="inline size-3.5" /> Se repite hasta el {{ $detail->series->ends_on->format('d/m/Y') }}</p>
                         @endif
@@ -383,7 +383,7 @@
                 </div>
 
                 @if ($detail->isScheduled() && $detailCanManage)
-                    <p class="rounded-lg bg-sky-50 p-3 text-xs text-sky-800">Al marcarla como dada, a cada presente se le descuenta una clase de su pack con {{ $detail->instructor->name }}; si no tiene pack o no le quedan clases, se le cobra la clase suelta. Los ausentes no consumen.</p>
+                    <p class="rounded-lg bg-sky-50 p-3 text-xs text-sky-800">{{ $detail->isLevelLesson() ? 'Clase de '.$detail->activity->name.': se paga con la cuota mensual. Al marcarla como dada queda registrada la asistencia.' : 'Al marcarla como dada, a cada presente se le descuenta una clase de su pack con '.$detail->instructor->name.'; si no tiene pack o no le quedan clases, se le cobra la clase suelta. Los ausentes no consumen.' }}</p>
                 @endif
             </div>
         @endif
@@ -391,12 +391,12 @@
             @if ($detail && $detailCanManage)
                 @if ($detail->isScheduled())
                     <div class="mr-auto flex flex-wrap gap-1">
-                        <button type="button" wire:click="cancelLesson" wire:confirm="¿Cancelar esta clase?" class="btn-ghost btn-sm text-red-600">Cancelar clase</button>
+                        <button type="button" wire:click="cancelLesson" wire:confirm="¿Cancelar esta clase?{{ $detail->isLevelLesson() ? ' Se avisa a los alumnos.' : '' }}" class="btn-ghost btn-sm text-red-600">Cancelar clase</button>
                         @if ($detail->series_id)
                             <button type="button" wire:click="cancelSeries" wire:confirm="¿Cancelar esta clase y todas las siguientes de la serie?" class="btn-ghost btn-sm text-red-600">Cancelar desde acá</button>
                         @endif
                     </div>
-                    <button type="button" wire:click="edit({{ $detail->id }})" class="btn-secondary">Editar</button>
+                    @unless ($detail->isLevelLesson())<button type="button" wire:click="edit({{ $detail->id }})" class="btn-secondary">Editar</button>@endunless
                     @if (! $detail->date->isFuture())
                         <button type="button" wire:click="markGiven" class="btn-primary"><x-icon name="check" class="size-4" /> Marcar como dada</button>
                     @endif

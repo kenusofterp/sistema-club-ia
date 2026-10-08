@@ -106,7 +106,8 @@ class PaymentService
             return $payment;
         });
 
-        if ($member->email) {
+        // Correo (si tiene) y push (si activó las notificaciones en su teléfono).
+        if ($member->email || $member->user_id) {
             $member->notify(new PaymentReceivedNotification($payment));
         }
 
@@ -134,6 +135,10 @@ class PaymentService
     {
         if ($payment->isCancelled()) {
             throw new BusinessRuleException('El pago ya está anulado.');
+        }
+
+        if ($payment->settlement_id) {
+            throw new BusinessRuleException('El pago ya fue rendido por el profesor; no se puede anular.');
         }
 
         DB::transaction(function () use ($payment, $reason, $by) {

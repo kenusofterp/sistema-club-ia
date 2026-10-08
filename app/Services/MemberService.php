@@ -7,6 +7,7 @@ use App\Enums\FeeType;
 use App\Enums\MemberStatus;
 use App\Enums\ReservationStatus;
 use App\Exceptions\BusinessRuleException;
+use App\Models\Activity;
 use App\Models\Member;
 use App\Models\MemberCategory;
 use App\Models\Organization;
@@ -151,10 +152,12 @@ class MemberService
         }
 
         DB::transaction(function () use ($member, $reason) {
+            $activities = $member->enrollments()->where('status', EnrollmentStatus::Active)->with('activity')->get()->pluck('activity');
             $member->enrollments()->where('status', EnrollmentStatus::Active)->update([
                 'status' => EnrollmentStatus::Ended,
                 'end_date' => today(),
             ]);
+            $activities->filter()->each(fn (Activity $activity) => app(LevelLessonService::class)->syncEnrollment($member, $activity, false));
 
             $member->reservations()
                 ->where('status', ReservationStatus::Confirmed)

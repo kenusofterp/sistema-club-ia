@@ -82,6 +82,32 @@ class Index extends Component
         }
     }
 
+    // ---- Cuota individual (beca o descuento) ----
+    public ?int $editingFeeId = null;
+
+    public string $feeAmount = '';
+
+    public function editFee(int $id): void
+    {
+        $this->authorize('inscripciones.gestionar');
+        $enrollment = Enrollment::findOrFail($id);
+        $this->editingFeeId = $enrollment->id;
+        $this->feeAmount = $enrollment->fee_amount !== null ? (string) $enrollment->fee_amount : '';
+    }
+
+    /** Vacío = vuelve a la cuota de la actividad. Se aplica desde la próxima cuota que se genere. */
+    public function saveFee(): void
+    {
+        $this->authorize('inscripciones.gestionar');
+        $this->validate(['feeAmount' => 'nullable|numeric|min:0|max:99999999'], [], ['feeAmount' => 'cuota']);
+
+        Enrollment::findOrFail($this->editingFeeId)->update([
+            'fee_amount' => $this->feeAmount === '' ? null : number_format((float) $this->feeAmount, 2, '.', ''),
+        ]);
+        $this->editingFeeId = null;
+        $this->notify('Cuota individual guardada. Se aplica desde la próxima cuota que se genere.');
+    }
+
     public function unenroll(int $id, EnrollmentService $service): void
     {
         $this->authorize('inscripciones.gestionar');

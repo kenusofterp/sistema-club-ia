@@ -35,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Carbon::setLocale(config('app.locale'));
 
+        // Windows: OpenSSL necesita su archivo de configuración para generar las claves EC del cifrado de las push.
+        if (PHP_OS_FAMILY === 'Windows' && ! getenv('OPENSSL_CONF') && is_file($conf = dirname(PHP_BINARY).'\\extras\\ssl\\openssl.cnf')) {
+            putenv("OPENSSL_CONF={$conf}");
+        }
+
         // Layouts usables como <x-layouts::site> y como layout de páginas Livewire.
         Blade::anonymousComponentPath(resource_path('views/layouts'), 'layouts');
         View::addNamespace('layouts', resource_path('views/layouts'));

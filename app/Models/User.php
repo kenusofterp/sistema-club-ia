@@ -7,6 +7,7 @@ use App\Models\Concerns\Auditable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,6 +18,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
+use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -29,7 +31,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use Auditable, HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
+    use Auditable, HasApiTokens, HasFactory, HasPushSubscriptions, HasRoles, Notifiable, SoftDeletes;
 
     protected array $auditExcept = ['password', 'remember_token', 'last_login_at'];
 
@@ -151,6 +153,26 @@ class User extends Authenticatable
             ->all();
     }
 
+    /**
+     * Personal activo que tiene un permiso en una entidad (por sus roles allí). No incluye a los
+     * super administradores, para no avisarles de cada entidad.
+     *
+     * @return Collection<int, User>
+     */
+    public static function withPermissionIn(string $permission, int $organizationId): Collection
+    {
+        return static::query()
+            ->where('is_active', true)
+            ->whereIn('id', DB::table(config('permission.table_names.model_has_roles').' as mr')
+                ->join(config('permission.table_names.role_has_permissions').' as rp', 'rp.role_id', '=', 'mr.role_id')
+                ->join(config('permission.table_names.permissions').' as p', 'p.id', '=', 'rp.permission_id')
+                ->where('mr.model_type', (new static)->getMorphClass())
+                ->where('mr.organization_id', $organizationId)
+                ->where('p.name', $permission)
+                ->select('mr.model_id'))
+            ->get();
+    }
+
     public function hasPermissionIn(string $permission, int $organizationId): bool
     {
         return in_array($organizationId, $this->organizationIdsWith($permission), true);
@@ -184,7 +206,16 @@ class User extends Authenticatable
 
     public function homeRoute(): string
     {
-        return $this->canAccessAdmin() ? route('admin.dashboard') : route('portal.dashboard');
+        if (! $this->canAccessAdmin()) {
+            return route('portal.dashboard');
+        }
+
+        // Profesores sin tablero: entran directo a sus clases del día.
+        if (! $this->isSuperAdmin() && $this->organizationIdsWith('dashboard.ver') === [] && $this->organizationIdsWith('agenda.ver') !== []) {
+            return route('admin.lessons.today');
+        }
+
+        return route('admin.dashboard');
     }
 
     public function initials(): string

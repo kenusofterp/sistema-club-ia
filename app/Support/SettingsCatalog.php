@@ -17,6 +17,7 @@ final class SettingsCatalog
         'club' => 'Reglas del club',
         'gym' => 'Gimnasio',
         'lessons' => 'Agenda de clases',
+        'payments' => 'Cobros',
     ];
 
     /** @return array<string, string> opciones de una configuración de tipo select */
@@ -95,6 +96,17 @@ final class SettingsCatalog
             // Agenda de clases
             ['group' => 'lessons', 'key' => 'lessons.single_price', 'type' => 'decimal', 'label' => 'Precio por defecto de la clase suelta', 'value' => 0, 'help' => 'Se cobra a los alumnos sin pack del profesor (o sin clases disponibles). Cada profesor puede tener su propio precio y se puede cambiar en cada clase.'],
             ['group' => 'lessons', 'key' => 'lessons.default_minutes', 'type' => 'integer', 'label' => 'Duración por defecto de una clase (minutos)', 'value' => 60],
+            ['group' => 'lessons', 'key' => 'activities.label_singular', 'type' => 'string', 'label' => 'Cómo se llaman las actividades (singular)', 'value' => 'Actividad', 'help' => 'Ej.: Actividad, Nivel, Grupo, Curso. Se usa en el menú, el portal y las pantallas.'],
+            ['group' => 'lessons', 'key' => 'activities.label_plural', 'type' => 'string', 'label' => 'Cómo se llaman las actividades (plural)', 'value' => 'Actividades'],
+            ['group' => 'lessons', 'key' => 'lessons.generate_weeks', 'type' => 'integer', 'label' => 'Semanas de clases que se generan por adelantado para cada actividad', 'value' => 4, 'help' => 'Las clases de las actividades con horario aparecen en la agenda para tomar asistencia y que los alumnos avisen si faltan.'],
+            ['group' => 'lessons', 'key' => 'lessons.absence_notice_enabled', 'type' => 'boolean', 'label' => 'Los alumnos pueden avisar desde la app que no van a una clase', 'value' => true],
+
+            // Cobros
+            ['group' => 'payments', 'key' => 'payments.receipts_enabled', 'type' => 'boolean', 'label' => 'Los socios pueden informar pagos subiendo el comprobante de transferencia', 'value' => true],
+            ['group' => 'payments', 'key' => 'payments.receipts_auto_approve', 'type' => 'boolean', 'label' => 'Acreditar automáticamente los comprobantes (sin revisión)', 'value' => false, 'help' => 'Si está activado, el pago se registra al subir el comprobante y tesorería puede anularlo. Si no, queda en revisión hasta que alguien lo apruebe.'],
+            ['group' => 'payments', 'key' => 'payments.transfer_info', 'type' => 'text', 'label' => 'Datos para transferir (CBU / alias / titular)', 'value' => null, 'help' => 'Se muestran al socio cuando informa un pago.'],
+            ['group' => 'payments', 'key' => 'payments.instructors_collect_cash', 'type' => 'boolean', 'label' => 'Los profesores pueden cobrar en efectivo a los alumnos de sus actividades', 'value' => true],
+            ['group' => 'payments', 'key' => 'payments.cash_requires_settlement', 'type' => 'boolean', 'label' => 'El efectivo cobrado por los profesores se rinde', 'value' => true, 'help' => 'Desactivalo si el profesor es el dueño y no le rinde a nadie.'],
         ];
     }
 }

@@ -12,6 +12,30 @@
         </div>
     @endunless
 
+    @foreach ($suspended as $lesson)
+        <div class="flex gap-3 rounded-xl bg-red-50 p-4 text-sm text-red-900 ring-1 ring-red-200" wire:key="susp-{{ $lesson->id }}">
+            <x-icon name="ban" class="size-5 shrink-0" />
+            <p><strong>No hay clase</strong> {{ $lesson->date->isToday() ? 'hoy' : ($lesson->date->isTomorrow() ? 'mañana' : 'el '.$lesson->date->translatedFormat('l j/m')) }} de {{ $lesson->activity?->name ?? 'tu clase' }} ({{ substr($lesson->start_time, 0, 5) }}){{ $lesson->cancel_reason ? ': '.$lesson->cancel_reason : '' }}.</p>
+        </div>
+    @endforeach
+
+    <x-push-toggle compact />
+
+    @if ($nextLesson)
+        @php($noticed = $nextLesson->pivot->attendance === \App\Enums\AttendanceStatus::Notified->value)
+        <a href="{{ route('portal.lessons') }}" wire:navigate class="card flex items-center justify-between gap-4 p-5 transition hover:shadow-md">
+            <div class="min-w-0">
+                <p class="text-sm text-slate-500">Tu próxima clase</p>
+                <p class="font-display text-xl font-bold text-slate-900">{{ $nextLesson->activity?->name ?? 'Clase' }}</p>
+                <p class="text-sm text-slate-500">{{ ucfirst($nextLesson->date->isToday() ? 'hoy' : ($nextLesson->date->isTomorrow() ? 'mañana' : $nextLesson->date->translatedFormat('l j/m'))) }} · {{ $nextLesson->timeRange() }}{{ $nextLesson->placeName() ? ' · '.$nextLesson->placeName() : '' }}</p>
+                @if ($noticed)
+                    <p class="mt-1 text-sm font-medium text-sky-700">Avisaste que no vas</p>
+                @endif
+            </div>
+            <span class="shrink-0 text-sm font-medium text-brand-700">{{ $noticed ? 'Ver' : '¿No vas?' }}</span>
+        </a>
+    @endif
+
     <div class="grid gap-4 sm:grid-cols-2">
         <a href="{{ route('portal.fees') }}" wire:navigate class="card block p-5 transition hover:shadow-md {{ bccomp($balance, '0', 2) > 0 ? 'ring-1 ring-red-200' : '' }}">
             <p class="text-sm text-slate-500">Saldo de tu cuenta</p>
@@ -25,6 +49,9 @@
                     ¡Estás al día!
                 @endif
             </p>
+            @if (bccomp($balance, '0', 2) > 0 && setting('payments.receipts_enabled', true))
+                <span class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand-700">¿Transferiste? Informá el pago <x-icon name="arrow-right" class="size-4" /></span>
+            @endif
         </a>
         <a href="{{ route('portal.card') }}" wire:navigate class="relative block overflow-hidden rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 p-5 text-white shadow-sm transition hover:shadow-md">
             <x-icon name="qr" class="absolute -right-4 -bottom-4 size-28 text-white/10" />

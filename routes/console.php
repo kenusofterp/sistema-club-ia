@@ -19,6 +19,9 @@ Schedule::command('club:marcar-vencidas')->dailyAt('00:30')->withoutOverlapping(
 // Planes de gimnasio: vencimientos, renovaciones automáticas y altas impagas.
 Schedule::command('club:procesar-planes')->dailyAt('00:45')->withoutOverlapping()->onOneServer();
 
+// Clases de las actividades con horario (agenda, asistencia y avisos de ausencia).
+Schedule::command('club:generar-clases')->dailyAt('02:00')->withoutOverlapping()->onOneServer();
+
 // Recordatorios por correo.
 Schedule::command('club:recordatorios')->dailyAt('09:00')->withoutOverlapping()->onOneServer();
 

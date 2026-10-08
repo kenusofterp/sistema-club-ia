@@ -11,6 +11,7 @@ enum AttendanceStatus: string
     case Pending = 'pendiente';
     case Present = 'presente';
     case Absent = 'ausente';
+    case Notified = 'aviso';
     case Cancelled = 'cancelada';
 
     public function label(): string
@@ -19,6 +20,7 @@ enum AttendanceStatus: string
             self::Pending => 'Pendiente',
             self::Present => 'Presente',
             self::Absent => 'Ausente',
+            self::Notified => 'Avisó que falta',
             self::Cancelled => 'Cancelada',
         };
     }
@@ -29,6 +31,7 @@ enum AttendanceStatus: string
             self::Pending => 'yellow',
             self::Present => 'green',
             self::Absent => 'red',
+            self::Notified => 'blue',
             self::Cancelled => 'gray',
         };
     }

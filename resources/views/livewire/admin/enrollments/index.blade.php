@@ -1,5 +1,5 @@
 <div>
-    <x-page-header title="Inscripciones" subtitle="Socios inscriptos en cada actividad">
+    <x-page-header title="Inscripciones" :subtitle="'Socios inscriptos en cada '.mb_strtolower(activity_label())">
         <x-slot:actions>
             <button type="button" wire:click="create" class="btn-primary"><x-icon name="plus" class="size-4" /> Nueva inscripción</button>
         </x-slot:actions>
@@ -9,7 +9,7 @@
         <div class="flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row">
             <input type="search" wire:model.live.debounce.400ms="search" placeholder="Buscar socio…" class="form-input md:flex-1">
             <select wire:model.live="activity" class="form-input md:w-64">
-                <option value="">Todas las actividades</option>
+                <option value="">{{ activity_label(true) }}: todas</option>
                 @foreach ($activities as $item)
                     <option value="{{ $item->id }}">{{ $item->name }}</option>
                 @endforeach
@@ -23,7 +23,7 @@
         </div>
         <div class="overflow-x-auto">
             <table class="data-table">
-                <thead><tr><th>Socio</th><th>Actividad</th><th>Desde</th><th>Hasta</th><th>Estado</th><th></th></tr></thead>
+                <thead><tr><th>Socio</th><th>{{ activity_label() }}</th><th>Desde</th><th>Hasta</th><th class="text-right">Cuota</th><th>Estado</th><th></th></tr></thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse ($enrollments as $enrollment)
                         <tr wire:key="e-{{ $enrollment->id }}">
@@ -31,6 +31,18 @@
                             <td>{{ $enrollment->activity->name }}</td>
                             <td>{{ $enrollment->start_date->format('d/m/Y') }}</td>
                             <td>{{ $enrollment->end_date?->format('d/m/Y') ?? '—' }}</td>
+                            <td class="text-right tabular-nums">
+                                @if ($editingFeeId === $enrollment->id)
+                                    <form wire:submit="saveFee" class="flex items-center justify-end gap-1">
+                                        <input type="number" step="0.01" min="0" wire:model="feeAmount" class="form-input w-28 py-1 text-right" placeholder="{{ $enrollment->activity->monthly_fee }}" aria-label="Cuota individual">
+                                        <button type="submit" class="btn-primary btn-sm">OK</button>
+                                    </form>
+                                @else
+                                    <button type="button" wire:click="editFee({{ $enrollment->id }})" class="hover:text-brand-700" title="Cuota individual (beca o descuento)">
+                                        {{ money($enrollment->fee_amount ?? $enrollment->activity->monthly_fee) }}@if ($enrollment->fee_amount !== null) <span class="text-xs text-amber-600">beca</span>@endif
+                                    </button>
+                                @endif
+                            </td>
                             <td><x-badge :status="$enrollment->status" /></td>
                             <td class="text-right">
                                 @if ($enrollment->status === \App\Enums\EnrollmentStatus::Active)
@@ -39,7 +51,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6"><x-empty-state icon="clipboard" title="Sin inscripciones" /></td></tr>
+                        <tr><td colspan="7"><x-empty-state icon="clipboard" title="Sin inscripciones" /></td></tr>
                     @endforelse
                 </tbody>
             </table>

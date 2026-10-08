@@ -218,14 +218,21 @@ class LessonService
             $price = $lesson->price !== null ? (string) $lesson->price : $this->singlePrice($lesson->instructor);
 
             foreach ($lesson->students as $student) {
-                $status = AttendanceStatus::tryFrom($attendance[$student->id] ?? '') ?? AttendanceStatus::Present;
+                $noticed = $student->pivot->attendance === AttendanceStatus::Notified->value;
+                $default = $noticed ? AttendanceStatus::Absent : AttendanceStatus::Present;
+                $status = AttendanceStatus::tryFrom($attendance[$student->id] ?? '') ?? $default;
                 if (! in_array($status, [AttendanceStatus::Present, AttendanceStatus::Absent], true)) {
-                    $status = AttendanceStatus::Present;
+                    $status = $default;
+                }
+                // Si había avisado y no vino, queda registrado el aviso.
+                if ($status === AttendanceStatus::Absent && $noticed) {
+                    $status = AttendanceStatus::Notified;
                 }
 
                 $pivot = ['attendance' => $status->value, 'subscription_id' => null, 'fee_id' => null];
 
-                if ($status === AttendanceStatus::Present) {
+                // Las clases de un nivel se pagan con la cuota mensual: no descuentan packs ni cobran por clase.
+                if ($status === AttendanceStatus::Present && ! $lesson->isLevelLesson()) {
                     $pack = $this->packFor($student, $lesson);
                     if ($pack) {
                         $pivot['subscription_id'] = $pack->id;
@@ -233,7 +240,7 @@ class LessonService
                         $pivot['fee_id'] = $this->fees->createCharge(
                             $student,
                             FeeType::Lesson,
-                            'Clase '.$lesson->date->format('d/m/Y').' '.substr($lesson->start_time, 0, 5).' - '.$lesson->facility->name,
+                            'Clase '.$lesson->date->format('d/m/Y').' '.substr($lesson->start_time, 0, 5).' - '.$lesson->placeName(),
                             $price,
                             $lesson->date->copy(),
                             instructorId: $lesson->instructor_id,
@@ -268,7 +275,7 @@ class LessonService
 
             foreach ($lesson->students as $student) {
                 $lesson->students()->updateExistingPivot($student->id, [
-                    'attendance' => AttendanceStatus::Pending->value,
+                    'attendance' => ($student->pivot->notice_at ? AttendanceStatus::Notified : AttendanceStatus::Pending)->value,
                     'subscription_id' => null,
                     'fee_id' => null,
                 ]);

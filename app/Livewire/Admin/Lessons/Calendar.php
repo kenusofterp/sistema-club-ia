@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Lessons;
 use App\Enums\LessonStatus;
 use App\Livewire\Concerns\InteractsWithUi;
 use App\Livewire\Concerns\SearchesPeople;
+use App\Models\Activity;
 use App\Models\Facility;
 use App\Models\Fee;
 use App\Models\Lesson;
@@ -12,6 +13,7 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
 use App\Services\LessonService;
+use App\Services\LevelLessonService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
@@ -273,7 +275,7 @@ class Calendar extends Component
         $this->detailId = $lesson->id;
         $this->detailSearch = '';
         $this->attendance = $lesson->students->mapWithKeys(fn (Member $m) => [
-            $m->id => $m->pivot->attendance === 'ausente' ? 'ausente' : 'presente',
+            $m->id => in_array($m->pivot->attendance, ['ausente', 'aviso'], true) ? 'ausente' : 'presente',
         ])->all();
         $this->showDetail = true;
     }
@@ -295,7 +297,14 @@ class Calendar extends Component
     public function cancelLesson(LessonService $service): void
     {
         $lesson = $this->findManageable($this->detailId);
-        if ($this->attempt(fn () => $service->cancel($lesson, 'Cancelada desde la agenda'), 'Clase cancelada.')) {
+
+        // Clase de un nivel: se suspende y se avisa a los alumnos.
+        $done = $lesson->isLevelLesson()
+            ? $this->attempt(fn () => Organization::runFor($lesson->organization_id, fn () => app(LevelLessonService::class)
+                ->suspend($lesson->date->copy(), [$lesson->activity_id], null, auth()->user())), 'Clase suspendida; se avisó a los alumnos.')
+            : $this->attempt(fn () => $service->cancel($lesson, 'Cancelada desde la agenda'), 'Clase cancelada.');
+
+        if ($done) {
             $this->showDetail = false;
         }
     }
@@ -367,13 +376,28 @@ class Calendar extends Component
 
         return Lesson::acrossOrganizations()
             ->whereIn('organization_id', $this->scopeOrganizationIds())
-            ->where(fn ($q) => $q->where('instructor_id', $user->id)->orWhereIn('organization_id', $seeAll))
+            ->where(fn ($q) => $q->where('instructor_id', $user->id)->orWhereIn('activity_id', $this->myActivityIds())->orWhereIn('organization_id', $seeAll))
             ->when($this->instructorFilter !== '' && $seeAll !== [], fn ($q) => $q->where('instructor_id', (int) $this->instructorFilter));
+    }
+
+    /** @var array<int, int>|null */
+    private ?array $myActivityIdsCache = null;
+
+    /** @return array<int, int> actividades (de cualquier entidad) donde el usuario es profesor titular o adjunto */
+    private function myActivityIds(): array
+    {
+        $userId = auth()->id();
+
+        return $this->myActivityIdsCache ??= Activity::acrossOrganizations()
+            ->where(fn ($q) => $q->where('instructor_id', $userId)->orWhereHas('instructors', fn ($i) => $i->whereKey($userId)))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     private function findVisible(?int $id): Lesson
     {
-        $lesson = $this->visibleQuery()->with(['students', 'facility', 'organization', 'instructor', 'series'])->find($id);
+        $lesson = $this->visibleQuery()->with(['students', 'facility', 'organization', 'instructor', 'series', 'activity'])->find($id);
         abort_unless($lesson, 404);
 
         return $lesson;
@@ -382,22 +406,22 @@ class Calendar extends Component
     private function findManageable(?int $id): Lesson
     {
         $lesson = $this->findVisible($id);
-        $this->assertCanManage($lesson->instructor_id, $lesson->organization_id);
+        $this->assertCanManage($lesson->instructor_id, $lesson->organization_id, $lesson->activity_id);
 
         return $lesson;
     }
 
-    private function canManage(int $instructorId, int $organizationId): bool
+    private function canManage(int $instructorId, int $organizationId, ?int $activityId = null): bool
     {
         $user = auth()->user();
 
         return $user->hasPermissionIn('agenda.todas', $organizationId)
-            || ($instructorId === $user->id && $user->hasPermissionIn('agenda.gestionar', $organizationId));
+            || (($instructorId === $user->id || ($activityId && in_array($activityId, $this->myActivityIds(), true))) && $user->hasPermissionIn('agenda.gestionar', $organizationId));
     }
 
-    private function assertCanManage(int $instructorId, int $organizationId): void
+    private function assertCanManage(int $instructorId, int $organizationId, ?int $activityId = null): void
     {
-        abort_unless($this->canManage($instructorId, $organizationId), 403);
+        abort_unless($this->canManage($instructorId, $organizationId, $activityId), 403);
     }
 
     /** Sedes del profesor del formulario en las entidades donde se le pueden programar clases. */
@@ -451,7 +475,7 @@ class Calendar extends Component
 
         $lessons = $this->visibleQuery()
             ->between($from, $to)
-            ->with(['facility', 'organization', 'instructor', 'students'])
+            ->with(['facility', 'organization', 'instructor', 'students', 'activity'])
             ->orderBy('date')->orderBy('start_time')
             ->get();
 
@@ -459,14 +483,14 @@ class Calendar extends Component
         $colorKeys = $lessons->map(fn (Lesson $l) => $byClub ? $l->organization_id : $l->facility_id)->unique()->sort()->values();
         $colorFor = fn (Lesson $l) => self::PALETTE[$colorKeys->search($byClub ? $l->organization_id : $l->facility_id) % count(self::PALETTE)];
         $legend = $lessons->unique(fn (Lesson $l) => $byClub ? $l->organization_id : $l->facility_id)
-            ->mapWithKeys(fn (Lesson $l) => [($byClub ? $l->organization->name : $l->facility->name) => $colorFor($l)])
+            ->mapWithKeys(fn (Lesson $l) => [($byClub ? $l->organization->name : ($l->facility?->name ?? $l->activity?->name ?? 'Sin sede')) => $colorFor($l)])
             ->sortKeys();
 
         $active = $lessons->where('status', '!=', LessonStatus::Cancelled);
         $visibleDays = $this->view === 'mes' ? [] : collect(range(0, (int) $from->diffInDays($to)))->map(fn ($i) => $from->copy()->addDays($i));
         $hours = $this->gridHours($active);
 
-        $detail = $this->showDetail && $this->detailId ? $this->visibleQuery()->with(['students', 'facility', 'organization', 'instructor', 'series'])->find($this->detailId) : null;
+        $detail = $this->showDetail && $this->detailId ? $this->visibleQuery()->with(['students', 'facility', 'organization', 'instructor', 'series', 'activity'])->find($this->detailId) : null;
 
         $instructorId = $this->formInstructorId;
         $formFacility = $this->showForm && $this->facilityId ? $this->formFacilities()->firstWhere('id', $this->facilityId) : null;
@@ -499,7 +523,7 @@ class Calendar extends Component
                 : null,
             'studentResults' => $this->showForm ? $this->searchPeople($this->studentSearch, $formFacility?->organization_id) : collect(),
             'detail' => $detail,
-            'detailCanManage' => $detail ? $this->canManage($detail->instructor_id, $detail->organization_id) : false,
+            'detailCanManage' => $detail ? $this->canManage($detail->instructor_id, $detail->organization_id, $detail->activity_id) : false,
             'detailResults' => $detail ? $this->searchPeople($this->detailSearch, $detail->organization_id)->reject(fn ($r) => $detail->students->contains('person_id', $r['person_id'])) : collect(),
             'detailFees' => $detail && $detail->status === LessonStatus::Given
                 ? Fee::acrossOrganizations()->where('lesson_id', $detail->id)->get()->keyBy('member_id')

@@ -41,6 +41,22 @@ class Activity extends Model
         return $this->belongsTo(User::class, 'instructor_id');
     }
 
+    /** Profesores a cargo (el titular, instructor_id, también figura acá). */
+    public function instructors(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'activity_instructor');
+    }
+
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class);
+    }
+
+    public function hasInstructor(User $user): bool
+    {
+        return $this->instructor_id === $user->id || $this->instructors()->whereKey($user->id)->exists();
+    }
+
     public function schedules(): HasMany
     {
         return $this->hasMany(ActivitySchedule::class)->orderBy('day_of_week')->orderBy('start_time');

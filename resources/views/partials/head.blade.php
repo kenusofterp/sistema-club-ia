@@ -6,6 +6,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+@auth
+    <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
+@endauth
 <title>{{ $pageTitle }}</title>
 <meta name="description" content="{{ $description ?? setting('seo.meta_description') }}">
 <meta property="og:title" content="{{ $pageTitle }}">

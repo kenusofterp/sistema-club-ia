@@ -100,9 +100,40 @@
         </div>
     </header>
 
-    <main class="px-4 py-6 sm:px-6 lg:px-8">
+    @php
+        // Barra inferior en el celular para el personal que da clases (estilo app).
+        $mobileBar = $currentOrganization && auth()->user()->can('agenda.ver') ? array_values(array_filter([
+            ['route' => 'admin.lessons.today', 'label' => 'Hoy', 'icon' => 'clock'],
+            ['route' => 'admin.lessons', 'label' => 'Agenda', 'icon' => 'calendar'],
+            auth()->user()->can('cobros.niveles') && setting('payments.instructors_collect_cash', true)
+                ? ['route' => 'admin.lessons.collect', 'label' => 'Cobrar', 'icon' => 'banknotes'] : null,
+            auth()->user()->can('cobros.niveles') && setting('payments.instructors_collect_cash', true) && setting('payments.cash_requires_settlement', true)
+                ? ['route' => 'admin.lessons.cash', 'label' => 'Rendir', 'icon' => 'credit-card'] : null,
+            auth()->user()->can('comprobantes.revisar') ? ['route' => 'admin.receipts', 'label' => 'Comprobantes', 'icon' => 'document'] : null,
+        ])) : [];
+        $mobileBar = array_slice($mobileBar, 0, 4);
+    @endphp
+    <main @class(['px-4 py-6 sm:px-6 lg:px-8', 'pb-28 lg:pb-6' => $mobileBar !== []])>
         {{ $slot }}
     </main>
+
+    @if ($mobileBar !== [])
+        <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
+            <div class="grid" style="grid-template-columns: repeat({{ count($mobileBar) + 1 }}, minmax(0, 1fr))">
+                @foreach ($mobileBar as $item)
+                    <a href="{{ route($item['route']) }}" wire:navigate
+                       @class(['flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium', 'text-brand-700' => request()->routeIs($item['route']), 'text-slate-500' => ! request()->routeIs($item['route'])])>
+                        <x-icon :name="$item['icon']" class="size-6" />
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+                <button type="button" x-on:click="sidebar = true" class="flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-slate-500">
+                    <x-icon name="menu" class="size-6" />
+                    Menú
+                </button>
+            </div>
+        </nav>
+    @endif
 </div>
 
 <x-toasts />

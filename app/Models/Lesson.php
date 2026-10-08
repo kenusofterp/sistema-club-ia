@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /** Clase de un profesor en una sede (individual o grupal). */
-#[Fillable(['facility_id', 'instructor_id', 'series_id', 'date', 'start_time', 'end_time', 'status', 'price', 'notes', 'created_by', 'given_at', 'cancelled_at', 'cancel_reason'])]
+#[Fillable(['facility_id', 'instructor_id', 'series_id', 'activity_id', 'date', 'start_time', 'end_time', 'status', 'price', 'notes', 'created_by', 'given_at', 'cancelled_at', 'cancel_reason'])]
 class Lesson extends Model
 {
     use Auditable, BelongsToOrganization, SoftDeletes;
@@ -46,11 +46,41 @@ class Lesson extends Model
         return $this->belongsTo(LessonSeries::class, 'series_id')->withoutGlobalScope('organization');
     }
 
+    /** Nivel / actividad (clase de nivel: alumnos = inscriptos, cuota mensual, sin cobro por clase). */
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(Activity::class)->withoutGlobalScope('organization')->withTrashed();
+    }
+
+    public function isLevelLesson(): bool
+    {
+        return $this->activity_id !== null;
+    }
+
+    /** Título para mostrar: el nivel o, en clases particulares, los alumnos. */
+    public function title(): string
+    {
+        if ($this->activity_id) {
+            return $this->activity->name;
+        }
+
+        return match ($this->students->count()) {
+            0 => 'Sin alumnos',
+            1 => $this->students->first()->fullName(),
+            default => $this->students->count().' alumnos',
+        };
+    }
+
+    public function placeName(): string
+    {
+        return $this->facility?->name ?? $this->activity?->schedules->first()?->location ?? '';
+    }
+
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Member::class)
             ->withoutGlobalScope('organization')
-            ->withPivot(['id', 'subscription_id', 'attendance', 'fee_id'])
+            ->withPivot(['id', 'subscription_id', 'attendance', 'fee_id', 'notice_at', 'notice_reason'])
             ->withTimestamps()
             ->orderBy('last_name');
     }

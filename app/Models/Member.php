@@ -10,6 +10,7 @@ use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -202,10 +203,16 @@ class Member extends Model
         return $this->subscriptions()->current()->with('plan.activities.schedules');
     }
 
+    /** Las notificaciones push llegan a los teléfonos donde la cuenta del socio las activó. */
+    public function routeNotificationForWebPush(): Collection
+    {
+        return $this->user?->pushSubscriptions ?? new Collection;
+    }
+
     public function lessons(): BelongsToMany
     {
         return $this->belongsToMany(Lesson::class)
-            ->withPivot(['id', 'subscription_id', 'attendance', 'fee_id'])
+            ->withPivot(['id', 'subscription_id', 'attendance', 'fee_id', 'notice_at', 'notice_reason'])
             ->withTimestamps();
     }
 

@@ -34,6 +34,9 @@ final class Permissions
                 'pagos.ver' => 'Ver pagos',
                 'pagos.registrar' => 'Registrar pagos',
                 'pagos.anular' => 'Anular pagos',
+                'comprobantes.revisar' => 'Revisar y aprobar comprobantes de transferencia',
+                'cobros.niveles' => 'Cobrar en efectivo a los alumnos de sus actividades o niveles',
+                'rendiciones.gestionar' => 'Confirmar las rendiciones de efectivo de los profesores',
             ],
             'Gimnasio' => [
                 'planes.gestionar' => 'Crear y editar planes / membresías',
@@ -83,7 +86,7 @@ final class Permissions
             ],
             'tesorero' => [
                 'label' => 'Tesorería',
-                'permissions' => ['dashboard.ver', 'reportes.ver', 'socios.ver', 'cuotas.ver', 'cuotas.gestionar', 'pagos.ver', 'pagos.registrar', 'pagos.anular', 'reservas.ver', 'suscripciones.gestionar'],
+                'permissions' => ['dashboard.ver', 'reportes.ver', 'socios.ver', 'cuotas.ver', 'cuotas.gestionar', 'pagos.ver', 'pagos.registrar', 'pagos.anular', 'reservas.ver', 'suscripciones.gestionar', 'comprobantes.revisar', 'rendiciones.gestionar'],
             ],
             'secretaria' => [
                 'label' => 'Secretaría',
@@ -93,9 +96,13 @@ final class Permissions
                 'label' => 'Recepción',
                 'permissions' => ['socios.ver', 'acceso.registrar', 'reservas.ver', 'reservas.gestionar', 'suscripciones.gestionar', 'pagos.registrar', 'pagos.ver'],
             ],
+            'coordinacion' => [
+                'label' => 'Coordinación',
+                'permissions' => ['dashboard.ver', 'socios.ver', 'socios.crear', 'socios.editar', 'actividades.ver', 'actividades.gestionar', 'inscripciones.gestionar', 'cuotas.ver', 'pagos.ver', 'pagos.registrar', 'comprobantes.revisar', 'rendiciones.gestionar', 'agenda.ver', 'agenda.gestionar', 'agenda.todas', 'avisos.gestionar'],
+            ],
             'profesor' => [
                 'label' => 'Profesor/a',
-                'permissions' => ['actividades.ver', 'socios.ver', 'agenda.ver', 'agenda.gestionar', 'cobros.propios'],
+                'permissions' => ['actividades.ver', 'socios.ver', 'agenda.ver', 'agenda.gestionar', 'cobros.propios', 'cobros.niveles'],
             ],
             'comunicacion' => [
                 'label' => 'Comunicación',

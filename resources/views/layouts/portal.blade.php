@@ -10,11 +10,14 @@
         ['route' => 'portal.dashboard', 'label' => 'Inicio', 'icon' => 'home'],
         ['route' => 'portal.fees', 'label' => 'Mi cuenta', 'icon' => 'banknotes'],
         ...(uses_gym() ? [['route' => 'portal.plans', 'label' => 'Mi plan', 'icon' => 'id-card']] : []),
-        ['route' => 'portal.activities', 'label' => 'Actividades', 'icon' => 'trophy'],
+        ['route' => 'portal.activities', 'label' => activity_label(true), 'icon' => 'trophy'],
         ['route' => 'portal.lessons', 'label' => 'Mis clases', 'icon' => 'clock'],
         ['route' => 'portal.reservations', 'label' => 'Reservas', 'icon' => 'calendar'],
         ['route' => 'portal.card', 'label' => 'Carnet', 'icon' => 'qr'],
     ];
+    // Móvil: 4 accesos principales + "Más" (estilo app).
+    $mobileMain = collect($portalNav)->whereIn('route', ['portal.dashboard', 'portal.lessons', 'portal.fees', 'portal.card'])->values();
+    $mobileMore = collect($portalNav)->whereNotIn('route', $mobileMain->pluck('route'))->push(['route' => 'portal.profile', 'label' => 'Mis datos', 'icon' => 'user'])->values();
 @endphp
 
 <header class="sticky top-0 z-30 bg-brand-900 text-white shadow">
@@ -78,15 +81,38 @@
 </main>
 
 {{-- Navegación inferior en móvil (estilo app) --}}
-<nav class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
-    <div class="grid" style="grid-template-columns: repeat({{ count($portalNav) }}, minmax(0, 1fr))">
-        @foreach ($portalNav as $item)
+<nav class="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden" x-data="{ more: false }">
+    <div class="grid grid-cols-5">
+        @foreach ($mobileMain as $item)
             <a href="{{ route($item['route']) }}" wire:navigate
                @class(['flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium', 'text-brand-700' => request()->routeIs($item['route']), 'text-slate-500' => ! request()->routeIs($item['route'])])>
                 <x-icon :name="$item['icon']" class="size-6" />
                 {{ $item['label'] }}
             </a>
         @endforeach
+        <button type="button" x-on:click="more = true"
+                @class(['flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium', 'text-brand-700' => request()->routeIs($mobileMore->pluck('route')->all()), 'text-slate-500' => ! request()->routeIs($mobileMore->pluck('route')->all())])>
+            <x-icon name="menu" class="size-6" />
+            Más
+        </button>
+    </div>
+
+    {{-- Hoja inferior con el resto de las secciones --}}
+    <div x-show="more" x-cloak class="fixed inset-0 z-40" x-on:keydown.escape.window="more = false">
+        <div class="absolute inset-0 bg-slate-900/40" x-show="more" x-transition.opacity x-on:click="more = false"></div>
+        <div class="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl"
+             x-show="more" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0">
+            <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200"></div>
+            <div class="grid grid-cols-3 gap-2">
+                @foreach ($mobileMore as $item)
+                    <a href="{{ route($item['route']) }}" wire:navigate x-on:click="more = false"
+                       class="flex flex-col items-center gap-1.5 rounded-xl p-3 text-center text-xs font-medium text-slate-700 hover:bg-slate-50">
+                        <x-icon :name="$item['icon']" class="size-6 text-brand-700" />
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
     </div>
 </nav>
 

@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Payment;
 use App\Notifications\Concerns\RendersForOrganization;
+use App\Notifications\Concerns\SendsWebPush;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,7 +12,7 @@ use Illuminate\Notifications\Notification;
 
 class PaymentReceivedNotification extends Notification implements ShouldQueue
 {
-    use Queueable, RendersForOrganization;
+    use Queueable, RendersForOrganization, SendsWebPush;
 
     public function __construct(public Payment $payment)
     {
@@ -21,7 +22,27 @@ class PaymentReceivedNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return array_values(array_filter([$this->pushChannel(), $notifiable->email ? 'mail' : null]));
+    }
+
+    protected function pushTitle(object $notifiable): string
+    {
+        return 'Pago registrado';
+    }
+
+    protected function pushBody(object $notifiable): string
+    {
+        return 'Recibimos tu pago de '.money($this->payment->amount)." (recibo {$this->payment->receipt_number}). ¡Gracias!";
+    }
+
+    protected function pushUrl(object $notifiable): string
+    {
+        return route('portal.fees');
+    }
+
+    protected function pushTag(): ?string
+    {
+        return (string) $this->payment->id;
     }
 
     public function toMail(object $notifiable): MailMessage

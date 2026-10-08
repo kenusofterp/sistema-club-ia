@@ -28,14 +28,23 @@
                 <div class="space-y-3">
                     @forelse ($schedules as $i => $schedule)
                         <div class="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 sm:grid-cols-[1fr_auto_auto_1fr_auto]" wire:key="sch-{{ $i }}">
-                            <select wire:model="schedules.{{ $i }}.day_of_week" class="form-input">
+                            <select wire:model="schedules.{{ $i }}.day_of_week" class="form-input" aria-label="Día">
                                 @foreach (\App\Models\ActivitySchedule::DAYS as $day => $label)
                                     <option value="{{ $day }}">{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <input type="time" wire:model="schedules.{{ $i }}.start_time" class="form-input">
-                            <input type="time" wire:model="schedules.{{ $i }}.end_time" class="form-input">
-                            <input wire:model="schedules.{{ $i }}.location" class="form-input" placeholder="Lugar">
+                            <input type="time" wire:model="schedules.{{ $i }}.start_time" class="form-input" aria-label="Inicio">
+                            <input type="time" wire:model="schedules.{{ $i }}.end_time" class="form-input" aria-label="Fin">
+                            @if ($facilities->isNotEmpty())
+                                <select wire:model="schedules.{{ $i }}.facility_id" class="form-input" aria-label="Sede">
+                                    <option value="">Lugar / sede…</option>
+                                    @foreach ($facilities as $fid => $fname)
+                                        <option value="{{ $fid }}">{{ $fname }}</option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input wire:model="schedules.{{ $i }}.location" class="form-input" placeholder="Lugar" aria-label="Lugar">
+                            @endif
                             <button type="button" wire:click="removeSchedule({{ $i }})" class="btn-ghost text-red-600"><x-icon name="trash" class="size-4" /></button>
                             @error("schedules.$i.end_time") <p class="form-error col-span-full">{{ $message }}</p> @enderror
                             @error("schedules.$i.start_time") <p class="form-error col-span-full">{{ $message }}</p> @enderror
@@ -71,6 +80,20 @@
                         @endforeach
                     </select>
                 </x-field>
+                @if ($instructors->count() > 1)
+                    <div>
+                        <span class="form-label">Otros profesores a cargo</span>
+                        <div class="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2">
+                            @foreach ($instructors as $id => $name)
+                                @continue((int) $id === (int) $instructor_id)
+                                <label class="flex items-center gap-2 rounded px-1 py-1 text-sm text-slate-700 hover:bg-slate-50">
+                                    <input type="checkbox" value="{{ $id }}" wire:model="instructorIds" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> {{ $name }}
+                                </label>
+                            @endforeach
+                        </div>
+                        <p class="form-help">Todos pueden tomar asistencia, suspender la clase y cobrar a sus alumnos.</p>
+                    </div>
+                @endif
                 <label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" wire:model="is_active" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Activa (admite inscripciones)</label>
                 <label class="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" wire:model="is_public" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Visible en la página web</label>
                 <label class="flex items-start gap-2 text-sm text-slate-700">

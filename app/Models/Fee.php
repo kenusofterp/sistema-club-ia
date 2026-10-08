@@ -63,6 +63,12 @@ class Fee extends Model
         return $this->belongsTo(Subscription::class);
     }
 
+    /** Comprobantes de transferencia que informan el pago de este cargo. */
+    public function receipts(): BelongsToMany
+    {
+        return $this->belongsToMany(PaymentReceipt::class);
+    }
+
     public function payments(): BelongsToMany
     {
         return $this->belongsToMany(Payment::class)->withPivot('amount')->withTimestamps();

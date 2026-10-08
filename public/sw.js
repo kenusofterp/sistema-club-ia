@@ -3,8 +3,9 @@
  * - Assets compilados (/build) e imágenes: cache-first.
  * - Navegación: network-first con respaldo en caché y página /offline.
  * - Nunca se cachean peticiones POST, Livewire, API ni rutas de administración.
+ * - Notificaciones push: se muestran y al tocarlas abren la pantalla correspondiente.
  */
-const VERSION = 'club-v1';
+const VERSION = 'club-v2';
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 const OFFLINE_URL = '/offline';
@@ -69,4 +70,46 @@ self.addEventListener('fetch', (event) => {
                 .catch(() => caches.match(request).then((cached) => cached || caches.match(OFFLINE_URL)))
         );
     }
+});
+
+// ---- Notificaciones push ----
+self.addEventListener('push', (event) => {
+    if (!event.data) {
+        return;
+    }
+
+    let payload;
+    try {
+        payload = event.data.json();
+    } catch {
+        payload = { title: 'Aviso', body: event.data.text() };
+    }
+
+    event.waitUntil(
+        self.registration.showNotification(payload.title || 'Aviso', {
+            body: payload.body,
+            icon: payload.icon,
+            badge: payload.badge,
+            tag: payload.tag,
+            data: payload.data || {},
+            renotify: Boolean(payload.tag),
+        })
+    );
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const url = (event.notification.data && event.notification.data.url) || '/';
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+            for (const client of windows) {
+                if (new URL(client.url).origin === self.location.origin && 'focus' in client) {
+                    client.navigate(url);
+                    return client.focus();
+                }
+            }
+            return self.clients.openWindow(url);
+        })
+    );
 });

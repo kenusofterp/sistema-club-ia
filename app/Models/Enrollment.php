@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['member_id', 'activity_id', 'status', 'start_date', 'end_date', 'notes'])]
+#[Fillable(['member_id', 'activity_id', 'status', 'start_date', 'end_date', 'fee_amount', 'notes'])]
 class Enrollment extends Model
 {
     use Auditable, BelongsToOrganization;
@@ -20,6 +20,7 @@ class Enrollment extends Model
             'status' => EnrollmentStatus::class,
             'start_date' => 'date',
             'end_date' => 'date',
+            'fee_amount' => 'decimal:2',
         ];
     }
 

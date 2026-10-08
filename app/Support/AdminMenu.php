@@ -3,9 +3,13 @@
 namespace App\Support;
 
 use App\Enums\MemberStatus;
+use App\Enums\ReceiptStatus;
+use App\Enums\SettlementStatus;
+use App\Models\CashSettlement;
 use App\Models\ContactMessage;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\PaymentReceipt;
 use App\Models\User;
 
 /** Menú lateral del panel de administración, filtrado por permisos del usuario. */
@@ -25,18 +29,25 @@ final class AdminMenu
                 ['label' => 'Categorías', 'route' => 'admin.categories', 'icon' => 'tag', 'can' => 'categorias.gestionar'],
                 ['label' => 'Control de acceso', 'route' => 'admin.access', 'icon' => 'qr', 'can' => 'acceso.registrar'],
             ]],
-            ['title' => 'Actividades', 'items' => [
-                ['label' => 'Actividades', 'route' => 'admin.activities.index', 'icon' => 'trophy', 'can' => 'actividades.ver', 'active' => 'admin.activities.*'],
+            ['title' => activity_label(true), 'items' => [
+                ['label' => activity_label(true), 'route' => 'admin.activities.index', 'icon' => 'trophy', 'can' => 'actividades.ver', 'active' => 'admin.activities.*'],
                 ['label' => 'Inscripciones', 'route' => 'admin.enrollments', 'icon' => 'clipboard', 'can' => 'inscripciones.gestionar'],
             ]],
             ['title' => 'Agenda de clases', 'items' => [
+                ['label' => 'Clases de hoy', 'route' => 'admin.lessons.today', 'icon' => 'clock', 'can' => 'agenda.ver'],
                 ['label' => 'Agenda', 'route' => 'admin.lessons', 'icon' => 'calendar', 'can' => 'agenda.ver'],
+                ['label' => 'Cobrar en efectivo', 'route' => 'admin.lessons.collect', 'icon' => 'banknotes', 'can' => 'cobros.niveles', 'when' => fn () => (bool) setting('payments.instructors_collect_cash', true)],
+                ['label' => 'Efectivo a rendir', 'route' => 'admin.lessons.cash', 'icon' => 'credit-card', 'can' => 'cobros.niveles', 'when' => fn () => (bool) setting('payments.instructors_collect_cash', true) && (bool) setting('payments.cash_requires_settlement', true)],
                 ['label' => 'Packs de clases', 'route' => 'admin.lessons.packs', 'icon' => 'id-card', 'can' => 'agenda.gestionar'],
                 ['label' => 'Mis cobros', 'route' => 'admin.lessons.account', 'icon' => 'banknotes', 'can' => 'cobros.propios'],
             ]],
             ['title' => 'Tesorería', 'items' => [
                 ['label' => 'Cuotas y cargos', 'route' => 'admin.fees', 'icon' => 'document', 'can' => 'cuotas.ver'],
                 ['label' => 'Pagos', 'route' => 'admin.payments.index', 'icon' => 'banknotes', 'can' => 'pagos.ver', 'active' => 'admin.payments.*'],
+                ['label' => 'Comprobantes', 'route' => 'admin.receipts', 'icon' => 'document', 'can' => 'comprobantes.revisar',
+                    'badge' => fn () => PaymentReceipt::where('status', ReceiptStatus::Pending)->count() ?: null],
+                ['label' => 'Rendiciones', 'route' => 'admin.settlements', 'icon' => 'credit-card', 'can' => 'rendiciones.gestionar',
+                    'badge' => fn () => CashSettlement::where('status', SettlementStatus::Pending)->count() ?: null],
             ]],
             ['title' => 'Gimnasio', 'gym' => true, 'items' => [
                 ['label' => 'Planes de socios', 'route' => 'admin.gym.subscriptions', 'icon' => 'id-card', 'can' => 'suscripciones.gestionar'],
@@ -75,6 +86,7 @@ final class AdminMenu
             ->map(function (array $group) use ($user, $withoutOrganization) {
                 $group['items'] = collect($group['items'])
                     ->filter(fn (array $item) => ! isset($item['can']) || $user->can($item['can']))
+                    ->filter(fn (array $item) => ! isset($item['when']) || ($item['when'])())
                     ->filter(fn (array $item) => ! $withoutOrganization || in_array($item['route'], ['admin.organizations', 'admin.help'], true))
                     ->map(function (array $item) {
                         $item['badge'] = isset($item['badge']) ? ($item['badge'])() : null;

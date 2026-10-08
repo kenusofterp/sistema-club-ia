@@ -62,7 +62,15 @@ class FeeService
 
     public function generateActivityFee(Member $member, Activity $activity, Carbon $period): bool
     {
-        if (bccomp((string) $activity->monthly_fee, '0', 2) <= 0) {
+        // Cuota individual de la inscripción (beca o descuento); si no tiene, la de la actividad.
+        $custom = $member->enrollments()
+            ->where('activity_id', $activity->id)
+            ->where('status', EnrollmentStatus::Active)
+            ->whereNotNull('fee_amount')
+            ->value('fee_amount');
+        $amount = (string) ($custom ?? $activity->monthly_fee);
+
+        if (bccomp($amount, '0', 2) <= 0) {
             return false;
         }
 
@@ -71,7 +79,7 @@ class FeeService
             FeeType::Activity,
             $period->copy()->startOfMonth(),
             $activity->name.' - '.ucfirst($period->translatedFormat('F Y')),
-            (string) $activity->monthly_fee,
+            $amount,
             $activity->id,
         );
     }

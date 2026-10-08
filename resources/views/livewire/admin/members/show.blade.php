@@ -259,7 +259,7 @@
                                     <tr>
                                         <td>{{ $lesson->date->format('d/m/Y') }}</td>
                                         <td>{{ $lesson->timeRange() }}</td>
-                                        <td>{{ $lesson->facility->name }}</td>
+                                        <td>{{ $lesson->placeName() }}</td>
                                         <td>{{ $lesson->instructor->name }}</td>
                                         <td><x-badge :status="$lesson->status" /></td>
                                         <td>

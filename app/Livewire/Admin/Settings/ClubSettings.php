@@ -6,7 +6,7 @@ class ClubSettings extends SettingsForm
 {
     protected function groups(): array
     {
-        return ['club', 'gym', 'lessons'];
+        return ['club', 'gym', 'lessons', 'payments'];
     }
 
     protected function permission(): string

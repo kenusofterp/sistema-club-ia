@@ -1,14 +1,14 @@
 <div>
-    <x-page-header title="Actividades" subtitle="Disciplinas, horarios, cupos y aranceles">
+    <x-page-header :title="activity_label(true)" subtitle="Grupos, horarios, profesores, cupos y cuotas">
         <x-slot:actions>
             @can('actividades.gestionar')
-                <a href="{{ route('admin.activities.create') }}" wire:navigate class="btn-primary"><x-icon name="plus" class="size-4" /> Nueva actividad</a>
+                <a href="{{ route('admin.activities.create') }}" wire:navigate class="btn-primary"><x-icon name="plus" class="size-4" /> Agregar {{ mb_strtolower(activity_label()) }}</a>
             @endcan
         </x-slot:actions>
     </x-page-header>
 
     <div class="mb-4 max-w-md">
-        <input type="search" wire:model.live.debounce.300ms="search" placeholder="Buscar actividad…" class="form-input">
+        <input type="search" wire:model.live.debounce.300ms="search" placeholder="Buscar…" class="form-input">
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -55,7 +55,7 @@
                 </div>
             </div>
         @empty
-            <div class="card md:col-span-2 xl:col-span-3"><x-empty-state icon="trophy" title="No hay actividades" /></div>
+            <div class="card md:col-span-2 xl:col-span-3"><x-empty-state icon="trophy" :title="'No hay '.mb_strtolower(activity_label(true))" /></div>
         @endforelse
     </div>
 </div>

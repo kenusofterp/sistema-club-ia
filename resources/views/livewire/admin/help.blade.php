@@ -13,13 +13,14 @@
         'instalaciones' => '9. Instalaciones y reservas',
         'gimnasio' => '10. Gimnasio: planes',
         'agenda' => '11. Agenda de clases (profesores)',
-        'acceso' => '12. Control de acceso',
-        'comunicacion' => '13. Mensajes y avisos',
-        'sitio' => '14. Sitio web',
-        'usuarios' => '15. Usuarios y roles',
-        'auditoria' => '16. Auditoría y reportes',
-        'portal' => '17. Portal del socio',
-        'automaticos' => '18. Procesos automáticos',
+        'niveles' => '12. Niveles, cobros y la app del teléfono',
+        'acceso' => '13. Control de acceso',
+        'comunicacion' => '14. Mensajes y avisos',
+        'sitio' => '15. Sitio web',
+        'usuarios' => '16. Usuarios y roles',
+        'auditoria' => '17. Auditoría y reportes',
+        'portal' => '18. Portal del socio',
+        'automaticos' => '19. Procesos automáticos',
         'ejemplo' => 'Ejemplo completo',
         'faq' => 'Preguntas frecuentes',
     ];
@@ -307,8 +308,56 @@
             </section>
 
             {{-- ============================================================ --}}
+            <section id="niveles" class="scroll-mt-20">
+                <h2>12. Niveles, cobros y la app del teléfono</h2>
+                <p>Pensado para academias y escuelas que agrupan a sus alumnos por <strong>nivel</strong> (por ejemplo Juvenil A, Juvenil B…), con uno o varios profesores por nivel y una cuota mensual. Todo es configurable, así que sirve tanto para una coordinadora con varios profesores como para un profesor que trabaja solo.</p>
+
+                <h3>Configuración (Configuración del club)</h3>
+                <ul>
+                    <li><strong>Agenda de clases › Cómo se llaman las actividades</strong>: por ejemplo <em>Nivel / Niveles</em>. Ese nombre se usa en el menú, el portal y las pantallas.</li>
+                    <li><strong>Cobros › Los socios pueden informar pagos…</strong>: habilita subir el comprobante de transferencia desde la app.</li>
+                    <li><strong>Cobros › Acreditar automáticamente los comprobantes</strong>: si está activado, el pago se registra al instante y tesorería puede anularlo; si no, queda <em>en revisión</em>.</li>
+                    <li><strong>Cobros › Datos para transferir</strong>: CBU, alias y titular que ve el alumno al informar el pago.</li>
+                    <li><strong>Cobros › Los profesores pueden cobrar en efectivo</strong> y <strong>El efectivo se rinde</strong>: si el profesor es el dueño, desactivá la rendición.</li>
+                </ul>
+
+                <h3>Armar los niveles</h3>
+                <ol class="steps">
+                    <li>En <strong>Niveles</strong> (antes <em>Actividades</em>), creá cada nivel con su cuota mensual, horarios y sede.</li>
+                    <li>Elegí el <strong>profesor responsable</strong> y, si hay más, marcá los <strong>otros profesores a cargo</strong>: todos pueden tomar asistencia, suspender la clase y cobrar a esas alumnas.</li>
+                    <li>Inscribí a las alumnas en <strong>Inscripciones</strong>. Para una beca o descuento, tocá la cuota de la inscripción y cargá el importe individual (0 = beca completa).</li>
+                </ol>
+                <p>El sistema genera las clases de las próximas semanas a partir de los horarios. Se ven en la <strong>Agenda</strong> y en <strong>Clases de hoy</strong>.</p>
+
+                <h3>Roles</h3>
+                <ul>
+                    <li><strong>Coordinación</strong>: ve todos los niveles y la agenda completa, suspende clases de uno o todos los niveles, revisa comprobantes y confirma rendiciones.</li>
+                    <li><strong>Profesor/a</strong>: sus niveles y clases, asistencia, suspender sus clases, cobrar en efectivo a sus alumnas y rendir.</li>
+                </ul>
+
+                <h3>El profesor en el celular</h3>
+                <p>Al ingresar, el profesor entra directo a <strong>Clases de hoy</strong>, con una barra inferior: <em>Hoy, Agenda, Cobrar, Rendir</em>.</p>
+                <ul>
+                    <li><strong>Asistencia</strong>: tocá la clase y marcá <em>P</em> o <em>A</em> para cada alumna. Quien avisó que falta aparece como ausente, con el motivo. Después, <strong>Guardar asistencia</strong>.</li>
+                    <li><strong>Suspender</strong>: avisa a las alumnas con una notificación y por correo. Coordinación puede usar <em>No hay clase hoy para ningún grupo</em> (por ejemplo, por lluvia o un feriado).</li>
+                    <li><strong>Cobrar</strong>: buscá a la alumna, marcá las cuotas y registrá el efectivo; se emite el recibo.</li>
+                    <li><strong>Efectivo a rendir</strong>: muestra lo cobrado y no rendido. Con <strong>Rendir</strong> se envía a coordinación, que lo confirma en <strong>Tesorería › Rendiciones</strong> al recibir el dinero. Un pago rendido no se puede anular.</li>
+                </ul>
+
+                <h3>La alumna en el celular</h3>
+                <ul>
+                    <li>Se instala la app desde el navegador (<em>Agregar a pantalla de inicio</em>) y se activan las <strong>notificaciones</strong> desde el aviso del inicio. En iPhone, primero hay que instalar la app.</li>
+                    <li><strong>Mis clases › No voy a esta clase</strong>: avisa al profesor, con un motivo opcional. Se puede deshacer hasta que empiece la clase.</li>
+                    <li><strong>Mi cuenta › Informar un pago</strong>: elegí las cuotas, sacá una foto del comprobante (o subí el PDF) y enviá. Llega una notificación cuando se acredita o si se rechaza, con el motivo.</li>
+                </ul>
+                <x-manual.tip type="example">
+                    Laura coordina tres niveles con dos profesores. El martes llueve: desde <em>Clases de hoy</em> toca <em>No hay clase hoy para ningún grupo</em> y a todas las alumnas les llega la notificación. Sofía, de Juvenil B, transfiere la cuota y sube la foto del comprobante; Laura lo ve en <em>Comprobantes</em> y lo acredita. Otra alumna le paga en efectivo al profe Diego, que lo registra en <em>Cobrar</em> y a fin de semana lo rinde; Laura confirma la rendición al recibir el dinero.
+                </x-manual.tip>
+            </section>
+
+            {{-- ============================================================ --}}
             <section id="acceso" class="scroll-mt-20">
-                <h2>12. Control de acceso</h2>
+                <h2>13. Control de acceso</h2>
                 <p>En <strong>Socios › Control de acceso</strong> el personal de recepción verifica si una persona puede ingresar. Escaneá el QR del carnet (con un lector o la cámara) o escribí el número de socio o documento y presioná <strong>Verificar</strong>.</p>
                 <p>El sistema responde <strong>Permitido</strong> o <strong>Denegado</strong> con el motivo: socio suspendido, deuda vencida por encima del límite, plan vencido, fuera de la franja horaria, sin visitas disponibles, etc. Cada intento queda registrado.</p>
                 <x-manual.shot src="21-control-acceso.png" caption="Verificación de ingreso con su resultado." />
@@ -316,7 +365,7 @@
 
             {{-- ============================================================ --}}
             <section id="comunicacion" class="scroll-mt-20">
-                <h2>13. Mensajes y avisos</h2>
+                <h2>14. Mensajes y avisos</h2>
                 <ul>
                     <li><strong>Mensajes:</strong> lo que llega desde el formulario de contacto del sitio. El menú muestra cuántos hay sin leer.</li>
                     <li><strong>Avisos a socios:</strong> comunicados que se muestran en el portal del socio (ej.: “La pileta abre el 1/12”). Se pueden programar con fecha de publicación y vencimiento; sin fecha quedan como borrador.</li>
@@ -326,7 +375,7 @@
 
             {{-- ============================================================ --}}
             <section id="sitio" class="scroll-mt-20">
-                <h2>14. Sitio web</h2>
+                <h2>15. Sitio web</h2>
                 <p>Cada entidad tiene su sitio público. Desde el menú <strong>Sitio web</strong> se edita sin conocimientos técnicos:</p>
                 <ul>
                     <li><strong>Identidad y contacto:</strong> nombre, logo, colores, teléfono, dirección, redes sociales y mapa.</li>
@@ -341,7 +390,7 @@
 
             {{-- ============================================================ --}}
             <section id="usuarios" class="scroll-mt-20">
-                <h2>15. Usuarios y roles</h2>
+                <h2>16. Usuarios y roles</h2>
                 <h3>Crear un usuario del personal</h3>
                 <ol class="steps">
                     <li>En <strong>Administración › Usuarios</strong>, hacé clic en <strong>Agregar usuario</strong>.</li>
@@ -358,7 +407,8 @@
                             <tr><td>Tesorería</td><td>Cuotas, pagos, anulaciones y reportes.</td></tr>
                             <tr><td>Secretaría</td><td>Socios, inscripciones, cobros, reservas, avisos y mensajes.</td></tr>
                             <tr><td>Recepción</td><td>Control de acceso, reservas, planes y cobros en mostrador.</td></tr>
-                            <tr><td>Profesor/a</td><td>Ver actividades y socios; su agenda de clases, sus packs y sus cobros.</td></tr>
+                            <tr><td>Coordinación</td><td>Niveles, inscripciones, agenda de todos los profesores, comprobantes y rendiciones.</td></tr>
+                            <tr><td>Profesor/a</td><td>Ver actividades y socios; su agenda, asistencia, packs y cobros (y efectivo de sus alumnos).</td></tr>
                             <tr><td>Comunicación</td><td>Sitio web, mensajes y avisos.</td></tr>
                         </tbody>
                     </table>
@@ -369,7 +419,7 @@
 
             {{-- ============================================================ --}}
             <section id="auditoria" class="scroll-mt-20">
-                <h2>16. Auditoría y reportes</h2>
+                <h2>17. Auditoría y reportes</h2>
                 <p><strong>Auditoría</strong> registra quién creó, modificó o anuló cada dato y cuándo, con el detalle de los cambios. Útil para controlar anulaciones de pagos o cambios de cuotas.</p>
                 <x-manual.shot src="27-auditoria.png" caption="Registro de auditoría." />
                 <p>Los listados de <strong>Socios</strong>, <strong>Pagos</strong> y <strong>Cuotas</strong> tienen botón de <strong>Exportar</strong> a planilla (respetando los filtros aplicados). El <strong>Tablero</strong> resume socios activos, recaudación del mes, deuda vencida, recaudación de los últimos 12 meses y reservas del día.</p>
@@ -378,7 +428,7 @@
 
             {{-- ============================================================ --}}
             <section id="portal" class="scroll-mt-20">
-                <h2>17. Portal del socio</h2>
+                <h2>18. Portal del socio</h2>
                 <p>Cuando habilitás el acceso al portal desde la ficha del socio, recibe un correo para crear su contraseña. Desde su celular o computadora puede:</p>
                 <ul>
                     <li>Ver su <strong>estado de cuenta</strong>, cargos pendientes, pagos y descargar recibos.</li>
@@ -398,7 +448,7 @@
 
             {{-- ============================================================ --}}
             <section id="automaticos" class="scroll-mt-20">
-                <h2>18. Procesos automáticos</h2>
+                <h2>19. Procesos automáticos</h2>
                 <p>Con el programador de tareas del servidor activo, el sistema hace solo:</p>
                 <div class="overflow-x-auto">
                     <table class="manual-table">

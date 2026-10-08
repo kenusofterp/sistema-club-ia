@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class EnrollmentService
 {
-    public function __construct(private FeeService $fees) {}
+    public function __construct(private FeeService $fees, private LevelLessonService $levelLessons) {}
 
     public function enroll(Member $member, Activity $activity, ?string $notes = null): Enrollment
     {
@@ -66,6 +66,8 @@ class EnrollmentService
             $this->fees->generateActivityFee($member, $activity, today());
         }
 
+        $this->levelLessons->syncEnrollment($member, $activity, true);
+
         return $enrollment;
     }
 
@@ -80,5 +82,7 @@ class EnrollmentService
             'end_date' => today(),
             'notes' => $notes ?? $enrollment->notes,
         ]);
+
+        $this->levelLessons->syncEnrollment($enrollment->member, $enrollment->activity, false);
     }
 }
