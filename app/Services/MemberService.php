@@ -10,6 +10,7 @@ use App\Exceptions\BusinessRuleException;
 use App\Models\Member;
 use App\Models\MemberCategory;
 use App\Models\Organization;
+use App\Models\Person;
 use App\Models\User;
 use App\Notifications\WelcomeMemberNotification;
 use Illuminate\Support\Carbon;
@@ -35,6 +36,35 @@ class MemberService
 
             return $member->refresh();
         });
+    }
+
+    /**
+     * Membresía en la entidad actual para una persona ya registrada en el sistema (por ejemplo, alumno de un
+     * profesor que da clases en esta entidad). Queda activa, en la primera categoría que admite su edad,
+     * y no se le cobra derecho de ingreso.
+     */
+    public function joinOrganization(Person $person): Member
+    {
+        $existing = Member::where('person_id', $person->id)->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        $age = (int) $person->birth_date->diffInYears(now());
+        $category = MemberCategory::active()->get()->first(fn (MemberCategory $c) => $c->acceptsAge($age));
+        if (! $category) {
+            throw new BusinessRuleException("No hay una categoría de socio para {$age} años en esta entidad. Cargá a {$person->fullName()} desde Socios.");
+        }
+
+        return DB::transaction(fn () => Member::create([
+            ...$person->personalData(),
+            'person_id' => $person->id,
+            'user_id' => $person->user_id,
+            'member_category_id' => $category->id,
+            'status' => MemberStatus::Active,
+            'member_number' => $this->nextMemberNumber(),
+            'admission_date' => today(),
+        ]));
     }
 
     public function update(Member $member, array $data): Member
@@ -76,6 +106,9 @@ class MemberService
 
         if ($member->email && ! $member->user_id) {
             $this->enablePortalAccess($member);
+        } elseif ($member->user && $this->accountComesFromOtherMembership($member)) {
+            // La persona ya tenía cuenta por otra entidad: se le avisa que ahora también accede a esta.
+            $member->user->notify(new WelcomeMemberNotification(null, $member->organization_id));
         }
 
         return $member;
@@ -180,8 +213,21 @@ class MemberService
         return $user;
     }
 
+    private function accountComesFromOtherMembership(Member $member): bool
+    {
+        return Member::acrossOrganizations()
+            ->where('person_id', $member->person_id)
+            ->whereKeyNot($member->id)
+            ->where('user_id', $member->user_id)
+            ->exists();
+    }
+
     private function findExistingAccount(Member $member): ?User
     {
+        if ($member->person?->user) {
+            return $member->person->user;
+        }
+
         $byEmail = User::withTrashed()->where('email', $member->email)->first();
         if ($byEmail) {
             return $byEmail;

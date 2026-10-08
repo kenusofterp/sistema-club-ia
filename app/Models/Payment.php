@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['receipt_number', 'member_id', 'amount', 'payment_date', 'method', 'reference', 'notes', 'status', 'received_by', 'cancelled_at', 'cancelled_by', 'cancel_reason'])]
+#[Fillable(['receipt_number', 'member_id', 'instructor_id', 'amount', 'payment_date', 'method', 'reference', 'notes', 'status', 'received_by', 'cancelled_at', 'cancelled_by', 'cancel_reason'])]
 class Payment extends Model
 {
     use Auditable, BelongsToOrganization;
@@ -26,6 +26,12 @@ class Payment extends Model
             'amount' => 'decimal:2',
             'cancelled_at' => 'datetime',
         ];
+    }
+
+    /** Profesor que cobró (null = cobro de la entidad). */
+    public function instructor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'instructor_id')->withTrashed();
     }
 
     public function member(): BelongsTo

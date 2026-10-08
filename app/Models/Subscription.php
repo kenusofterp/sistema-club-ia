@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\AccessResult;
+use App\Enums\AttendanceStatus;
+use App\Enums\LessonStatus;
 use App\Enums\SubscriptionStatus;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
@@ -10,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
@@ -63,6 +66,15 @@ class Subscription extends Model
         return $this->hasMany(AccessLog::class);
     }
 
+    /** Clases a las que asistió consumiendo este plan. */
+    public function lessonsAttended(): BelongsToMany
+    {
+        return $this->belongsToMany(Lesson::class, 'lesson_member', 'subscription_id', 'lesson_id')
+            ->withoutGlobalScope('organization')
+            ->wherePivot('attendance', AttendanceStatus::Present->value)
+            ->where('lessons.status', '!=', LessonStatus::Cancelled->value);
+    }
+
     /** Suscripciones activas y vigentes en una fecha. */
     public function scopeCurrent(Builder $query, ?Carbon $date = null): void
     {
@@ -98,10 +110,21 @@ class Subscription extends Model
         return $start->max($this->start_date);
     }
 
-    /** Visitas usadas: días distintos con ingreso permitido en el período. */
+    /**
+     * Visitas usadas en el período.
+     * Pack de un profesor: cada clase con asistencia "presente" (dos clases el mismo día cuentan dos).
+     * Plan de la entidad: días distintos con ingreso permitido.
+     */
     public function visitsUsed(?Carbon $at = null): int
     {
         $at ??= now();
+
+        if ($this->plan->instructor_id) {
+            return $this->lessonsAttended()
+                ->whereDate('lessons.date', '>=', $this->visitPeriodStart($at))
+                ->whereDate('lessons.date', '<=', $at)
+                ->count();
+        }
 
         return (int) $this->accessLogs()
             ->where('result', AccessResult::Granted)

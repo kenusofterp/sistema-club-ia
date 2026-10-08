@@ -187,7 +187,8 @@ class SubscriptionService
     private function createPeriod(Member $member, Plan $plan, Carbon $start, bool $autoRenew, ?Subscription $previous, ?User $by): Subscription
     {
         $price = (string) $plan->price;
-        $requiresPayment = setting('gym.activate_on_payment', true) && bccomp($price, '0', 2) > 0;
+        // Los packs de un profesor se activan al venderse: la deuda queda en la cuenta corriente del alumno.
+        $requiresPayment = ! $plan->instructor_id && setting('gym.activate_on_payment', true) && bccomp($price, '0', 2) > 0;
 
         $subscription = Subscription::create([
             'member_id' => $member->id,
@@ -209,6 +210,7 @@ class SubscriptionService
                 "Plan {$plan->name} ({$subscription->periodLabel()})",
                 $price,
                 $start->copy(),
+                instructorId: $plan->instructor_id,
             );
             $fee->update(['subscription_id' => $subscription->id]);
         }

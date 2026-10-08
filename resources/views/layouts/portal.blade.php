@@ -11,6 +11,7 @@
         ['route' => 'portal.fees', 'label' => 'Mi cuenta', 'icon' => 'banknotes'],
         ...(uses_gym() ? [['route' => 'portal.plans', 'label' => 'Mi plan', 'icon' => 'id-card']] : []),
         ['route' => 'portal.activities', 'label' => 'Actividades', 'icon' => 'trophy'],
+        ['route' => 'portal.lessons', 'label' => 'Mis clases', 'icon' => 'clock'],
         ['route' => 'portal.reservations', 'label' => 'Reservas', 'icon' => 'calendar'],
         ['route' => 'portal.card', 'label' => 'Carnet', 'icon' => 'qr'],
     ];

@@ -8,6 +8,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -23,7 +24,7 @@ use Spatie\Permission\Traits\HasRoles;
  * - administrar una o varias entidades (roles por entidad), o todas si es super administrador;
  * - ser socia de varias entidades (una membresía por entidad, ver members.user_id).
  */
-#[Fillable(['name', 'email', 'password', 'phone', 'avatar_path', 'is_active', 'last_login_at'])]
+#[Fillable(['name', 'email', 'password', 'phone', 'avatar_path', 'is_active', 'last_login_at', 'preferences'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -40,6 +41,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'is_super_admin' => 'boolean',
+            'preferences' => 'array',
         ];
     }
 
@@ -70,6 +72,30 @@ class User extends Authenticatable
         return $this->hasMany(Member::class)->withoutGlobalScope('organization');
     }
 
+    /** Sedes donde da clases el profesor, de todas las entidades. */
+    public function facilities(): BelongsToMany
+    {
+        return $this->belongsToMany(Facility::class)->withoutGlobalScope('organization');
+    }
+
+    /** Clases que dicta, de todas las entidades. */
+    public function lessons(): HasMany
+    {
+        return $this->hasMany(Lesson::class, 'instructor_id')->withoutGlobalScope('organization');
+    }
+
+    public function preference(string $key, mixed $default = null): mixed
+    {
+        return data_get($this->preferences ?? [], $key, $default);
+    }
+
+    public function setPreference(string $key, mixed $value): void
+    {
+        $preferences = $this->preferences ?? [];
+        data_set($preferences, $key, $value);
+        $this->forceFill(['preferences' => $preferences])->saveQuietly();
+    }
+
     public function isSuperAdmin(): bool
     {
         return (bool) $this->is_super_admin;
@@ -93,6 +119,41 @@ class User extends Authenticatable
             ->pluck('organization_id')
             ->map(fn ($id) => (int) $id)
             ->all();
+    }
+
+    /** @var array<string, array<int, int>> */
+    private array $permissionOrganizationsCache = [];
+
+    /**
+     * Entidades (activas) donde el usuario tiene un permiso por alguno de sus roles.
+     * Sirve para pantallas que cruzan entidades, donde can() solo mira la entidad actual.
+     *
+     * @return array<int, int>
+     */
+    public function organizationIdsWith(string $permission): array
+    {
+        if ($this->isSuperAdmin()) {
+            return $this->adminOrganizationIds();
+        }
+
+        return $this->permissionOrganizationsCache[$permission] ??= DB::table(config('permission.table_names.model_has_roles').' as mr')
+            ->join(config('permission.table_names.role_has_permissions').' as rp', 'rp.role_id', '=', 'mr.role_id')
+            ->join(config('permission.table_names.permissions').' as p', 'p.id', '=', 'rp.permission_id')
+            ->join('organizations as o', 'o.id', '=', 'mr.organization_id')
+            ->where('mr.model_type', $this->getMorphClass())
+            ->where('mr.model_id', $this->id)
+            ->where('p.name', $permission)
+            ->where('o.is_active', true)
+            ->whereNull('o.deleted_at')
+            ->distinct()
+            ->pluck('mr.organization_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    public function hasPermissionIn(string $permission, int $organizationId): bool
+    {
+        return in_array($organizationId, $this->organizationIdsWith($permission), true);
     }
 
     /** @return array<int, int> entidades donde la persona es socia (no rechazada) */

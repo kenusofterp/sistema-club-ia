@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\Members;
 use App\Livewire\Concerns\InteractsWithUi;
 use App\Models\Member;
 use App\Models\MemberCategory;
+use App\Models\Person;
 use App\Services\MemberService;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -102,6 +103,40 @@ class Form extends Component
             'admission_date' => 'nullable|date|before_or_equal:today',
             'photo' => 'nullable|image|max:3072',
         ];
+    }
+
+    /** Persona ya registrada en el sistema (otra entidad) con el documento ingresado. */
+    public ?string $existingPerson = null;
+
+    public function updatedDocumentNumber(): void
+    {
+        $this->fillFromExistingPerson();
+    }
+
+    public function updatedDocumentType(): void
+    {
+        $this->fillFromExistingPerson();
+    }
+
+    /** En el alta, si la persona ya existe en el sistema se completan sus datos personales. */
+    private function fillFromExistingPerson(): void
+    {
+        $this->existingPerson = null;
+        if ($this->member) {
+            return;
+        }
+
+        $person = Person::findByDocument($this->document_type, $this->document_number);
+        if (! $person) {
+            return;
+        }
+
+        foreach ($person->personalData() as $field => $value) {
+            if ($field !== 'photo_path' && property_exists($this, $field)) {
+                $this->{$field} = (string) $value;
+            }
+        }
+        $this->existingPerson = $person->fullName();
     }
 
     public function selectHolder(int $id): void

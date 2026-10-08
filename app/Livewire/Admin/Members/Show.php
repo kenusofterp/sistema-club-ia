@@ -181,6 +181,10 @@ class Show extends Component
                 'activities' => Activity::active()->whereNotIn('id', $member->enrollments()->where('status', EnrollmentStatus::Active)->pluck('activity_id'))->get(),
             ],
             'reservas' => ['reservations' => $member->reservations()->with('facility')->latest('date')->limit(30)->get()],
+            'clases' => [
+                'lessons' => $member->lessons()->with(['facility', 'instructor'])->orderByDesc('date')->orderByDesc('start_time')->limit(40)->get(),
+                'packs' => $member->subscriptions()->current()->whereHas('plan', fn ($q) => $q->whereNotNull('instructor_id'))->with('plan.instructor')->get(),
+            ],
             'planes' => ['subscriptions' => $member->subscriptions()->with('plan')->latest('start_date')->limit(30)->get()],
             'accesos' => ['accessLogs' => $member->accessLogs()->with('checker')->latest('checked_at')->limit(50)->get()],
             'historial' => ['audits' => AuditLog::with('causer')->where('subject_type', $member->getMorphClass())->where('subject_id', $member->id)->latest('id')->limit(50)->get()],

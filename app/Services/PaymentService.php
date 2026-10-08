@@ -63,6 +63,11 @@ class PaymentService
                 throw new BusinessRuleException('Alguno de los cargos seleccionados ya está pagado o anulado.');
             }
 
+            // Cobros separados: un pago es del club o de un único profesor.
+            if ($fees->pluck('instructor_id')->unique()->count() > 1) {
+                throw new BusinessRuleException('No se pueden cobrar en un mismo pago cargos del club y de un profesor, ni de profesores distintos. Registrá un pago para cada uno.');
+            }
+
             $totalBalance = $fees->reduce(fn (string $carry, Fee $fee) => bcadd($carry, $fee->balance(), 2), '0');
             if (bccomp($amount, $totalBalance, 2) > 0) {
                 throw new BusinessRuleException('El importe ('.money($amount).') supera el saldo de los cargos seleccionados ('.money($totalBalance).').');
@@ -71,6 +76,7 @@ class PaymentService
             $payment = Payment::create([
                 'receipt_number' => $this->nextReceiptNumber($member->organization_id),
                 'member_id' => $member->id,
+                'instructor_id' => $fees->first()->instructor_id,
                 'amount' => $amount,
                 'payment_date' => $date,
                 'method' => $method,

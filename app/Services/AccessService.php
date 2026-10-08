@@ -35,11 +35,7 @@ class AccessService
                 return null;
             }
 
-            return Member::with('category')
-                ->where(fn ($q) => $q
-                    ->when($other->user_id, fn ($w) => $w->where('user_id', $other->user_id))
-                    ->orWhere(fn ($w) => $w->where('document_type', $other->document_type)->where('document_number', $other->document_number)))
-                ->first();
+            return Member::with('category')->where('person_id', $other->person_id)->first();
         }
 
         return Member::with('category')
@@ -80,7 +76,10 @@ class AccessService
         $warning = $overdue > 0 ? "Atención: {$overdue} cuota(s) vencida(s)" : null;
 
         if (uses_gym()) {
-            $subscriptions = $member->subscriptions()->current($at->copy()->startOfDay())->with('plan.activities.schedules')->get();
+            // Los packs de clases de un profesor no habilitan el ingreso: se consumen en la agenda.
+            $subscriptions = $member->subscriptions()->current($at->copy()->startOfDay())
+                ->whereHas('plan', fn ($q) => $q->whereNull('instructor_id'))
+                ->with('plan.activities.schedules')->get();
             $reasons = [];
 
             foreach ($subscriptions as $subscription) {

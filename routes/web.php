@@ -81,6 +81,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
         Route::get('/suscripciones', Admin\Gym\Subscriptions::class)->name('subscriptions')->middleware('can:suscripciones.gestionar');
     });
 
+    // Agenda de clases (profesores)
+    Route::prefix('agenda')->name('lessons')->group(function () {
+        Route::get('/', Admin\Lessons\Calendar::class)->middleware('can:agenda.ver');
+        Route::get('/packs', Admin\Lessons\Packs::class)->name('.packs')->middleware('can:agenda.gestionar');
+        Route::get('/cobros', Admin\Lessons\Account::class)->name('.account')->middleware('can:cobros.propios');
+    });
+
     // Instalaciones
     Route::get('/instalaciones', Admin\Facilities\Index::class)->name('facilities')->middleware('can:instalaciones.gestionar');
     Route::get('/reservas', Admin\Reservations\Index::class)->name('reservations')->middleware('can:reservas.ver');
@@ -119,6 +126,7 @@ Route::prefix('portal')->name('portal.')->middleware(['auth', 'active', 'member'
     Route::get('/cuenta', Portal\Fees::class)->name('fees');
     Route::get('/actividades', Portal\Activities::class)->name('activities');
     Route::get('/reservas', Portal\Reservations::class)->name('reservations');
+    Route::get('/clases', Portal\Lessons::class)->name('lessons');
     Route::get('/carnet', Portal\Card::class)->name('card');
     Route::get('/mi-plan', Portal\Plans::class)->name('plans')->middleware('gym');
     Route::get('/mis-datos', Portal\Profile::class)->name('profile');

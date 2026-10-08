@@ -107,7 +107,7 @@
         {{-- Pestañas --}}
         <div class="xl:col-span-3">
             <div class="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200">
-                @foreach (['cuenta' => 'Cuenta corriente', ...(uses_gym() ? ['planes' => 'Planes'] : []), 'actividades' => 'Actividades', 'reservas' => 'Reservas', 'accesos' => 'Accesos', 'historial' => 'Historial'] as $key => $label)
+                @foreach (['cuenta' => 'Cuenta corriente', ...(uses_gym() ? ['planes' => 'Planes'] : []), 'actividades' => 'Actividades', 'clases' => 'Clases', 'reservas' => 'Reservas', 'accesos' => 'Accesos', 'historial' => 'Historial'] as $key => $label)
                     <button type="button" wire:click="$set('tab', '{{ $key }}')"
                             @class(['-mb-px border-b-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap', 'border-brand-600 text-brand-700' => $tab === $key, 'border-transparent text-slate-500 hover:text-slate-800' => $tab !== $key])>{{ $label }}</button>
                 @endforeach
@@ -228,6 +228,47 @@
                                     </tr>
                                 @empty
                                     <tr><td colspan="5"><x-empty-state icon="id-card" title="Sin planes contratados" /></td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                @elseif ($tab === 'clases')
+                    @if ($packs->isNotEmpty())
+                        <div class="mb-4 grid gap-3 sm:grid-cols-2">
+                            @foreach ($packs as $pack)
+                                @php($remaining = $pack->visitsRemaining())
+                                <div class="card p-4">
+                                    <p class="font-medium text-slate-900">{{ $pack->plan->name }}</p>
+                                    <p class="text-xs text-slate-500">{{ $pack->plan->instructor?->name }} · vence {{ $pack->end_date->format('d/m/Y') }}</p>
+                                    <p class="mt-2 text-sm text-slate-700">
+                                        @if ($remaining === null)
+                                            Clases ilimitadas
+                                        @else
+                                            Le quedan <strong @class(['text-red-600' => $remaining === 0])>{{ $remaining }}</strong> de {{ $pack->plan->visit_limit }} {{ \App\Models\Plan::VISIT_PERIODS[$pack->plan->visit_period] ?? '' }}
+                                        @endif
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="card overflow-x-auto">
+                        <table class="data-table">
+                            <thead><tr><th>Fecha</th><th>Horario</th><th>Sede</th><th>Profesor</th><th>Clase</th><th>Asistencia</th></tr></thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @forelse ($lessons as $lesson)
+                                    <tr>
+                                        <td>{{ $lesson->date->format('d/m/Y') }}</td>
+                                        <td>{{ $lesson->timeRange() }}</td>
+                                        <td>{{ $lesson->facility->name }}</td>
+                                        <td>{{ $lesson->instructor->name }}</td>
+                                        <td><x-badge :status="$lesson->status" /></td>
+                                        <td>
+                                            <x-badge :status="\App\Enums\AttendanceStatus::from($lesson->pivot->attendance)" />
+                                            @if ($lesson->pivot->subscription_id)<span class="text-xs text-slate-500">pack</span>@elseif ($lesson->pivot->fee_id)<span class="text-xs text-slate-500">suelta</span>@endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6"><x-empty-state icon="calendar" title="Sin clases en esta entidad" /></td></tr>
                                 @endforelse
                             </tbody>
                         </table>

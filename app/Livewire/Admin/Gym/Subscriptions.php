@@ -163,7 +163,7 @@ class Subscriptions extends Component
 
         return view('livewire.admin.gym.subscriptions', [
             'subscriptions' => $subscriptions,
-            'plans' => Plan::orderBy('name')->get(['id', 'name', 'price', 'duration_unit', 'duration_value', 'is_active']),
+            'plans' => Plan::ofOrganization()->orderBy('name')->get(['id', 'name', 'price', 'duration_unit', 'duration_value', 'is_active']),
             'statuses' => SubscriptionStatus::options(),
             'memberResults' => ! $this->memberId && strlen($this->memberSearch) >= 2 ? Member::active()->search($this->memberSearch)->limit(6)->get() : collect(),
             'stats' => [

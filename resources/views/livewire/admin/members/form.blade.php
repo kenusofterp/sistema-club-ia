@@ -15,16 +15,19 @@
                 </x-field>
                 <div class="grid grid-cols-3 gap-3">
                     <x-field label="Tipo" for="document_type" error="document_type">
-                        <select id="document_type" wire:model="document_type" class="form-input">
+                        <select id="document_type" wire:model.live="document_type" class="form-input">
                             @foreach (\App\Models\Member::DOCUMENT_TYPES as $value => $label)
                                 <option value="{{ $value }}">{{ $value }}</option>
                             @endforeach
                         </select>
                     </x-field>
                     <x-field label="Documento" for="document_number" error="document_number" required class="col-span-2">
-                        <input id="document_number" wire:model="document_number" class="form-input">
+                        <input id="document_number" wire:model.blur="document_number" class="form-input">
                     </x-field>
                 </div>
+                @if ($existingPerson)
+                    <p class="rounded-lg bg-sky-50 p-3 text-xs text-sky-800 sm:col-span-2">{{ $existingPerson }} ya está registrada en el sistema: se completaron sus datos personales. Los cambios que hagas se actualizan en todas sus entidades.</p>
+                @endif
                 <x-field label="Fecha de nacimiento" for="birth_date" error="birth_date" required>
                     <input id="birth_date" type="date" wire:model="birth_date" class="form-input">
                 </x-field>

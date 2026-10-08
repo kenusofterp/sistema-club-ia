@@ -16,6 +16,7 @@ final class SettingsCatalog
         'pwa' => 'Aplicación (PWA)',
         'club' => 'Reglas del club',
         'gym' => 'Gimnasio',
+        'lessons' => 'Agenda de clases',
     ];
 
     /** @return array<string, string> opciones de una configuración de tipo select */
@@ -90,6 +91,10 @@ final class SettingsCatalog
             ['group' => 'gym', 'key' => 'gym.renewal_days_before', 'type' => 'integer', 'label' => 'Días antes del vencimiento en que se genera la renovación automática', 'value' => 3],
             ['group' => 'gym', 'key' => 'gym.pending_expiry_days', 'type' => 'integer', 'label' => 'Días para cancelar planes nuevos impagos', 'value' => 7, 'help' => '0 para no cancelarlos automáticamente.'],
             ['group' => 'gym', 'key' => 'gym.allow_portal_purchase', 'type' => 'boolean', 'label' => 'Permitir que el socio contrate planes desde el portal', 'value' => true],
+
+            // Agenda de clases
+            ['group' => 'lessons', 'key' => 'lessons.single_price', 'type' => 'decimal', 'label' => 'Precio por defecto de la clase suelta', 'value' => 0, 'help' => 'Se cobra a los alumnos sin pack del profesor (o sin clases disponibles). Cada profesor puede tener su propio precio y se puede cambiar en cada clase.'],
+            ['group' => 'lessons', 'key' => 'lessons.default_minutes', 'type' => 'integer', 'label' => 'Duración por defecto de una clase (minutos)', 'value' => 60],
         ];
     }
 }

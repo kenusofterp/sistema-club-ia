@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -18,7 +19,7 @@ use Illuminate\Support\Carbon;
  * Plan / membresía de gimnasio.
  * access_windows: [{"days":[1..7], "from":"06:00", "to":"14:00"}] — vacío = cualquier horario de apertura.
  */
-#[Fillable(['name', 'description', 'price', 'duration_unit', 'duration_value', 'access_type', 'visit_limit', 'visit_period', 'access_windows', 'is_featured', 'is_public', 'is_active', 'sort_order'])]
+#[Fillable(['name', 'instructor_id', 'description', 'price', 'duration_unit', 'duration_value', 'access_type', 'visit_limit', 'visit_period', 'access_windows', 'is_featured', 'is_public', 'is_active', 'sort_order'])]
 class Plan extends Model
 {
     use Auditable, BelongsToOrganization, HasFactory, SoftDeletes;
@@ -41,6 +42,12 @@ class Plan extends Model
         ];
     }
 
+    /** Profesor dueño del pack (null = plan de la entidad). */
+    public function instructor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'instructor_id')->withTrashed();
+    }
+
     public function activities(): BelongsToMany
     {
         return $this->belongsToMany(Activity::class);
@@ -54,6 +61,12 @@ class Plan extends Model
     public function scopeActive(Builder $query): void
     {
         $query->where('is_active', true)->orderBy('sort_order')->orderBy('price');
+    }
+
+    /** Planes de la entidad (excluye los packs de clases de los profesores). */
+    public function scopeOfOrganization(Builder $query): void
+    {
+        $query->whereNull('instructor_id');
     }
 
     public function scopeVisible(Builder $query): void

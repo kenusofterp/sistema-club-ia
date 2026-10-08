@@ -29,6 +29,11 @@ final class AdminMenu
                 ['label' => 'Actividades', 'route' => 'admin.activities.index', 'icon' => 'trophy', 'can' => 'actividades.ver', 'active' => 'admin.activities.*'],
                 ['label' => 'Inscripciones', 'route' => 'admin.enrollments', 'icon' => 'clipboard', 'can' => 'inscripciones.gestionar'],
             ]],
+            ['title' => 'Agenda de clases', 'items' => [
+                ['label' => 'Agenda', 'route' => 'admin.lessons', 'icon' => 'calendar', 'can' => 'agenda.ver'],
+                ['label' => 'Packs de clases', 'route' => 'admin.lessons.packs', 'icon' => 'id-card', 'can' => 'agenda.gestionar'],
+                ['label' => 'Mis cobros', 'route' => 'admin.lessons.account', 'icon' => 'banknotes', 'can' => 'cobros.propios'],
+            ]],
             ['title' => 'Tesorería', 'items' => [
                 ['label' => 'Cuotas y cargos', 'route' => 'admin.fees', 'icon' => 'document', 'can' => 'cuotas.ver'],
                 ['label' => 'Pagos', 'route' => 'admin.payments.index', 'icon' => 'banknotes', 'can' => 'pagos.ver', 'active' => 'admin.payments.*'],

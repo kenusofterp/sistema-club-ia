@@ -75,6 +75,19 @@
                 </div>
                 <p class="form-help">Para darle acceso a otra entidad, cambiá de entidad y asignale roles allí.</p>
             </div>
+            @if ($availableFacilities->isNotEmpty())
+                <div class="sm:col-span-2">
+                    <span class="form-label">Sedes donde da clases (agenda de clases)</span>
+                    <div class="grid gap-2 sm:grid-cols-2">
+                        @foreach ($availableFacilities as $facility)
+                            <label class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                                <input type="checkbox" value="{{ $facility->id }}" wire:model="facilityIds" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> {{ $facility->name }}
+                            </label>
+                        @endforeach
+                    </div>
+                    <p class="form-help">Solo para profesores. Las sedes de otras entidades se asignan desde cada entidad.</p>
+                </div>
+            @endif
             @if (auth()->user()->isSuperAdmin())
                 <label class="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm sm:col-span-2">
                     <input type="checkbox" wire:model="is_super_admin" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500">

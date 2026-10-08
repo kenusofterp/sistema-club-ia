@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Livewire\Concerns\InteractsWithUi;
+use App\Models\Facility;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +50,9 @@ class Index extends Component
     /** @var array<int, string> roles en la entidad actual */
     public array $roles = [];
 
+    /** @var array<int, string> sedes de la entidad actual donde da clases */
+    public array $facilityIds = [];
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -71,6 +75,7 @@ class Index extends Component
         $this->is_active = $user->is_active;
         $this->is_super_admin = $user->is_super_admin;
         $this->roles = $user->roles()->pluck('name')->all();
+        $this->facilityIds = $user->facilities()->where('facilities.organization_id', Organization::currentId())->pluck('facilities.id')->map(fn ($id) => (string) $id)->all();
         $this->sendInvite = false;
         $this->showForm = true;
     }
@@ -88,6 +93,8 @@ class Index extends Component
             'is_super_admin' => 'boolean',
             'roles' => 'array',
             'roles.*' => Rule::exists('roles', 'name'),
+            'facilityIds' => 'array',
+            'facilityIds.*' => org_exists('facilities'),
         ]);
 
         $user = $this->editingId ? User::findOrFail($this->editingId) : new User;
@@ -120,6 +127,11 @@ class Index extends Component
 
             $user->save();
             $user->syncRoles($this->roles); // en la entidad actual
+
+            // Sedes de esta entidad; las de otras entidades no se tocan.
+            $here = Facility::withTrashed()->pluck('id');
+            $user->facilities()->detach($here->diff(array_map('intval', $this->facilityIds))->all());
+            $user->facilities()->syncWithoutDetaching(array_map('intval', $this->facilityIds));
 
             if (! $this->is_active) {
                 $user->tokens()->delete();
@@ -160,7 +172,7 @@ class Index extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['editingId', 'name', 'email', 'phone', 'password', 'is_active', 'is_super_admin', 'roles', 'sendInvite']);
+        $this->reset(['editingId', 'name', 'email', 'phone', 'password', 'is_active', 'is_super_admin', 'roles', 'sendInvite', 'facilityIds']);
         $this->resetValidation();
     }
 
@@ -191,6 +203,7 @@ class Index extends Component
             'users' => $users,
             'otherOrgs' => $otherOrgs,
             'availableRoles' => Role::orderBy('name')->get(),
+            'availableFacilities' => Facility::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 }

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /** Cargo en la cuenta corriente del socio (cuota social, actividad, reserva, etc.). */
-#[Fillable(['member_id', 'type', 'activity_id', 'reservation_id', 'subscription_id', 'period', 'concept', 'amount', 'surcharge', 'paid_amount', 'due_date', 'status', 'cancel_reason', 'created_by'])]
+#[Fillable(['member_id', 'instructor_id', 'type', 'activity_id', 'reservation_id', 'lesson_id', 'subscription_id', 'period', 'concept', 'amount', 'surcharge', 'paid_amount', 'due_date', 'status', 'cancel_reason', 'created_by'])]
 class Fee extends Model
 {
     use Auditable, BelongsToOrganization, HasFactory;
@@ -30,6 +30,17 @@ class Fee extends Model
             'surcharge' => 'decimal:2',
             'paid_amount' => 'decimal:2',
         ];
+    }
+
+    /** Profesor a cuyo nombre está el cargo (null = cargo de la entidad). */
+    public function instructor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'instructor_id')->withTrashed();
+    }
+
+    public function lesson(): BelongsTo
+    {
+        return $this->belongsTo(Lesson::class)->withTrashed();
     }
 
     public function member(): BelongsTo

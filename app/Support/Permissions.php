@@ -39,6 +39,12 @@ final class Permissions
                 'planes.gestionar' => 'Crear y editar planes / membresías',
                 'suscripciones.gestionar' => 'Ver, asignar y cancelar planes de socios',
             ],
+            'Agenda de clases' => [
+                'agenda.ver' => 'Ver la agenda de clases propia',
+                'agenda.gestionar' => 'Programar clases, tomar asistencia y vender packs (propios)',
+                'agenda.todas' => 'Ver y gestionar la agenda de todos los profesores',
+                'cobros.propios' => 'Ver y cobrar la cuenta de sus alumnos (cobros a su nombre)',
+            ],
             'Instalaciones' => [
                 'instalaciones.gestionar' => 'Gestionar instalaciones',
                 'reservas.ver' => 'Ver reservas',
@@ -81,7 +87,7 @@ final class Permissions
             ],
             'secretaria' => [
                 'label' => 'Secretaría',
-                'permissions' => ['dashboard.ver', 'socios.ver', 'socios.crear', 'socios.editar', 'actividades.ver', 'inscripciones.gestionar', 'cuotas.ver', 'pagos.ver', 'pagos.registrar', 'reservas.ver', 'reservas.gestionar', 'acceso.registrar', 'mensajes.ver', 'avisos.gestionar', 'suscripciones.gestionar'],
+                'permissions' => ['dashboard.ver', 'socios.ver', 'socios.crear', 'socios.editar', 'actividades.ver', 'inscripciones.gestionar', 'cuotas.ver', 'pagos.ver', 'pagos.registrar', 'reservas.ver', 'reservas.gestionar', 'acceso.registrar', 'mensajes.ver', 'avisos.gestionar', 'suscripciones.gestionar', 'agenda.ver', 'agenda.gestionar', 'agenda.todas'],
             ],
             'recepcion' => [
                 'label' => 'Recepción',
@@ -89,7 +95,7 @@ final class Permissions
             ],
             'profesor' => [
                 'label' => 'Profesor/a',
-                'permissions' => ['actividades.ver', 'socios.ver'],
+                'permissions' => ['actividades.ver', 'socios.ver', 'agenda.ver', 'agenda.gestionar', 'cobros.propios'],
             ],
             'comunicacion' => [
                 'label' => 'Comunicación',

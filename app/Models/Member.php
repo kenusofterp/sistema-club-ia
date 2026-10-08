@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EnrollmentStatus;
 use App\Enums\FeeStatus;
 use App\Enums\MemberStatus;
+use App\Exceptions\BusinessRuleException;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -21,7 +22,7 @@ use Illuminate\Support\Str;
 #[Fillable([
     'member_number', 'first_name', 'last_name', 'document_type', 'document_number', 'birth_date', 'gender',
     'email', 'phone', 'address', 'city', 'member_category_id', 'status', 'admission_date', 'leave_date',
-    'leave_reason', 'photo_path', 'user_id', 'holder_id', 'relationship', 'emergency_contact_name',
+    'leave_reason', 'photo_path', 'person_id', 'user_id', 'holder_id', 'relationship', 'emergency_contact_name',
     'emergency_contact_phone', 'medical_notes', 'notes',
 ])]
 class Member extends Model
@@ -36,7 +37,84 @@ class Member extends Model
     {
         static::creating(function (Member $member) {
             $member->uuid ??= (string) Str::uuid();
+            $member->attachPerson();
         });
+
+        static::updating(function (Member $member) {
+            if ($member->isDirty(['document_type', 'document_number'])) {
+                $other = Person::findByDocument($member->document_type, $member->document_number);
+                if ($other && $other->id !== $member->person_id) {
+                    throw new BusinessRuleException('Ese documento ya corresponde a otra persona registrada en el sistema.');
+                }
+            }
+        });
+
+        static::saved(function (Member $member) {
+            $member->syncPerson();
+        });
+    }
+
+    /**
+     * Vincula la membresía con la persona del sistema (por documento) o la crea.
+     * Los datos que la membresía no trae se completan con los de la persona.
+     */
+    private function attachPerson(): void
+    {
+        $person = $this->person_id
+            ? Person::find($this->person_id)
+            : Person::findByDocument($this->document_type, $this->document_number);
+
+        if (! $person) {
+            $this->person_id = Person::create([...$this->personalAttributes(), 'user_id' => $this->user_id])->id;
+
+            return;
+        }
+
+        foreach ($person->personalData() as $field => $value) {
+            if ($this->{$field} === null || $this->{$field} === '') {
+                $this->{$field} = $value;
+            }
+        }
+        $this->user_id ??= $person->user_id;
+        $this->person_id = $person->id;
+    }
+
+    /** Lleva los cambios de datos personales a la persona y al resto de sus membresías. */
+    private function syncPerson(): void
+    {
+        $fields = $this->wasRecentlyCreated
+            ? Person::PERSONAL_FIELDS
+            : array_values(array_intersect(Person::PERSONAL_FIELDS, array_keys($this->getChanges())));
+
+        $person = $this->person()->first();
+        if (! $person) {
+            return;
+        }
+
+        $changes = array_intersect_key($this->personalAttributes(), array_flip($fields));
+        if ($this->user_id && ! $person->user_id) {
+            $person->user_id = $this->user_id;
+        }
+        $person->fill($changes);
+        if ($person->isDirty()) {
+            $person->save();
+        }
+
+        if ($changes) {
+            Member::acrossOrganizations()->withTrashed()
+                ->where('person_id', $person->id)
+                ->whereKeyNot($this->id)
+                ->update([...$changes, 'updated_at' => now()]);
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function personalAttributes(): array
+    {
+        return [
+            ...$this->only(Person::PERSONAL_FIELDS),
+            'birth_date' => $this->birth_date?->toDateString(),
+        ];
     }
 
     protected function casts(): array
@@ -54,6 +132,11 @@ class Member extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(MemberCategory::class, 'member_category_id');
+    }
+
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
     }
 
     public function user(): BelongsTo
@@ -119,6 +202,13 @@ class Member extends Model
         return $this->subscriptions()->current()->with('plan.activities.schedules');
     }
 
+    public function lessons(): BelongsToMany
+    {
+        return $this->belongsToMany(Lesson::class)
+            ->withPivot(['id', 'subscription_id', 'attendance', 'fee_id'])
+            ->withTimestamps();
+    }
+
     public function accessLogs(): HasMany
     {
         return $this->hasMany(AccessLog::class);
@@ -180,9 +270,10 @@ class Member extends Model
             ->value('balance');
     }
 
+    /** Cuotas vencidas con la entidad (las deudas con un profesor no bloquean ingreso, reservas ni inscripciones). */
     public function overdueFeesCount(): int
     {
-        return $this->fees()->where('status', FeeStatus::Overdue)->count();
+        return $this->fees()->where('status', FeeStatus::Overdue)->whereNull('instructor_id')->count();
     }
 
     public function photoUrl(): ?string

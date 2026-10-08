@@ -62,7 +62,7 @@ class Plans extends Component
     public function edit(int $id): void
     {
         $this->resetForm();
-        $plan = Plan::with('activities')->findOrFail($id);
+        $plan = Plan::ofOrganization()->with('activities')->findOrFail($id);
         $this->editingId = $plan->id;
         $this->fill([
             'name' => $plan->name,
@@ -155,7 +155,7 @@ class Plans extends Component
     public function delete(int $id): void
     {
         $this->authorize('planes.gestionar');
-        $plan = Plan::findOrFail($id);
+        $plan = Plan::ofOrganization()->findOrFail($id);
 
         if ($plan->subscriptions()->whereIn('status', [SubscriptionStatus::Active, SubscriptionStatus::Pending])->exists()) {
             $this->notify('El plan tiene socios con suscripciones vigentes. Desactivalo en lugar de eliminarlo.', 'error');
@@ -176,7 +176,7 @@ class Plans extends Component
     public function render()
     {
         return view('livewire.admin.gym.plans', [
-            'plans' => Plan::with('activities')
+            'plans' => Plan::ofOrganization()->with('activities')
                 ->withCount(['subscriptions as active_count' => fn ($q) => $q->current()])
                 ->orderBy('sort_order')->orderBy('price')->get(),
             'activities' => Activity::active()->get(['id', 'name']),

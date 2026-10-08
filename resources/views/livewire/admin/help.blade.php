@@ -12,13 +12,14 @@
         'actividades' => '8. Actividades e inscripciones',
         'instalaciones' => '9. Instalaciones y reservas',
         'gimnasio' => '10. Gimnasio: planes',
-        'acceso' => '11. Control de acceso',
-        'comunicacion' => '12. Mensajes y avisos',
-        'sitio' => '13. Sitio web',
-        'usuarios' => '14. Usuarios y roles',
-        'auditoria' => '15. Auditoría y reportes',
-        'portal' => '16. Portal del socio',
-        'automaticos' => '17. Procesos automáticos',
+        'agenda' => '11. Agenda de clases (profesores)',
+        'acceso' => '12. Control de acceso',
+        'comunicacion' => '13. Mensajes y avisos',
+        'sitio' => '14. Sitio web',
+        'usuarios' => '15. Usuarios y roles',
+        'auditoria' => '16. Auditoría y reportes',
+        'portal' => '17. Portal del socio',
+        'automaticos' => '18. Procesos automáticos',
         'ejemplo' => 'Ejemplo completo',
         'faq' => 'Preguntas frecuentes',
     ];
@@ -261,8 +262,53 @@
             </section>
 
             {{-- ============================================================ --}}
+            <section id="agenda" class="scroll-mt-20">
+                <h2>11. Agenda de clases (profesores)</h2>
+                <p>Para profesores que dan clases individuales o grupales (por ejemplo, tenis) en una o varias entidades. Cada profesor entra con su usuario y maneja <strong>su</strong> agenda, sus packs y sus cobros. Está disponible en cualquier tipo de entidad.</p>
+                <h3>Preparar al profesor</h3>
+                <ol class="steps">
+                    <li>En <strong>Administración › Usuarios</strong>, creá el usuario y dale el rol <strong>profesor</strong>.</li>
+                    <li>En el mismo formulario, marcá las <strong>sedes donde da clases</strong> (las instalaciones de esa entidad).</li>
+                    <li>Si también da clases en otra entidad, cambiá de entidad y repetí: rol <em>profesor</em> y sus sedes allí.</li>
+                </ol>
+                <h3>Ver la agenda</h3>
+                <p>En <strong>Agenda de clases › Agenda</strong> elegís la vista <strong>Día</strong>, <strong>Semana</strong> o <strong>Mes</strong> y qué querés ver:</p>
+                <ul>
+                    <li><strong>Todos mis clubes</strong>: una agenda única con las clases de todas las entidades donde trabajás, con un color por club.</li>
+                    <li><strong>Un club puntual</strong>: solo las clases de esa entidad, con un color por sede.</li>
+                </ul>
+                <p>El sistema recuerda la vista que elegiste: la próxima vez que entres la vas a encontrar igual. Arriba se muestran los totales del período: clases, horas ocupadas, clases dadas y alumnos. Quien tiene el permiso <em>Ver y gestionar la agenda de todos los profesores</em> (administración, secretaría) puede además filtrar por profesor.</p>
+                <h3>Programar una clase</h3>
+                <ol class="steps">
+                    <li>Hacé clic en un horario libre de la grilla o en <strong>Nueva clase</strong>.</li>
+                    <li>Elegí club y sede, fecha y horario. Si la sede ya tiene una reserva u otra clase en ese horario, el sistema te avisa.</li>
+                    <li>Buscá a los alumnos por nombre o documento. La búsqueda es en <strong>toda la base de personas del sistema</strong>: si el alumno es socio de otra entidad, se lo suma a esta automáticamente, sin cobrarle derecho de ingreso. Con varios alumnos, la clase es grupal.</li>
+                    <li>Para una clase fija, marcá <strong>Repetir semanalmente</strong>, elegí los días y hasta qué fecha.</li>
+                </ol>
+                <x-manual.tip>Un profesor no puede tener dos clases a la misma hora, aunque sean en clubes distintos: el sistema lo impide e indica dónde está la otra clase.</x-manual.tip>
+                <h3>Tomar asistencia y marcar la clase como dada</h3>
+                <p>Hacé clic en la clase, marcá a cada alumno como <em>Presente</em> o <em>Ausente</em> y luego <strong>Marcar como dada</strong>. A cada presente:</p>
+                <ul>
+                    <li>si tiene un <strong>pack vigente</strong> con ese profesor y le quedan clases, se le descuenta una;</li>
+                    <li>si no tiene pack o ya lo usó, se le cobra la <strong>clase suelta</strong>.</li>
+                </ul>
+                <p>Los ausentes no consumen ni pagan. Si te equivocaste, usá <strong>Reabrir</strong>: la clase vuelve a quedar programada y se anulan las clases sueltas que todavía no se cobraron.</p>
+                <h3>Precio de la clase suelta</h3>
+                <p>Se toma, en este orden: el precio cargado en la clase; el precio propio del profesor; el de la entidad (<strong>Configuración › Agenda de clases</strong>).</p>
+                <h3>Packs de clases</h3>
+                <p>En <strong>Agenda de clases › Packs</strong> el profesor crea sus planes, por ejemplo <em>4 clases por mes</em>, <em>8 clases por mes</em> o <em>Clase de prueba</em>, con su precio, vigencia y cantidad de clases (por semana, por mes o en todo el pack). Con <strong>Asignar a alumno</strong> se lo vende: queda activo de inmediato y el cargo va a la cuenta del alumno. Cada pack es de una entidad y se consume con las clases que el profesor da allí.</p>
+                <h3>Mis cobros</h3>
+                <p>Los packs y las clases sueltas quedan <strong>a nombre del profesor</strong>, separados de las cuotas del club. En <strong>Agenda de clases › Mis cobros</strong> el profesor ve el saldo de cada alumno en todas sus entidades y registra los cobros. Un mismo pago no puede mezclar cargos del club con cargos de un profesor. Las deudas con un profesor no bloquean el ingreso al club, las reservas ni las inscripciones.</p>
+                <x-manual.tip type="example">
+                    Martín da tenis en el <strong>Club Norte</strong> (lunes y miércoles) y en el <strong>Club Sur</strong> (martes). Programa una serie <em>lunes y miércoles 18 a 19 h</em> en Club Norte con Lucía y Pedro, y una clase individual los martes en Club Sur con Ana. Lucía compró el pack <em>8 clases por mes</em> ($ 40.000); Pedro paga cada clase ($ 6.000). En la vista <em>Todos mis clubes</em> Martín ve su semana completa; al marcar la clase del lunes como dada, a Lucía le quedan 7 clases y a Pedro se le genera un cargo de $ 6.000 que cobra desde <em>Mis cobros</em>.
+                </x-manual.tip>
+                <h3>Para el alumno</h3>
+                <p>En el portal, la sección <strong>Mis clases</strong> muestra sus próximas clases, el historial con su asistencia y las clases que le quedan del pack.</p>
+            </section>
+
+            {{-- ============================================================ --}}
             <section id="acceso" class="scroll-mt-20">
-                <h2>11. Control de acceso</h2>
+                <h2>12. Control de acceso</h2>
                 <p>En <strong>Socios › Control de acceso</strong> el personal de recepción verifica si una persona puede ingresar. Escaneá el QR del carnet (con un lector o la cámara) o escribí el número de socio o documento y presioná <strong>Verificar</strong>.</p>
                 <p>El sistema responde <strong>Permitido</strong> o <strong>Denegado</strong> con el motivo: socio suspendido, deuda vencida por encima del límite, plan vencido, fuera de la franja horaria, sin visitas disponibles, etc. Cada intento queda registrado.</p>
                 <x-manual.shot src="21-control-acceso.png" caption="Verificación de ingreso con su resultado." />
@@ -270,7 +316,7 @@
 
             {{-- ============================================================ --}}
             <section id="comunicacion" class="scroll-mt-20">
-                <h2>12. Mensajes y avisos</h2>
+                <h2>13. Mensajes y avisos</h2>
                 <ul>
                     <li><strong>Mensajes:</strong> lo que llega desde el formulario de contacto del sitio. El menú muestra cuántos hay sin leer.</li>
                     <li><strong>Avisos a socios:</strong> comunicados que se muestran en el portal del socio (ej.: “La pileta abre el 1/12”). Se pueden programar con fecha de publicación y vencimiento; sin fecha quedan como borrador.</li>
@@ -280,7 +326,7 @@
 
             {{-- ============================================================ --}}
             <section id="sitio" class="scroll-mt-20">
-                <h2>13. Sitio web</h2>
+                <h2>14. Sitio web</h2>
                 <p>Cada entidad tiene su sitio público. Desde el menú <strong>Sitio web</strong> se edita sin conocimientos técnicos:</p>
                 <ul>
                     <li><strong>Identidad y contacto:</strong> nombre, logo, colores, teléfono, dirección, redes sociales y mapa.</li>
@@ -295,7 +341,7 @@
 
             {{-- ============================================================ --}}
             <section id="usuarios" class="scroll-mt-20">
-                <h2>14. Usuarios y roles</h2>
+                <h2>15. Usuarios y roles</h2>
                 <h3>Crear un usuario del personal</h3>
                 <ol class="steps">
                     <li>En <strong>Administración › Usuarios</strong>, hacé clic en <strong>Agregar usuario</strong>.</li>
@@ -312,7 +358,7 @@
                             <tr><td>Tesorería</td><td>Cuotas, pagos, anulaciones y reportes.</td></tr>
                             <tr><td>Secretaría</td><td>Socios, inscripciones, cobros, reservas, avisos y mensajes.</td></tr>
                             <tr><td>Recepción</td><td>Control de acceso, reservas, planes y cobros en mostrador.</td></tr>
-                            <tr><td>Profesor/a</td><td>Ver actividades y socios.</td></tr>
+                            <tr><td>Profesor/a</td><td>Ver actividades y socios; su agenda de clases, sus packs y sus cobros.</td></tr>
                             <tr><td>Comunicación</td><td>Sitio web, mensajes y avisos.</td></tr>
                         </tbody>
                     </table>
@@ -323,7 +369,7 @@
 
             {{-- ============================================================ --}}
             <section id="auditoria" class="scroll-mt-20">
-                <h2>15. Auditoría y reportes</h2>
+                <h2>16. Auditoría y reportes</h2>
                 <p><strong>Auditoría</strong> registra quién creó, modificó o anuló cada dato y cuándo, con el detalle de los cambios. Útil para controlar anulaciones de pagos o cambios de cuotas.</p>
                 <x-manual.shot src="27-auditoria.png" caption="Registro de auditoría." />
                 <p>Los listados de <strong>Socios</strong>, <strong>Pagos</strong> y <strong>Cuotas</strong> tienen botón de <strong>Exportar</strong> a planilla (respetando los filtros aplicados). El <strong>Tablero</strong> resume socios activos, recaudación del mes, deuda vencida, recaudación de los últimos 12 meses y reservas del día.</p>
@@ -332,7 +378,7 @@
 
             {{-- ============================================================ --}}
             <section id="portal" class="scroll-mt-20">
-                <h2>16. Portal del socio</h2>
+                <h2>17. Portal del socio</h2>
                 <p>Cuando habilitás el acceso al portal desde la ficha del socio, recibe un correo para crear su contraseña. Desde su celular o computadora puede:</p>
                 <ul>
                     <li>Ver su <strong>estado de cuenta</strong>, cargos pendientes, pagos y descargar recibos.</li>
@@ -352,7 +398,7 @@
 
             {{-- ============================================================ --}}
             <section id="automaticos" class="scroll-mt-20">
-                <h2>17. Procesos automáticos</h2>
+                <h2>18. Procesos automáticos</h2>
                 <p>Con el programador de tareas del servidor activo, el sistema hace solo:</p>
                 <div class="overflow-x-auto">
                     <table class="manual-table">

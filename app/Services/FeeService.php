@@ -76,8 +76,16 @@ class FeeService
         );
     }
 
-    public function createCharge(Member $member, FeeType $type, string $concept, string $amount, Carbon $dueDate, ?int $reservationId = null): Fee
-    {
+    public function createCharge(
+        Member $member,
+        FeeType $type,
+        string $concept,
+        string $amount,
+        Carbon $dueDate,
+        ?int $reservationId = null,
+        ?int $instructorId = null,
+        ?int $lessonId = null,
+    ): Fee {
         if (bccomp($amount, '0', 2) <= 0) {
             throw new BusinessRuleException('El importe del cargo debe ser mayor a cero.');
         }
@@ -86,6 +94,8 @@ class FeeService
             'member_id' => $member->id,
             'type' => $type,
             'reservation_id' => $reservationId,
+            'instructor_id' => $instructorId,
+            'lesson_id' => $lessonId,
             'concept' => $concept,
             'amount' => $amount,
             'due_date' => $dueDate,
