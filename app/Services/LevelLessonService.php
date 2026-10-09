@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Enums\AttendanceStatus;
+use App\Enums\EnrollmentStatus;
 use App\Enums\LessonStatus;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Activity;
+use App\Models\Enrollment;
 use App\Models\Lesson;
 use App\Models\Member;
 use App\Models\User;
@@ -126,6 +128,32 @@ class LevelLessonService
                 $lesson->students()->detach($member->id);
             }
         }
+    }
+
+    /**
+     * Antes de tomar asistencia: suma a la clase de nivel programada a todos los inscriptos activos
+     * del nivel que todavía no figuran (por ejemplo, inscriptos después de generarse la clase).
+     *
+     * @return int alumnos agregados
+     */
+    public function syncLessonStudents(Lesson $lesson): int
+    {
+        if (! $lesson->isLevelLesson() || $lesson->status !== LessonStatus::Scheduled) {
+            return 0;
+        }
+
+        $missing = Enrollment::query()
+            ->where('activity_id', $lesson->activity_id)
+            ->where('status', EnrollmentStatus::Active)
+            ->whereDate('start_date', '<=', $lesson->date)
+            ->whereNotIn('member_id', $lesson->students()->select('members.id'))
+            ->pluck('member_id');
+
+        if ($missing->isNotEmpty()) {
+            $lesson->students()->attach($missing, ['attendance' => AttendanceStatus::Pending->value]);
+        }
+
+        return $missing->count();
     }
 
     /** El alumno avisa que no va. Solo hasta que empieza la clase; avisa a los profesores. */

@@ -12,6 +12,8 @@
         ...(uses_gym() ? [['route' => 'portal.plans', 'label' => 'Mi plan', 'icon' => 'id-card']] : []),
         ['route' => 'portal.activities', 'label' => activity_label(true), 'icon' => 'trophy'],
         ['route' => 'portal.lessons', 'label' => 'Mis clases', 'icon' => 'clock'],
+        ['route' => 'portal.tournaments', 'label' => 'Torneos', 'icon' => 'flag'],
+        ['route' => 'portal.messages', 'label' => 'Mensajes', 'icon' => 'chat'],
         ['route' => 'portal.reservations', 'label' => 'Reservas', 'icon' => 'calendar'],
         ['route' => 'portal.card', 'label' => 'Carnet', 'icon' => 'qr'],
     ];

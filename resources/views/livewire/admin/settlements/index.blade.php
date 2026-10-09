@@ -22,7 +22,11 @@
                         @can('rendiciones.gestionar')
                             <div class="mt-3 grid grid-cols-2 gap-2">
                                 <button type="button" wire:click="revert({{ $settlement->id }})" wire:confirm="¿Devolver la rendición? Los cobros vuelven a quedar a cargo del profesor." class="btn-secondary">Devolver</button>
-                                <button type="button" wire:click="confirm({{ $settlement->id }})" wire:confirm="¿Confirmás que recibiste {{ money($settlement->amount) }} de {{ $settlement->user->name }}?" class="btn-primary"><x-icon name="check" class="size-4" /> Recibí el dinero</button>
+                                @if ($settlement->user_id !== auth()->id() || $selfConfirm)
+                                    <button type="button" wire:click="confirm({{ $settlement->id }})" wire:confirm="¿Confirmás que recibiste {{ money($settlement->amount) }} de {{ $settlement->user->name }}?" class="btn-primary"><x-icon name="check" class="size-4" /> Recibí el dinero</button>
+                                @else
+                                    <p class="self-center text-center text-xs text-slate-500">Otra persona tiene que confirmar tu rendición.</p>
+                                @endif
                             </div>
                         @endcan
                     </div>

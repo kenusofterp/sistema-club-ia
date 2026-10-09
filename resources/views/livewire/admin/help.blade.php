@@ -14,6 +14,9 @@
         'gimnasio' => '10. Gimnasio: planes',
         'agenda' => '11. Agenda de clases (profesores)',
         'niveles' => '12. Niveles, cobros y la app del teléfono',
+        'becas' => '12b. Becas, aumentos e inscripción anual',
+        'torneos' => '12c. Torneos',
+        'mensajes-alumnos' => '12d. Mensajes a alumnos',
         'acceso' => '13. Control de acceso',
         'comunicacion' => '14. Mensajes y avisos',
         'sitio' => '15. Sitio web',
@@ -342,6 +345,8 @@
                     <li><strong>Suspender</strong>: avisa a las alumnas con una notificación y por correo. Coordinación puede usar <em>No hay clase hoy para ningún grupo</em> (por ejemplo, por lluvia o un feriado).</li>
                     <li><strong>Cobrar</strong>: buscá a la alumna, marcá las cuotas y registrá el efectivo; se emite el recibo.</li>
                     <li><strong>Efectivo a rendir</strong>: muestra lo cobrado y no rendido. Con <strong>Rendir</strong> se envía a coordinación, que lo confirma en <strong>Tesorería › Rendiciones</strong> al recibir el dinero. Un pago rendido no se puede anular.</li>
+                    <li><strong>Rendirse a sí mismo</strong>: si el profesor trabaja solo y quiere llevar el control, activá en Configuración <em>Quien rinde puede confirmar su propia rendición</em>. Rinde y después toca <strong>Confirmar</strong> en <em>Mis rendiciones</em>.</li>
+                    <li><strong>Asistencia</strong>: en <em>Clases de hoy</em> aparecen todos los alumnos del nivel, tildados como presentes. Solo hay que destildar a los que faltan y tocar <strong>Guardar asistencia</strong>.</li>
                 </ul>
 
                 <h3>La alumna en el celular</h3>
@@ -353,6 +358,45 @@
                 <x-manual.tip type="example">
                     Laura coordina tres niveles con dos profesores. El martes llueve: desde <em>Clases de hoy</em> toca <em>No hay clase hoy para ningún grupo</em> y a todas las alumnas les llega la notificación. Sofía, de Juvenil B, transfiere la cuota y sube la foto del comprobante; Laura lo ve en <em>Comprobantes</em> y lo acredita. Otra alumna le paga en efectivo al profe Diego, que lo registra en <em>Cobrar</em> y a fin de semana lo rinde; Laura confirma la rendición al recibir el dinero.
                 </x-manual.tip>
+            </section>
+
+            {{-- ============================================================ --}}
+            <section id="becas" class="scroll-mt-20">
+                <h2>12b. Becas, aumentos e inscripción anual</h2>
+                <h3>Becas por porcentaje</h3>
+                <p>Al inscribir a un alumno (o después, en <strong>Inscripciones</strong>, tocando su cuota) se carga la <strong>beca en %</strong>. Se descuenta solo de la cuota mensual, nunca de torneos ni de la inscripción anual. Se puede cambiar cuando haga falta: el nuevo porcentaje rige desde la próxima cuota que se genere.</p>
+                <p>También se puede cargar una <strong>cuota individual fija</strong> (un descuento en pesos); si tiene las dos, la beca se aplica sobre la cuota fija.</p>
+                <x-manual.tip type="example">Sofía paga Juvenil B ($ 20.000). En octubre está becada al 25 % y paga $ 15.000; en noviembre el profe cambia la beca a 50 % y la cuota de noviembre sale $ 10.000. Con 100 % no se le genera cuota.</x-manual.tip>
+                <h3>Aumento masivo de cuotas</h3>
+                <p>En el listado de {{ mb_strtolower(activity_label(true)) }}, <strong>Aumentar cuotas</strong>: elegí si es un <strong>monto fijo</strong> (ej. $ 10.000 más) o un <strong>porcentaje</strong> (ej. 20 %), a qué {{ mb_strtolower(activity_label(true)) }} se aplica, mirá la vista previa y confirmá. También se ajustan las cuotas individuales fijas. Rige desde la próxima generación; lo ya generado no cambia.</p>
+                <h3>Inscripción anual</h3>
+                <p>Cada {{ mb_strtolower(activity_label()) }} puede tener un costo de <strong>inscripción anual</strong> (en su formulario; 0 = sin costo). Se cobra al inscribir al alumno, una sola vez por año. Para la reinscripción de un año nuevo, usá <strong>Cobrar inscripción {{ now()->year }}</strong> en el listado: se cobra a todos los inscriptos que todavía no la tienen.</p>
+            </section>
+
+            {{-- ============================================================ --}}
+            <section id="torneos" class="scroll-mt-20">
+                <h2>12c. Torneos</h2>
+                <p>En <strong>Torneos › Nuevo torneo</strong> el profesor carga nombre, <strong>costo</strong>, <strong>fecha máxima de pago</strong> y los <strong>días</strong>: cada día con uno o varios {{ mb_strtolower(activity_label(true)) }}. Puede haber varios torneos en el mes, cada uno con sus {{ mb_strtolower(activity_label(true)) }} y su costo.</p>
+                <ul>
+                    <li><strong>Libre</strong>: los alumnos de esos {{ mb_strtolower(activity_label(true)) }} se anotan desde el portal (<em>Torneos › Participar</em>) hasta el día anterior al comienzo. El profe también puede anotarlos, uno por uno o con <em>Anotar a todos</em>.</li>
+                    <li><strong>Solo los que yo elija</strong>: solo el profe anota a los participantes.</li>
+                    <li><strong>Excepciones</strong>: el profe puede sumar a cualquier alumno, aunque sea de otro {{ mb_strtolower(activity_label()) }} o a último momento. Queda marcado como <em>Excepción</em>.</li>
+                </ul>
+                <p>A cada participante se le genera el cargo del torneo, que se paga igual que la cuota: transferencia con comprobante desde <em>Mi cuenta</em>, efectivo con el profe (<em>Cobrar en efectivo</em>) o en secretaría. Al cobrar se elige qué se paga: la cuota, el torneo o ambos.</p>
+                <p>En el detalle del torneo se ve quién pagó y quién debe, con totales. Si un torneo no se paga a tiempo queda <em>Vencido</em>, pero no suma recargo ni bloquea el ingreso. Quitar a un participante anula su cargo (si ya pagó, primero hay que anular el pago).</p>
+                <x-manual.tip type="example">Torneo <strong>Primavera</strong>, $ 15.000, pagar hasta el 20/10. Sábado 25: Juvenil A y B; domingo 26: Mayores. Lucía (Juvenil A) se anota desde el portal; el profe suma a Pedro, que es de Infantil, como excepción. Lucía paga cuota + torneo juntos por transferencia; Pedro le paga solo el torneo en efectivo.</x-manual.tip>
+            </section>
+
+            {{-- ============================================================ --}}
+            <section id="mensajes-alumnos" class="scroll-mt-20">
+                <h2>12d. Mensajes a alumnos</h2>
+                <p>En <strong>Comunicación › Mensajes a alumnos</strong> (o desde un torneo con <em>Avisar a los que deben</em>) se envía un mensaje a:</p>
+                <ul>
+                    <li>los que deben (cuotas vencidas o que vencen en la semana),</li>
+                    <li>los que deben un torneo,</li>
+                    <li>todos los alumnos de un {{ mb_strtolower(activity_label()) }}, o todos.</li>
+                </ul>
+                <p>El texto viene sugerido y se puede editar. Llega como <strong>notificación al celular</strong> a quienes la activaron y queda en el portal, en <em>Mensajes</em> y en el inicio. El profesor solo puede escribirles a sus alumnos.</p>
             </section>
 
             {{-- ============================================================ --}}

@@ -107,6 +107,7 @@ final class SettingsCatalog
             ['group' => 'payments', 'key' => 'payments.transfer_info', 'type' => 'text', 'label' => 'Datos para transferir (CBU / alias / titular)', 'value' => null, 'help' => 'Se muestran al socio cuando informa un pago.'],
             ['group' => 'payments', 'key' => 'payments.instructors_collect_cash', 'type' => 'boolean', 'label' => 'Los profesores pueden cobrar en efectivo a los alumnos de sus actividades', 'value' => true],
             ['group' => 'payments', 'key' => 'payments.cash_requires_settlement', 'type' => 'boolean', 'label' => 'El efectivo cobrado por los profesores se rinde', 'value' => true, 'help' => 'Desactivalo si el profesor es el dueño y no le rinde a nadie.'],
+            ['group' => 'payments', 'key' => 'payments.self_settlement_allowed', 'type' => 'boolean', 'label' => 'Quien rinde puede confirmar su propia rendición', 'value' => false, 'help' => 'Para un profesor que trabaja solo y quiere llevar el control de su efectivo: rinde y confirma él mismo desde «Efectivo a rendir».'],
         ];
     }
 }

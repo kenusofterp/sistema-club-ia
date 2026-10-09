@@ -70,6 +70,7 @@ class Index extends Component
                 ? CashSettlement::with(['user', 'payments.member' => fn ($q) => $q->withTrashed()])->find($this->detailId)
                 : null,
             'requiresSettlement' => app(CashCollectionService::class)->requiresSettlement(),
+            'selfConfirm' => app(CashCollectionService::class)->selfConfirmAllowed() || auth()->user()->isSuperAdmin(),
         ]);
     }
 }

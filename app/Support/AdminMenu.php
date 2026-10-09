@@ -32,6 +32,7 @@ final class AdminMenu
             ['title' => activity_label(true), 'items' => [
                 ['label' => activity_label(true), 'route' => 'admin.activities.index', 'icon' => 'trophy', 'can' => 'actividades.ver', 'active' => 'admin.activities.*'],
                 ['label' => 'Inscripciones', 'route' => 'admin.enrollments', 'icon' => 'clipboard', 'can' => 'inscripciones.gestionar'],
+                ['label' => 'Torneos', 'route' => 'admin.tournaments.index', 'icon' => 'flag', 'can' => 'torneos.gestionar', 'active' => 'admin.tournaments.*'],
             ]],
             ['title' => 'Agenda de clases', 'items' => [
                 ['label' => 'Clases de hoy', 'route' => 'admin.lessons.today', 'icon' => 'clock', 'can' => 'agenda.ver'],
@@ -61,6 +62,7 @@ final class AdminMenu
                 ['label' => 'Mensajes', 'route' => 'admin.messages', 'icon' => 'inbox', 'can' => 'mensajes.ver',
                     'badge' => fn () => ContactMessage::unread()->count() ?: null],
                 ['label' => 'Avisos a socios', 'route' => 'admin.announcements', 'icon' => 'megaphone', 'can' => 'avisos.gestionar'],
+                ['label' => 'Mensajes a alumnos', 'route' => 'admin.member-messages', 'icon' => 'chat', 'can' => 'mensajes.enviar'],
             ]],
             ['title' => 'Sitio web', 'items' => [
                 ['label' => 'Identidad y contacto', 'route' => 'admin.site.settings', 'icon' => 'globe', 'can' => 'sitio.gestionar'],

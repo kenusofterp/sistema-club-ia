@@ -44,12 +44,31 @@ class Today extends Component
     public function mount(): void
     {
         $this->date = $this->date ?: today()->toDateString();
+        $this->prepareDay();
     }
 
     public function shift(int $days): void
     {
         $this->date = Carbon::parse($this->date)->addDays($days)->toDateString();
         $this->reset(['attendance', 'openLessonId']);
+        $this->prepareDay();
+    }
+
+    /**
+     * Asegura que existan las clases de nivel del día (aunque no haya corrido la tarea programada)
+     * y que figuren todos los inscriptos activos, para tomar asistencia con todos presentes por defecto.
+     */
+    private function prepareDay(): void
+    {
+        $day = Carbon::parse($this->date);
+        if ($day->lt(today()->subDays(7)) || $day->gt(today()->addMonths(2))) {
+            return;
+        }
+
+        $levels = app(LevelLessonService::class);
+        $levels->generate(null, $day, $day);
+        $this->query()->where('status', LessonStatus::Scheduled)->whereNotNull('activity_id')->get()
+            ->each(fn (Lesson $lesson) => $levels->syncLessonStudents($lesson));
     }
 
     public function toggle(int $lessonId): void
@@ -61,6 +80,15 @@ class Today extends Component
     {
         $this->findManageable($lessonId);
         $this->attendance[$lessonId][$memberId] = $value === 'ausente' ? 'ausente' : 'presente';
+    }
+
+    /** Marca a todos como presentes (true) o ausentes (false). */
+    public function setAll(int $lessonId, bool $present): void
+    {
+        $lesson = $this->findManageable($lessonId);
+        foreach ($lesson->students()->pluck('members.id') as $memberId) {
+            $this->attendance[$lessonId][$memberId] = $present ? 'presente' : 'ausente';
+        }
     }
 
     public function markGiven(int $lessonId, LessonService $service): void

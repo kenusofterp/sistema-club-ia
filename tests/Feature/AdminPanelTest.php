@@ -20,6 +20,7 @@ use App\Models\MemberCategory;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Services\PaymentService;
+use App\Support\Permissions;
 use Database\Seeders\ClubBaseSeeder;
 use Database\Seeders\SiteContentSeeder;
 use Livewire\Livewire;
@@ -47,6 +48,7 @@ class AdminPanelTest extends TestCase
             'admin.payments.create', 'admin.facilities', 'admin.reservations', 'admin.messages', 'admin.announcements',
             'admin.site.settings', 'admin.site.hero', 'admin.site.sections', 'admin.site.posts.index', 'admin.site.posts.create',
             'admin.site.pages', 'admin.users', 'admin.roles', 'admin.audit', 'admin.settings',
+            'admin.tournaments.index', 'admin.tournaments.create', 'admin.member-messages', 'admin.lessons.today', 'admin.lessons.cash', 'admin.settlements',
         ];
 
         foreach ($routes as $route) {
@@ -212,6 +214,26 @@ class AdminPanelTest extends TestCase
         $this->staff('tesorero');
         Livewire::test(RolesIndex::class)->call('selectRole', $tesorero->id)->call('deleteRole');
         $this->assertNotNull(Role::find($tesorero->id));
+    }
+
+    public function test_role_permissions_can_be_selected_all_at_once_or_by_group(): void
+    {
+        $this->actingAs($this->staff());
+        $tesorero = Role::findByName('tesorero');
+        $general = array_keys(Permissions::grouped()['General']);
+
+        $component = Livewire::test(RolesIndex::class)->call('selectRole', $tesorero->id)
+            ->call('toggleAll', true)
+            ->assertSet('permissions', fn ($p) => ! array_diff(Permissions::all(), $p))
+            ->call('toggleAll', false)
+            ->assertSet('permissions', [])
+            ->call('toggleAll', true, 0)
+            ->assertSet('permissions', $general)
+            ->call('save');
+
+        $this->assertEqualsCanonicalizing($general, $tesorero->fresh()->permissions->pluck('name')->all());
+
+        $component->call('toggleAll', false, 0)->assertSet('permissions', []);
     }
 
     public function test_super_admins_are_hidden_from_the_users_list(): void

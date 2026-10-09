@@ -24,25 +24,28 @@ use Illuminate\Support\Facades\Notification;
  */
 class CashCollectionService
 {
-    public function __construct(private PaymentService $payments, private LevelLessonService $levels) {}
+    public function __construct(private PaymentService $payments, private LevelLessonService $levels, private TournamentService $tournaments) {}
 
-    /** ¿El socio es alumno (inscripción activa) de alguna actividad del profesor? */
+    /** ¿El socio es alumno del profesor (inscripto en sus actividades o anotado en sus torneos)? */
     public function isStudentOf(User $teacher, Member $member): bool
     {
-        return $member->enrollments()
-            ->where('status', EnrollmentStatus::Active)
-            ->whereIn('activity_id', $this->levels->activityIdsTaughtBy($teacher))
-            ->exists();
+        return $this->studentsQuery($teacher)->whereKey($member->id)->exists();
     }
 
-    /** Alumnos del profesor (inscriptos en sus actividades), para buscar a quién cobrar. */
+    /**
+     * Alumnos del profesor, para buscar a quién cobrar: inscriptos en sus actividades y participantes
+     * de sus torneos (incluye las excepciones que no están en sus niveles).
+     */
     public function studentsQuery(User $teacher): Builder
     {
         $activityIds = $this->levels->activityIdsTaughtBy($teacher);
+        $tournamentIds = $this->tournaments->queryFor($teacher)->active()->pluck('id');
 
-        return Member::query()->whereHas('enrollments', fn ($q) => $q
-            ->where('status', EnrollmentStatus::Active)
-            ->whereIn('activity_id', $activityIds));
+        return Member::query()->where(fn ($q) => $q
+            ->whereHas('enrollments', fn ($e) => $e
+                ->where('status', EnrollmentStatus::Active)
+                ->whereIn('activity_id', $activityIds))
+            ->orWhereHas('tournamentParticipations', fn ($t) => $t->whereIn('tournament_id', $tournamentIds)));
     }
 
     /**
@@ -120,14 +123,20 @@ class CashCollectionService
         return $settlement;
     }
 
-    /** Coordinación o tesorería confirma que recibió el dinero. */
+    /** Quien rinde puede confirmar su propia rendición (profesor que trabaja solo, a modo de control). */
+    public function selfConfirmAllowed(): bool
+    {
+        return (bool) setting('payments.self_settlement_allowed', false);
+    }
+
+    /** Coordinación o tesorería confirma que recibió el dinero (o el mismo profesor, si está habilitado). */
     public function confirm(CashSettlement $settlement, User $by): CashSettlement
     {
         if ($settlement->status !== SettlementStatus::Pending) {
             throw new BusinessRuleException('La rendición ya fue confirmada.');
         }
 
-        if ($settlement->user_id === $by->id && ! $by->isSuperAdmin()) {
+        if ($settlement->user_id === $by->id && ! $by->isSuperAdmin() && ! $this->selfConfirmAllowed()) {
             throw new BusinessRuleException('Otra persona tiene que confirmar tu rendición.');
         }
 

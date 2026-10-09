@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Actividad / disciplina deportiva o cultural del club.
  * (No confundir con Spatie\Activitylog\Models\Activity, que es el registro de auditoría.)
  */
-#[Fillable(['name', 'slug', 'summary', 'description', 'image_path', 'monthly_fee', 'capacity', 'min_age', 'max_age', 'instructor_id', 'is_public', 'allows_enrollment', 'is_active'])]
+#[Fillable(['name', 'slug', 'summary', 'description', 'image_path', 'monthly_fee', 'enrollment_fee', 'capacity', 'min_age', 'max_age', 'instructor_id', 'is_public', 'allows_enrollment', 'is_active'])]
 class Activity extends Model
 {
     use Auditable, BelongsToOrganization, HasFactory, SoftDeletes;
@@ -27,6 +27,7 @@ class Activity extends Model
     {
         return [
             'monthly_fee' => 'decimal:2',
+            'enrollment_fee' => 'decimal:2',
             'capacity' => 'integer',
             'min_age' => 'integer',
             'max_age' => 'integer',

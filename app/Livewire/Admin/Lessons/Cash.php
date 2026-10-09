@@ -34,11 +34,20 @@ class Cash extends Component
         }
     }
 
+    /** Autorrendición: el mismo profesor confirma su rendición pendiente (si la configuración lo permite). */
+    public function confirmOwn(int $id, CashCollectionService $cash): void
+    {
+        $settlement = CashSettlement::where('user_id', auth()->id())->findOrFail($id);
+
+        $this->attempt(fn () => $cash->confirm($settlement, auth()->user()), 'Rendición confirmada.');
+    }
+
     public function render(CashCollectionService $cash)
     {
         $user = auth()->user();
 
         return view('livewire.admin.lessons.cash', [
+            'selfConfirm' => $cash->selfConfirmAllowed(),
             'pending' => $cash->pendingQuery($user)->with(['member' => fn ($q) => $q->withTrashed()])->latest('payment_date')->latest('id')->get(),
             'total' => $cash->pendingTotal($user),
             'settlements' => CashSettlement::where('user_id', $user->id)->latest('id')->limit(15)->get(),

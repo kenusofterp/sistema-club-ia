@@ -43,6 +43,18 @@ class Index extends Component
         $this->permissions = $role->permissions->pluck('name')->all();
     }
 
+    /** Marca o desmarca todos los permisos (o solo los del grupo en la posición $group). Se aplica al guardar. */
+    public function toggleAll(bool $on, ?int $group = null): void
+    {
+        $scope = $group === null
+            ? Permissions::all()
+            : array_keys(array_values(Permissions::grouped())[$group] ?? []);
+
+        $this->permissions = $on
+            ? array_values(array_unique([...$this->permissions, ...$scope]))
+            : array_values(array_diff($this->permissions, $scope));
+    }
+
     public function createRole(): void
     {
         $this->authorize('roles.gestionar');

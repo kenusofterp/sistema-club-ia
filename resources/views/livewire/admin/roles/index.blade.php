@@ -25,15 +25,23 @@
                 <div class="card">
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-4">
                         <h2 class="font-semibold text-slate-900">Permisos de «{{ $current->name }}»</h2>
-                        <div class="flex gap-2">
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" wire:click="toggleAll(true)" class="btn-secondary btn-sm"><x-icon name="check" class="size-4" /> Seleccionar todo</button>
+                            <button type="button" wire:click="toggleAll(false)" class="btn-ghost btn-sm">Quitar todo</button>
                             <button type="button" wire:click="deleteRole" wire:confirm="¿Eliminar el rol {{ $current->name }}?" class="btn-ghost btn-sm text-red-600"><x-icon name="trash" class="size-4" /> Eliminar</button>
                             <button type="button" wire:click="save" class="btn-primary btn-sm"><x-icon name="check" class="size-4" /> Guardar permisos</button>
                         </div>
                     </div>
                     <div class="grid gap-6 p-6 md:grid-cols-2">
                         @foreach ($grouped as $group => $perms)
-                            <fieldset>
-                                <legend class="mb-2 text-xs font-semibold tracking-wider text-slate-500 uppercase">{{ $group }}</legend>
+                            @php($allInGroup = ! array_diff(array_keys($perms), $permissions))
+                            <fieldset wire:key="g-{{ $loop->index }}">
+                                <legend class="mb-2 flex w-full items-center justify-between gap-2">
+                                    <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase">{{ $group }}</span>
+                                    <button type="button" wire:click="toggleAll({{ $allInGroup ? 'false' : 'true' }}, {{ $loop->index }})" class="text-xs font-medium text-brand-600 hover:underline">
+                                        {{ $allInGroup ? 'Quitar todos' : 'Marcar todos' }}
+                                    </button>
+                                </legend>
                                 <div class="space-y-2">
                                     @foreach ($perms as $perm => $label)
                                         <label class="flex items-start gap-2 text-sm">

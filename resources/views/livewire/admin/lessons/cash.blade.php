@@ -11,7 +11,7 @@
 
         @if ($pending->isNotEmpty())
             <input wire:model="notes" class="form-input mt-4" placeholder="Nota para quien recibe (opcional)" aria-label="Nota">
-            <button type="button" wire:click="settle" wire:confirm="¿Rendir {{ money($total) }}? Entregá el dinero a coordinación para que lo confirme." class="btn-primary mt-3 w-full py-3 text-base">Rendir {{ money($total) }}</button>
+            <button type="button" wire:click="settle" wire:confirm="¿Rendir {{ money($total) }}? {{ $selfConfirm ? 'Después la confirmás vos en «Mis rendiciones».' : 'Entregá el dinero a coordinación para que lo confirme.' }}" class="btn-primary mt-3 w-full py-3 text-base">Rendir {{ money($total) }}</button>
         @endif
     </div>
 
@@ -38,7 +38,12 @@
                     <p class="font-medium tabular-nums text-slate-800">{{ money($settlement->amount) }} <span class="font-normal text-slate-500">· {{ $settlement->payments_count }} cobros</span></p>
                     <p class="text-xs text-slate-500">{{ $settlement->created_at->format('d/m/Y H:i') }}@if ($settlement->confirmed_at) · confirmada el {{ $settlement->confirmed_at->format('d/m/Y') }}@endif</p>
                 </div>
-                <x-badge :status="$settlement->status" />
+                <div class="flex shrink-0 items-center gap-2">
+                    @if ($selfConfirm && $settlement->status === \App\Enums\SettlementStatus::Pending)
+                        <button type="button" wire:click="confirmOwn({{ $settlement->id }})" wire:confirm="¿Confirmás la rendición de {{ money($settlement->amount) }}?" class="btn-primary btn-sm"><x-icon name="check" class="size-4" /> Confirmar</button>
+                    @endif
+                    <x-badge :status="$settlement->status" />
+                </div>
             </li>
         @empty
             <li class="px-4 py-6 text-center text-sm text-slate-500">Todavía no rendiste efectivo.</li>

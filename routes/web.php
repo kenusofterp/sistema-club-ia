@@ -75,6 +75,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     Route::get('/actividades/nueva', Admin\Activities\Form::class)->name('activities.create')->middleware('can:actividades.gestionar');
     Route::get('/actividades/{activity:id}/editar', Admin\Activities\Form::class)->name('activities.edit')->middleware('can:actividades.gestionar');
     Route::get('/inscripciones', Admin\Enrollments\Index::class)->name('enrollments')->middleware('can:inscripciones.gestionar');
+    Route::get('/torneos', Admin\Tournaments\Index::class)->name('tournaments.index')->middleware('can:torneos.gestionar');
+    Route::get('/torneos/nuevo', Admin\Tournaments\Form::class)->name('tournaments.create')->middleware('can:torneos.gestionar');
+    Route::get('/torneos/{tournament}', Admin\Tournaments\Show::class)->name('tournaments.show')->middleware('can:torneos.gestionar');
+    Route::get('/torneos/{tournament}/editar', Admin\Tournaments\Form::class)->name('tournaments.edit')->middleware('can:torneos.gestionar');
 
     // Tesorería
     Route::get('/cuotas', Admin\Fees\Index::class)->name('fees')->middleware('can:cuotas.ver');
@@ -107,6 +111,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     // Comunicación
     Route::get('/mensajes', Admin\Messages\Index::class)->name('messages')->middleware('can:mensajes.ver');
     Route::get('/avisos', Admin\Announcements\Index::class)->name('announcements')->middleware('can:avisos.gestionar');
+    Route::get('/mensajes-a-alumnos', Admin\MemberMessages\Compose::class)->name('member-messages')->middleware('can:mensajes.enviar');
 
     // Sitio web
     Route::prefix('sitio')->name('site.')->middleware('can:sitio.gestionar')->group(function () {
@@ -137,6 +142,8 @@ Route::prefix('portal')->name('portal.')->middleware(['auth', 'active', 'member'
     Route::post('/entidad', [OrganizationSwitchController::class, 'portal'])->name('organization.switch');
     Route::get('/cuenta', Portal\Fees::class)->name('fees');
     Route::get('/actividades', Portal\Activities::class)->name('activities');
+    Route::get('/torneos', Portal\Tournaments::class)->name('tournaments');
+    Route::get('/mensajes', Portal\Messages::class)->name('messages');
     Route::get('/reservas', Portal\Reservations::class)->name('reservations');
     Route::get('/clases', Portal\Lessons::class)->name('lessons');
     Route::get('/carnet', Portal\Card::class)->name('card');

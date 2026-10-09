@@ -61,6 +61,9 @@
                 <x-field label="Cuota mensual" for="monthly_fee" error="monthly_fee" required>
                     <input id="monthly_fee" type="number" step="0.01" min="0" wire:model="monthly_fee" class="form-input">
                 </x-field>
+                <x-field label="Inscripción anual" for="enrollment_fee" error="enrollment_fee" help="Se cobra una vez por año al inscribirse (0 = sin costo). Para la reinscripción de un año nuevo usá «Cobrar inscripción» en el listado.">
+                    <input id="enrollment_fee" type="number" step="0.01" min="0" wire:model="enrollment_fee" class="form-input">
+                </x-field>
                 <x-field label="Cupo máximo" for="capacity" error="capacity" help="Vacío = sin límite.">
                     <input id="capacity" type="number" min="1" wire:model="capacity" class="form-input">
                 </x-field>

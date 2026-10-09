@@ -14,6 +14,8 @@ enum FeeType: string
     case Reservation = 'reserva';
     case Plan = 'plan';
     case Lesson = 'clase';
+    case Registration = 'inscripcion';
+    case Tournament = 'torneo';
     case Other = 'otro';
 
     public function label(): string
@@ -25,6 +27,8 @@ enum FeeType: string
             self::Reservation => 'Reserva de instalación',
             self::Plan => 'Plan / membresía',
             self::Lesson => 'Clase suelta',
+            self::Registration => 'Inscripción anual',
+            self::Tournament => 'Torneo',
             self::Other => 'Otro cargo',
         };
     }
@@ -32,7 +36,8 @@ enum FeeType: string
     public function color(): string
     {
         return match ($this) {
-            self::Membership => 'blue',
+            self::Membership, self::Registration => 'blue',
+            self::Tournament => 'yellow',
             self::Activity, self::Plan, self::Lesson => 'green',
             default => 'gray',
         };

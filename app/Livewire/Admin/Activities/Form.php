@@ -30,6 +30,8 @@ class Form extends Component
 
     public string $monthly_fee = '0';
 
+    public string $enrollment_fee = '0';
+
     public ?int $capacity = null;
 
     public ?int $min_age = null;
@@ -61,6 +63,7 @@ class Form extends Component
             $this->summary = (string) $activity->summary;
             $this->description = (string) $activity->description;
             $this->monthly_fee = (string) $activity->monthly_fee;
+            $this->enrollment_fee = (string) $activity->enrollment_fee;
             $this->capacity = $activity->capacity;
             $this->min_age = $activity->min_age;
             $this->max_age = $activity->max_age;
@@ -107,6 +110,7 @@ class Form extends Component
             'summary' => 'nullable|string|max:300',
             'description' => 'nullable|string|max:10000',
             'monthly_fee' => 'required|numeric|min:0|max:99999999',
+            'enrollment_fee' => 'required|numeric|min:0|max:99999999',
             'capacity' => 'nullable|integer|min:1|max:100000',
             'min_age' => 'nullable|integer|min:0|max:120',
             'max_age' => 'nullable|integer|min:0|max:120|gte:min_age',

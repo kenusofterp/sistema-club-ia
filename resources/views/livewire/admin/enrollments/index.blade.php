@@ -33,13 +33,22 @@
                             <td>{{ $enrollment->end_date?->format('d/m/Y') ?? '—' }}</td>
                             <td class="text-right tabular-nums">
                                 @if ($editingFeeId === $enrollment->id)
-                                    <form wire:submit="saveFee" class="flex items-center justify-end gap-1">
-                                        <input type="number" step="0.01" min="0" wire:model="feeAmount" class="form-input w-28 py-1 text-right" placeholder="{{ $enrollment->activity->monthly_fee }}" aria-label="Cuota individual">
+                                    <form wire:submit="saveFee" class="flex flex-wrap items-center justify-end gap-1">
+                                        <input type="number" step="0.01" min="0" wire:model="feeAmount" class="form-input w-28 py-1 text-right" placeholder="{{ $enrollment->activity->monthly_fee }}" aria-label="Cuota individual fija" title="Cuota individual fija (vacío = cuota general)">
+                                        <span class="flex items-center gap-1">
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="scholarship" class="form-input w-20 py-1 text-right" placeholder="0" aria-label="Beca en porcentaje" title="Beca en % sobre la cuota mensual">
+                                            <span class="text-xs text-slate-500">%</span>
+                                        </span>
                                         <button type="submit" class="btn-primary btn-sm">OK</button>
+                                        <button type="button" wire:click="$set('editingFeeId', null)" class="btn-ghost btn-sm">Cancelar</button>
                                     </form>
+                                    @error('feeAmount') <p class="form-error">{{ $message }}</p> @enderror
+                                    @error('scholarship') <p class="form-error">{{ $message }}</p> @enderror
                                 @else
-                                    <button type="button" wire:click="editFee({{ $enrollment->id }})" class="hover:text-brand-700" title="Cuota individual (beca o descuento)">
-                                        {{ money($enrollment->fee_amount ?? $enrollment->activity->monthly_fee) }}@if ($enrollment->fee_amount !== null) <span class="text-xs text-amber-600">beca</span>@endif
+                                    <button type="button" wire:click="editFee({{ $enrollment->id }})" class="hover:text-brand-700" title="Cuota individual fija y beca en %">
+                                        {{ money($enrollment->fee_amount ?? $enrollment->activity->monthly_fee) }}
+                                        @if ($enrollment->fee_amount !== null) <span class="text-xs text-amber-600">fija</span>@endif
+                                        @if ($enrollment->scholarship_percent !== null) <span class="text-xs text-emerald-700">beca {{ rtrim(rtrim(number_format((float) $enrollment->scholarship_percent, 2, ',', ''), '0'), ',') }} %</span>@endif
                                     </button>
                                 @endif
                             </td>
@@ -83,7 +92,15 @@
                     @endforeach
                 </select>
             </x-field>
-            <p class="text-xs text-slate-500">Se validan edad, cupo y deuda del socio según la configuración del club.</p>
+            <div class="grid gap-4 sm:grid-cols-2">
+                <x-field label="Beca (%)" for="newScholarship" error="newScholarship">
+                    <input id="newScholarship" type="number" step="0.01" min="0" max="100" wire:model="newScholarship" class="form-input" placeholder="Sin beca">
+                </x-field>
+                <x-field label="Cuota individual fija" for="newFeeAmount" error="newFeeAmount">
+                    <input id="newFeeAmount" type="number" step="0.01" min="0" wire:model="newFeeAmount" class="form-input" placeholder="Cuota general">
+                </x-field>
+            </div>
+            <p class="text-xs text-slate-500">La beca en % se aplica solo a la cuota mensual (no a torneos ni a la inscripción anual) y se puede cambiar más adelante. Se validan edad, cupo y deuda del socio según la configuración del club.</p>
         </div>
         <x-slot:footer>
             <button type="button" class="btn-secondary" x-on:click="open = false">Cancelar</button>

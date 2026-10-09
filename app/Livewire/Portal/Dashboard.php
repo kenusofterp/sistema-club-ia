@@ -27,6 +27,7 @@ class Dashboard extends Component
             'activities' => $member->activities()->with('schedules')->get(),
             'reservations' => $member->reservations()->confirmed()->upcoming()->with('facility')->limit(3)->get(),
             'announcements' => Announcement::current()->limit(5)->get(),
+            'unreadMessages' => $member->messages()->wherePivotNull('read_at')->latest('member_messages.id')->limit(3)->get(),
             'subscription' => uses_gym() ? $member->subscriptions()->current()->with('plan')->orderBy('end_date')->first() : null,
             'pendingPlan' => uses_gym() && $member->subscriptions()->where('status', 'pendiente')->exists(),
             'nextLesson' => $member->lessons()->with(['activity', 'facility', 'instructor'])

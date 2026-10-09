@@ -66,30 +66,47 @@
                         @if ($lesson->status === \App\Enums\LessonStatus::Cancelled)
                             <p class="p-4 text-sm text-slate-600">Clase suspendida{{ $lesson->cancel_reason ? ': '.$lesson->cancel_reason : '' }}.</p>
                         @else
+                            @if ($lesson->isScheduled() && $lesson->students->isNotEmpty())
+                                @php($presentCount = collect($attendance[$lesson->id] ?? [])->filter(fn ($v) => $v === 'presente')->count())
+                                <div class="flex items-center justify-between gap-2 bg-slate-50 px-4 py-2 text-sm">
+                                    <span class="text-slate-600">Presentes <strong class="text-slate-900">{{ $presentCount }}</strong> de {{ $lesson->students->count() }}</span>
+                                    <span class="flex gap-3">
+                                        <button type="button" wire:click="setAll({{ $lesson->id }}, true)" class="font-medium text-brand-700">Todos</button>
+                                        <button type="button" wire:click="setAll({{ $lesson->id }}, false)" class="font-medium text-slate-500">Ninguno</button>
+                                    </span>
+                                </div>
+                            @endif
                             <ul class="divide-y divide-slate-100">
                                 @forelse ($lesson->students as $student)
                                     @php($value = $attendance[$lesson->id][$student->id] ?? 'presente')
                                     @php($noticed = $student->pivot->notice_at !== null)
-                                    <li class="flex items-center gap-3 px-4 py-3" wire:key="t-{{ $lesson->id }}-{{ $student->id }}">
-                                        <div class="min-w-0 flex-1">
-                                            <p class="truncate font-medium text-slate-800">{{ $student->sortableName() }}</p>
-                                            @if ($noticed)
-                                                <p class="truncate text-xs text-sky-700">Avisó que falta{{ $student->pivot->notice_reason ? ': '.$student->pivot->notice_reason : '' }}</p>
-                                            @endif
-                                        </div>
-                                        @if ($lesson->isScheduled())
-                                            <div class="inline-flex shrink-0 rounded-lg bg-slate-100 p-1">
-                                                <button type="button" wire:click="setAttendance({{ $lesson->id }}, {{ $student->id }}, 'presente')"
-                                                        @class(['rounded-md px-3 py-2 text-sm font-semibold', 'bg-emerald-600 text-white shadow-sm' => $value === 'presente', 'text-slate-500' => $value !== 'presente'])
-                                                        aria-label="Presente">P</button>
-                                                <button type="button" wire:click="setAttendance({{ $lesson->id }}, {{ $student->id }}, 'ausente')"
-                                                        @class(['rounded-md px-3 py-2 text-sm font-semibold', 'bg-red-600 text-white shadow-sm' => $value === 'ausente', 'text-slate-500' => $value !== 'ausente'])
-                                                        aria-label="Ausente">A</button>
+                                    @if ($lesson->isScheduled())
+                                        {{-- Todos presentes por defecto: se destilda al que no vino. --}}
+                                        <li wire:key="t-{{ $lesson->id }}-{{ $student->id }}">
+                                            <label class="flex cursor-pointer items-center gap-3 px-4 py-3">
+                                                <input type="checkbox" @checked($value === 'presente')
+                                                       wire:click="setAttendance({{ $lesson->id }}, {{ $student->id }}, '{{ $value === 'presente' ? 'ausente' : 'presente' }}')"
+                                                       class="size-6 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                                <span class="min-w-0 flex-1">
+                                                    <span @class(['block truncate font-medium', 'text-slate-800' => $value === 'presente', 'text-slate-400 line-through' => $value !== 'presente'])>{{ $student->sortableName() }}</span>
+                                                    @if ($noticed)
+                                                        <span class="block truncate text-xs text-sky-700">Avisó que falta{{ $student->pivot->notice_reason ? ': '.$student->pivot->notice_reason : '' }}</span>
+                                                    @endif
+                                                </span>
+                                                <span @class(['text-xs font-semibold', 'text-emerald-700' => $value === 'presente', 'text-red-600' => $value !== 'presente'])>{{ $value === 'presente' ? 'Presente' : 'Ausente' }}</span>
+                                            </label>
+                                        </li>
+                                    @else
+                                        <li class="flex items-center gap-3 px-4 py-3" wire:key="t-{{ $lesson->id }}-{{ $student->id }}">
+                                            <div class="min-w-0 flex-1">
+                                                <p class="truncate font-medium text-slate-800">{{ $student->sortableName() }}</p>
+                                                @if ($noticed)
+                                                    <p class="truncate text-xs text-sky-700">Avisó que falta{{ $student->pivot->notice_reason ? ': '.$student->pivot->notice_reason : '' }}</p>
+                                                @endif
                                             </div>
-                                        @else
                                             <x-badge :status="\App\Enums\AttendanceStatus::from($student->pivot->attendance)" />
-                                        @endif
-                                    </li>
+                                        </li>
+                                    @endif
                                 @empty
                                     <li class="p-4 text-sm text-slate-500">Sin alumnos.</li>
                                 @endforelse

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /** Cargo en la cuenta corriente del socio (cuota social, actividad, reserva, etc.). */
-#[Fillable(['member_id', 'instructor_id', 'type', 'activity_id', 'reservation_id', 'lesson_id', 'subscription_id', 'period', 'concept', 'amount', 'surcharge', 'paid_amount', 'due_date', 'status', 'cancel_reason', 'created_by'])]
+#[Fillable(['member_id', 'instructor_id', 'type', 'activity_id', 'reservation_id', 'lesson_id', 'tournament_id', 'subscription_id', 'period', 'concept', 'amount', 'surcharge', 'paid_amount', 'due_date', 'status', 'cancel_reason', 'created_by'])]
 class Fee extends Model
 {
     use Auditable, BelongsToOrganization, HasFactory;
@@ -41,6 +41,11 @@ class Fee extends Model
     public function lesson(): BelongsTo
     {
         return $this->belongsTo(Lesson::class)->withTrashed();
+    }
+
+    public function tournament(): BelongsTo
+    {
+        return $this->belongsTo(Tournament::class)->withTrashed();
     }
 
     public function member(): BelongsTo

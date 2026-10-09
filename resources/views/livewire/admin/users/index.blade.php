@@ -72,6 +72,7 @@
                         </label>
                     @endforeach
                 </div>
+                @error('roles') <p class="form-error">{{ $message }}</p> @enderror
                 <p class="form-help">Para darle acceso a otra entidad, cambiá de entidad y asignale roles allí.</p>
             </div>
             @if ($availableFacilities->isNotEmpty())

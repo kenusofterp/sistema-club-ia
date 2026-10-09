@@ -87,10 +87,14 @@ class Index extends Component
             'phone' => 'nullable|string|max:40',
             'password' => [$this->editingId || $this->sendInvite ? 'nullable' : 'required', PasswordRule::defaults()],
             'is_active' => 'boolean',
-            'roles' => 'array',
+            // Sin roles en esta entidad el usuario no se lista ni puede ingresar.
+            'roles' => 'required|array|min:1',
             'roles.*' => Rule::exists('roles', 'name'),
             'facilityIds' => 'array',
             'facilityIds.*' => org_exists('facilities'),
+        ], [
+            'roles.required' => 'Asigná al menos un rol (para quitarle el acceso usá «Quitar de esta entidad» en la lista).',
+            'roles.min' => 'Asigná al menos un rol (para quitarle el acceso usá «Quitar de esta entidad» en la lista).',
         ]);
 
         $user = $this->editingId ? $this->findManageable($this->editingId) : new User;

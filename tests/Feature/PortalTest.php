@@ -26,6 +26,8 @@ class PortalTest extends TestCase
         $this->get(route('portal.dashboard'))->assertOk()->assertSee('Asamblea anual')->assertSee($user->member->first_name);
         $this->get(route('portal.fees'))->assertOk()->assertSee('Cuota de prueba');
         $this->get(route('portal.activities'))->assertOk();
+        $this->get(route('portal.tournaments'))->assertOk();
+        $this->get(route('portal.messages'))->assertOk();
         $this->get(route('portal.reservations'))->assertOk();
         $this->get(route('portal.card'))->assertOk()->assertSee('<svg', false)->assertSee($user->member->member_number);
         $this->get(route('portal.profile'))->assertOk();

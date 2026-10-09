@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EnrollmentStatus;
 use App\Enums\FeeStatus;
+use App\Enums\FeeType;
 use App\Enums\MemberStatus;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Concerns\Auditable;
@@ -160,6 +161,17 @@ class Member extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+    public function tournamentParticipations(): HasMany
+    {
+        return $this->hasMany(TournamentParticipant::class);
+    }
+
+    /** Mensajes recibidos (profesor / administración). */
+    public function messages(): BelongsToMany
+    {
+        return $this->belongsToMany(MemberMessage::class, 'member_message_recipients')->withPivot('read_at');
+    }
+
     public function activeEnrollments(): HasMany
     {
         return $this->enrollments()->where('status', EnrollmentStatus::Active);
@@ -277,10 +289,17 @@ class Member extends Model
             ->value('balance');
     }
 
-    /** Cuotas vencidas con la entidad (las deudas con un profesor no bloquean ingreso, reservas ni inscripciones). */
+    /**
+     * Cuotas vencidas con la entidad. Las deudas con un profesor y los torneos no bloquean
+     * ingreso, reservas ni inscripciones.
+     */
     public function overdueFeesCount(): int
     {
-        return $this->fees()->where('status', FeeStatus::Overdue)->whereNull('instructor_id')->count();
+        return $this->fees()
+            ->where('status', FeeStatus::Overdue)
+            ->whereNull('instructor_id')
+            ->where('type', '!=', FeeType::Tournament)
+            ->count();
     }
 
     public function photoUrl(): ?string

@@ -19,6 +19,13 @@
         </div>
     @endforeach
 
+    @foreach ($unreadMessages as $message)
+        <a href="{{ route('portal.messages') }}" wire:navigate class="flex gap-3 rounded-xl bg-sky-50 p-4 text-sm text-sky-900 ring-1 ring-sky-200" wire:key="msg-{{ $message->id }}">
+            <x-icon name="chat" class="size-5 shrink-0" />
+            <span class="min-w-0"><strong class="block">{{ $message->title }}</strong><span class="line-clamp-2">{{ $message->body }}</span></span>
+        </a>
+    @endforeach
+
     <x-push-toggle compact />
 
     @if ($nextLesson)

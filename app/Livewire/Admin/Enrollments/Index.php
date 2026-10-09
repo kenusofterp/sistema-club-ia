@@ -37,6 +37,10 @@ class Index extends Component
 
     public ?int $activityId = null;
 
+    public string $newFeeAmount = '';
+
+    public string $newScholarship = '';
+
     public function updated($property): void
     {
         if (in_array($property, ['activity', 'status', 'search'], true)) {
@@ -51,7 +55,7 @@ class Index extends Component
 
     public function create(): void
     {
-        $this->reset(['memberSearch', 'memberId']);
+        $this->reset(['memberSearch', 'memberId', 'newFeeAmount', 'newScholarship']);
         $this->activityId = $this->activity ? (int) $this->activity : null;
         $this->resetValidation();
         $this->showForm = true;
@@ -70,10 +74,17 @@ class Index extends Component
         $this->validate([
             'memberId' => 'required|exists:members,id',
             'activityId' => 'required|exists:activities,id',
-        ], [], ['memberId' => 'socio', 'activityId' => 'actividad']);
+            'newFeeAmount' => 'nullable|numeric|min:0|max:99999999',
+            'newScholarship' => 'nullable|numeric|min:0|max:100',
+        ], [], ['memberId' => 'socio', 'activityId' => 'actividad', 'newFeeAmount' => 'cuota individual', 'newScholarship' => 'beca']);
 
         $done = $this->attempt(
-            fn () => $service->enroll(Member::findOrFail($this->memberId), Activity::findOrFail($this->activityId)),
+            fn () => $service->enroll(
+                Member::findOrFail($this->memberId),
+                Activity::findOrFail($this->activityId),
+                feeAmount: $this->decimalOrNull($this->newFeeAmount),
+                scholarshipPercent: $this->decimalOrNull($this->newScholarship),
+            ),
             'Inscripción registrada.'
         );
 
@@ -82,10 +93,12 @@ class Index extends Component
         }
     }
 
-    // ---- Cuota individual (beca o descuento) ----
+    // ---- Cuota individual fija y beca en % ----
     public ?int $editingFeeId = null;
 
     public string $feeAmount = '';
+
+    public string $scholarship = '';
 
     public function editFee(int $id): void
     {
@@ -93,19 +106,33 @@ class Index extends Component
         $enrollment = Enrollment::findOrFail($id);
         $this->editingFeeId = $enrollment->id;
         $this->feeAmount = $enrollment->fee_amount !== null ? (string) $enrollment->fee_amount : '';
+        $this->scholarship = $enrollment->scholarship_percent !== null ? (string) (float) $enrollment->scholarship_percent : '';
+        $this->resetValidation();
     }
 
-    /** Vacío = vuelve a la cuota de la actividad. Se aplica desde la próxima cuota que se genere. */
-    public function saveFee(): void
+    /** Cuota vacía = la de la actividad; beca vacía = sin beca. Se aplica desde la próxima cuota que se genere. */
+    public function saveFee(EnrollmentService $service): void
     {
         $this->authorize('inscripciones.gestionar');
-        $this->validate(['feeAmount' => 'nullable|numeric|min:0|max:99999999'], [], ['feeAmount' => 'cuota']);
+        $this->validate([
+            'feeAmount' => 'nullable|numeric|min:0|max:99999999',
+            'scholarship' => 'nullable|numeric|min:0|max:100',
+        ], [], ['feeAmount' => 'cuota', 'scholarship' => 'beca']);
 
-        Enrollment::findOrFail($this->editingFeeId)->update([
-            'fee_amount' => $this->feeAmount === '' ? null : number_format((float) $this->feeAmount, 2, '.', ''),
-        ]);
-        $this->editingFeeId = null;
-        $this->notify('Cuota individual guardada. Se aplica desde la próxima cuota que se genere.');
+        $saved = $this->attempt(fn () => $service->updateFee(
+            Enrollment::findOrFail($this->editingFeeId),
+            $this->decimalOrNull($this->feeAmount),
+            $this->decimalOrNull($this->scholarship),
+        ), 'Cuota guardada. Se aplica desde la próxima cuota que se genere.');
+
+        if ($saved) {
+            $this->editingFeeId = null;
+        }
+    }
+
+    private function decimalOrNull(string $value): ?string
+    {
+        return $value === '' ? null : number_format((float) $value, 2, '.', '');
     }
 
     public function unenroll(int $id, EnrollmentService $service): void
