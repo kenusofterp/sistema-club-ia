@@ -4,29 +4,23 @@ namespace Database\Seeders;
 
 use App\Support\Permissions;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
- * Roles globales (definidos una vez para toda la plataforma) que se asignan a cada usuario por entidad.
+ * Catálogo de permisos más los roles sugeridos (administrador, tesorero, profesor…). No lo usa la
+ * instalación limpia: lo usan los tests y los datos de demostración.
  * El super administrador no usa roles: se marca con users.is_super_admin.
  */
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
+        $new = app(PermissionsSeeder::class)->syncCatalog();
+
         $registrar = app(PermissionRegistrar::class);
         $previousTeam = getPermissionsTeamId();
         $registrar->setPermissionsTeamId(null);
-        $registrar->forgetCachedPermissions();
-
-        $new = [];
-        foreach (Permissions::all() as $permission) {
-            if (Permission::findOrCreate($permission, 'web')->wasRecentlyCreated) {
-                $new[] = $permission;
-            }
-        }
 
         foreach (Permissions::defaultRoles() as $name => $definition) {
             $role = Role::findOrCreate($name, 'web');

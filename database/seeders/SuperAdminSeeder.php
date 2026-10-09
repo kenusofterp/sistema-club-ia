@@ -31,6 +31,7 @@ class SuperAdminSeeder extends Seeder
 
         $user->is_super_admin = true;
         $user->deleted_at = null;
-        $user->save();
+        // Instalación limpia: la auditoría arranca vacía.
+        activity()->withoutLogging(fn () => $user->save());
     }
 }

@@ -7,14 +7,15 @@ Sitio institucional configurable + panel de administración + portal de socios (
 ## Puesta en marcha
 
 ```bash
-composer setup                 # instala dependencias, migra, siembra datos base y compila assets
+composer setup                 # instala dependencias, migra, crea el super administrador y compila assets
 php artisan db:seed --class=DemoSeeder   # (opcional) 2 clubes + 1 gimnasio con socios, cuotas, pagos y planes
 composer dev                   # servidor + cola + logs + Vite
 php artisan schedule:work      # en otra terminal: procesos automáticos
 ```
 
 Configurar antes en `.env`: conexión `DB_*` a PostgreSQL y `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD`
-(con comillas simples si la clave tiene `$`). Para reinstalar limpio: `php artisan migrate:fresh --seed`.
+(con comillas simples si la clave tiene `$`). Para reinstalar limpio: `php artisan migrate:fresh --seed` (deja solo el super administrador;
+entidades, roles, usuarios y demás los carga el operador desde el panel).
 
 - Sitio: `http://localhost:8000`
 - Ingreso: `/ingresar` → el personal entra a `/admin`, los socios a `/portal`.

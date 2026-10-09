@@ -21,19 +21,18 @@
                             </td>
                             <td>
                                 <div class="flex flex-wrap gap-1">
-                                    @if ($user->is_super_admin)<x-badge color="brand">Super administrador</x-badge>@endif
                                     @foreach ($user->roles as $role)
                                         <x-badge color="blue">{{ $role->name }}</x-badge>
                                     @endforeach
                                 </div>
                             </td>
-                            <td class="hidden text-xs text-slate-500 lg:table-cell">{{ $user->is_super_admin ? 'Todas' : ($otherOrgs[$user->id] ?? '—') }}</td>
+                            <td class="hidden text-xs text-slate-500 lg:table-cell">{{ $otherOrgs[$user->id] ?? '—' }}</td>
                             <td class="text-sm text-slate-500">{{ $user->last_login_at?->diffForHumans() ?? 'Nunca' }}</td>
                             <td><x-badge :color="$user->is_active ? 'green' : 'red'">{{ $user->is_active ? 'Activo' : 'Inactivo' }}</x-badge></td>
                             <td class="text-right whitespace-nowrap">
                                 <button type="button" wire:click="sendReset({{ $user->id }})" wire:confirm="¿Enviar enlace para restablecer la contraseña?" class="btn-ghost btn-sm" title="Enviar enlace de contraseña"><x-icon name="key" class="size-4" /></button>
                                 <button type="button" wire:click="edit({{ $user->id }})" class="btn-ghost btn-sm" title="Editar"><x-icon name="pencil" class="size-4" /></button>
-                                @if (! $user->is_super_admin && ! $user->is(auth()->user()))
+                                @if (! $user->is(auth()->user()))
                                     <button type="button" wire:click="removeFromOrganization({{ $user->id }})" wire:confirm="¿Quitar a {{ $user->name }} de esta entidad? Conserva su acceso a las demás." class="btn-ghost btn-sm text-red-600" title="Quitar de esta entidad"><x-icon name="ban" class="size-4" /></button>
                                 @endif
                             </td>
@@ -87,12 +86,6 @@
                     </div>
                     <p class="form-help">Solo para profesores. Las sedes de otras entidades se asignan desde cada entidad.</p>
                 </div>
-            @endif
-            @if (auth()->user()->isSuperAdmin())
-                <label class="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm sm:col-span-2">
-                    <input type="checkbox" wire:model="is_super_admin" class="mt-0.5 rounded border-slate-300 text-brand-600 focus:ring-brand-500">
-                    <span><strong>Super administrador</strong><span class="block text-xs text-slate-600">Acceso total a todas las entidades y a la gestión de la plataforma.</span></span>
-                </label>
             @endif
             <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model="is_active" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Usuario activo</label>
             @error('is_active') <p class="form-error sm:col-span-2">{{ $message }}</p> @enderror

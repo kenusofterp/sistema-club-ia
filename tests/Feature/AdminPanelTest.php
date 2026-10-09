@@ -12,6 +12,7 @@ use App\Livewire\Admin\Payments\Create as PaymentCreate;
 use App\Livewire\Admin\Roles\Index as RolesIndex;
 use App\Livewire\Admin\Settings\SiteSettings;
 use App\Livewire\Admin\Site\HeroSlides;
+use App\Livewire\Admin\Users\Index as UsersIndex;
 use App\Models\Activity;
 use App\Models\Fee;
 use App\Models\Member;
@@ -211,5 +212,20 @@ class AdminPanelTest extends TestCase
         $this->staff('tesorero');
         Livewire::test(RolesIndex::class)->call('selectRole', $tesorero->id)->call('deleteRole');
         $this->assertNotNull(Role::find($tesorero->id));
+    }
+
+    public function test_super_admins_are_hidden_from_the_users_list(): void
+    {
+        $super = $this->staff();
+        $super->update(['name' => 'Plataforma Oculta']);
+        $this->staff('tesorero')->update(['name' => 'Tesorera Visible']);
+
+        $this->actingAs($super);
+        Livewire::test(UsersIndex::class)
+            ->assertSee('Tesorera Visible')
+            ->assertDontSee('Plataforma Oculta');
+
+        // Tampoco se lo puede abrir para editar desde esta pantalla.
+        Livewire::test(UsersIndex::class)->call('edit', $super->id)->assertNotFound();
     }
 }

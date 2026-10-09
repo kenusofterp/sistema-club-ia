@@ -7,6 +7,7 @@ use App\Enums\FeeStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Middleware\ResolveOrganization;
 use App\Livewire\Admin\Organizations\Index as OrganizationsIndex;
+use App\Models\Activity;
 use App\Models\Fee;
 use App\Models\Member;
 use App\Models\MemberCategory;
@@ -165,7 +166,7 @@ class MultiOrganizationTest extends TestCase
         $this->assertSame(FeeStatus::Overdue, Fee::acrossOrganizations()->find($gymFee->id)->status);
     }
 
-    public function test_super_admin_creates_organization_with_initial_setup(): void
+    public function test_super_admin_creates_organization_empty_with_only_its_settings(): void
     {
         $this->actingAs($this->staff());
 
@@ -179,9 +180,10 @@ class MultiOrganizationTest extends TestCase
         $nautico = Organization::where('slug', 'club-nautico')->firstOrFail();
         Organization::runFor($nautico, function () {
             $this->assertSame('Club Náutico', setting('site.name'));
-            $this->assertTrue(MemberCategory::exists());
-            $this->assertTrue(Plan::exists());
-            $this->assertTrue(SiteSection::where('type', 'plans')->exists());
+            $this->assertFalse(MemberCategory::exists());
+            $this->assertFalse(Plan::exists());
+            $this->assertFalse(Activity::exists());
+            $this->assertFalse(SiteSection::exists());
         });
     }
 }

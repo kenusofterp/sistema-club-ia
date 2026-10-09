@@ -43,8 +43,6 @@ class Index extends Component
 
     public bool $is_active = true;
 
-    public bool $is_super_admin = false;
-
     public bool $sendInvite = true;
 
     /** @var array<int, string> roles en la entidad actual */
@@ -67,13 +65,12 @@ class Index extends Component
     public function edit(int $id): void
     {
         $this->resetForm();
-        $user = User::findOrFail($id);
+        $user = $this->findManageable($id);
         $this->editingId = $user->id;
         $this->name = $user->name;
         $this->email = $user->email;
         $this->phone = (string) $user->phone;
         $this->is_active = $user->is_active;
-        $this->is_super_admin = $user->is_super_admin;
         $this->roles = $user->roles()->pluck('name')->all();
         $this->facilityIds = $user->facilities()->where('facilities.organization_id', Organization::currentId())->pluck('facilities.id')->map(fn ($id) => (string) $id)->all();
         $this->sendInvite = false;
@@ -90,34 +87,27 @@ class Index extends Component
             'phone' => 'nullable|string|max:40',
             'password' => [$this->editingId || $this->sendInvite ? 'nullable' : 'required', PasswordRule::defaults()],
             'is_active' => 'boolean',
-            'is_super_admin' => 'boolean',
             'roles' => 'array',
             'roles.*' => Rule::exists('roles', 'name'),
             'facilityIds' => 'array',
             'facilityIds.*' => org_exists('facilities'),
         ]);
 
-        $user = $this->editingId ? User::findOrFail($this->editingId) : new User;
-        $me = auth()->user();
+        $user = $this->editingId ? $this->findManageable($this->editingId) : new User;
 
-        if ($user->is($me) && (! $this->is_active || ($me->is_super_admin && ! $this->is_super_admin))) {
-            $this->addError('is_active', 'No podés desactivarte ni quitarte el nivel de super administrador a vos mismo.');
+        if ($user->is(auth()->user()) && ! $this->is_active) {
+            $this->addError('is_active', 'No podés desactivarte a vos mismo.');
 
             return;
         }
 
-        DB::transaction(function () use ($user, $me) {
+        DB::transaction(function () use ($user) {
             $user->fill([
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone ?: null,
                 'is_active' => $this->is_active,
             ]);
-
-            // Solo un super administrador puede otorgar o quitar ese nivel.
-            if ($me->isSuperAdmin()) {
-                $user->is_super_admin = $this->is_super_admin;
-            }
 
             if ($this->password) {
                 $user->password = $this->password;
@@ -150,7 +140,7 @@ class Index extends Component
     public function removeFromOrganization(int $id): void
     {
         $this->authorize('usuarios.gestionar');
-        $user = User::findOrFail($id);
+        $user = $this->findManageable($id);
 
         if ($user->is(auth()->user())) {
             $this->notify('No podés quitarte a vos mismo.', 'error');
@@ -165,25 +155,31 @@ class Index extends Component
     public function sendReset(int $id): void
     {
         $this->authorize('usuarios.gestionar');
-        $user = User::findOrFail($id);
+        $user = $this->findManageable($id);
         Password::sendResetLink(['email' => $user->email]);
         $this->notify("Se envió un enlace de restablecimiento a {$user->email}.");
     }
 
+    /** Los super administradores son de la plataforma: no se listan ni se gestionan desde aquí. */
+    private function findManageable(int $id): User
+    {
+        return User::where('is_super_admin', false)->findOrFail($id);
+    }
+
     private function resetForm(): void
     {
-        $this->reset(['editingId', 'name', 'email', 'phone', 'password', 'is_active', 'is_super_admin', 'roles', 'sendInvite', 'facilityIds']);
+        $this->reset(['editingId', 'name', 'email', 'phone', 'password', 'is_active', 'roles', 'sendInvite', 'facilityIds']);
         $this->resetValidation();
     }
 
     public function render()
     {
-        // Personal de esta entidad: con algún rol aquí, o super administradores.
+        // Personal de esta entidad: con algún rol aquí (los super administradores no se muestran).
         $users = User::query()
             ->with('roles')
-            ->where(fn ($q) => $q->whereHas('roles')->orWhere('is_super_admin', true))
+            ->where('is_super_admin', false)
+            ->whereHas('roles')
             ->when($this->search, fn ($q) => $q->where(fn ($w) => $w->where('name', 'ilike', "%{$this->search}%")->orWhere('email', 'ilike', "%{$this->search}%")))
-            ->orderByDesc('is_super_admin')
             ->orderBy('name')
             ->paginate(20);
 

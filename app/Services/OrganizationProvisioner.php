@@ -4,15 +4,13 @@ namespace App\Services;
 
 use App\Models\Organization;
 use App\Models\Setting;
-use Database\Seeders\ClubBaseSeeder;
-use Database\Seeders\GymSeeder;
 use Database\Seeders\SettingsSeeder;
-use Database\Seeders\SiteContentSeeder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Prepara una entidad nueva: configuración, sitio web inicial y datos base según su tipo
- * (categorías y actividades para clubes; clases y planes para gimnasios). Es idempotente.
+ * Prepara una entidad nueva: solo su configuración. Arranca vacía (sin actividades, instalaciones,
+ * planes ni contenido del sitio de ejemplo); todo se carga desde el panel. Es idempotente.
+ * Contenido de ejemplo, si se quiere: ClubBaseSeeder, GymSeeder y SiteContentSeeder.
  */
 class OrganizationProvisioner
 {
@@ -27,16 +25,6 @@ class OrganizationProvisioner
                 if ($isNew) {
                     Setting::set('site.name', $org->name);
                     Setting::set('site.short_name', mb_strtoupper(mb_substr(preg_replace('/[^\pL\pN]/u', '', $org->name), 0, 3)));
-                }
-
-                app(SiteContentSeeder::class)->run();
-
-                if ($org->usesClub()) {
-                    app(ClubBaseSeeder::class)->run();
-                }
-
-                if ($org->usesGym()) {
-                    app(GymSeeder::class)->run();
                 }
             });
         });

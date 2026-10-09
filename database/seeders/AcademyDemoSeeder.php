@@ -30,6 +30,7 @@ class AcademyDemoSeeder extends Seeder
     public function run(): void
     {
         Notification::fake();
+        $this->call(RolesAndPermissionsSeeder::class);
 
         $org = Organization::firstOrCreate(['slug' => 'academia'], [
             'name' => 'Academia de Tenis',

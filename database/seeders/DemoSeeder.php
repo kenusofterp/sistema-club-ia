@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Notification;
 /**
  * Demo multi-entidad: dos clubes y un gimnasio, con socios que pertenecen a más de una entidad
  * y personal con roles distintos en cada una.
- * Uso: php artisan db:seed --class=DemoSeeder (después de migrate:fresh --seed)
+ * Uso: php artisan db:seed --class=DemoSeeder (después de migrate:fresh --seed; crea los roles sugeridos)
  */
 class DemoSeeder extends Seeder
 {
@@ -31,11 +31,25 @@ class DemoSeeder extends Seeder
     {
         Notification::fake();
 
-        $principal = Organization::where('is_default', true)->firstOrFail();
+        $this->call(RolesAndPermissionsSeeder::class);
+
+        $principal = Organization::where('is_default', true)->first()
+            ?? Organization::firstOrCreate(['slug' => 'principal'], ['name' => config('club.default_organization.name'), 'type' => config('club.default_organization.type'), 'is_default' => true]);
         $atletico = Organization::firstOrCreate(['slug' => 'atletico'], ['name' => 'Club Atlético del Sur', 'type' => 'club']);
         $gym = Organization::firstOrCreate(['slug' => 'gimnasio'], ['name' => 'Sidkenu Gym', 'type' => 'gimnasio']);
-        $provisioner->provision($atletico);
-        $provisioner->provision($gym);
+        foreach ([$principal, $atletico, $gym] as $org) {
+            $provisioner->provision($org);
+            // Las entidades nuevas arrancan vacías: la demo agrega el contenido de ejemplo.
+            Organization::runFor($org, function (Organization $org) {
+                $this->call(SiteContentSeeder::class);
+                if ($org->usesClub()) {
+                    $this->call(ClubBaseSeeder::class);
+                }
+                if ($org->usesGym()) {
+                    $this->call(GymSeeder::class);
+                }
+            });
+        }
 
         // Personas que serán socias en varias entidades (mismo documento).
         $people = Member::factory()->count(12)->make(['member_category_id' => null])
