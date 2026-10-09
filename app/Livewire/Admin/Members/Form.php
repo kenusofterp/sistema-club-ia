@@ -6,7 +6,9 @@ use App\Livewire\Concerns\InteractsWithUi;
 use App\Models\Member;
 use App\Models\MemberCategory;
 use App\Models\Person;
+use App\Services\MedicalRecordService;
 use App\Services\MemberService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -59,8 +61,15 @@ class Form extends Component
 
     public $photo = null;
 
-    public function mount(?Member $member = null): void
+    /** @var array<int, mixed> ficha médica: id de campo => valor */
+    public array $medical = [];
+
+    public function mount(MedicalRecordService $medicalService, ?Member $member = null): void
     {
+        if (auth()->user()->can('fichas_medicas.editar')) {
+            $this->medical = $medicalService->formValues($medicalService->activeFields(), $member?->exists ? $member : null);
+        }
+
         if ($member?->exists) {
             $this->member = $member;
             foreach ([
@@ -139,6 +148,52 @@ class Form extends Component
         $this->existingPerson = $person->fullName();
     }
 
+    // Alta rápida de categoría sin salir de la pantalla del socio.
+    public bool $showCategoryModal = false;
+
+    /** @var array{name: string, description: string, monthly_fee: string, admission_fee: string, min_age: ?int, max_age: ?int} */
+    public array $newCategory = [];
+
+    public function openCategoryModal(): void
+    {
+        $this->authorize('categorias.gestionar');
+        $this->newCategory = ['name' => '', 'description' => '', 'monthly_fee' => '0', 'admission_fee' => '0', 'min_age' => null, 'max_age' => null];
+        $this->resetValidation(array_map(fn ($key) => "newCategory.{$key}", array_keys($this->newCategory)));
+        $this->showCategoryModal = true;
+    }
+
+    public function saveCategory(): void
+    {
+        $this->authorize('categorias.gestionar');
+
+        $data = $this->validate([
+            'newCategory.name' => ['required', 'string', 'max:80', org_unique('member_categories', 'name')],
+            'newCategory.description' => 'nullable|string|max:255',
+            'newCategory.monthly_fee' => 'required|numeric|min:0|max:99999999',
+            'newCategory.admission_fee' => 'required|numeric|min:0|max:99999999',
+            'newCategory.min_age' => 'nullable|integer|min:0|max:120',
+            'newCategory.max_age' => 'nullable|integer|min:0|max:120|gte:newCategory.min_age',
+        ], [], [
+            'newCategory.name' => 'nombre',
+            'newCategory.description' => 'descripción',
+            'newCategory.monthly_fee' => 'cuota mensual',
+            'newCategory.admission_fee' => 'derecho de ingreso',
+            'newCategory.min_age' => 'edad mínima',
+            'newCategory.max_age' => 'edad máxima',
+        ])['newCategory'];
+        $data = array_map(fn ($value) => $value === '' ? null : $value, $data);
+
+        $category = MemberCategory::create([
+            ...$data,
+            'is_active' => true,
+            'sort_order' => (int) MemberCategory::max('sort_order') + 1,
+        ]);
+
+        $this->member_category_id = $category->id;
+        $this->showCategoryModal = false;
+        $this->notify("Categoría «{$category->name}» creada y seleccionada.");
+    }
+
     public function selectHolder(int $id): void
     {
         $holder = Member::find($id);
@@ -153,21 +208,37 @@ class Form extends Component
         $this->relationship = '';
     }
 
-    public function save(MemberService $service)
+    public function save(MemberService $service, MedicalRecordService $medicalService)
     {
         $this->authorize($this->member ? 'socios.editar' : 'socios.crear');
 
-        $data = $this->validate();
-        unset($data['photo']);
+        // La ficha médica es opcional en el alta: si no se completó nada, queda pendiente y no se valida.
+        $medicalFields = auth()->user()->can('fichas_medicas.editar') ? $medicalService->activeFields() : collect();
+        $checkMedical = $medicalFields->isNotEmpty() && ($this->member?->medicalRecord || ! $medicalService->isBlank($this->medical));
+
+        $data = $this->validate(
+            [...$this->rules(), ...($checkMedical ? $medicalService->rules($medicalFields) : [])],
+            [],
+            $checkMedical ? $medicalService->attributes($medicalFields) : [],
+        );
+        unset($data['photo'], $data['medical']);
         $data = array_map(fn ($v) => $v === '' ? null : $v, $data);
 
         if ($this->photo) {
             $data['photo_path'] = $this->photo->store('members', 'public');
         }
 
-        $member = $this->attempt(fn () => $this->member
-            ? $service->update($this->member, $data)
-            : $service->create($data, activate: true));
+        $member = $this->attempt(fn () => DB::transaction(function () use ($service, $medicalService, $data, $checkMedical, $medicalFields) {
+            $member = $this->member
+                ? $service->update($this->member, $data)
+                : $service->create($data, activate: true);
+
+            if ($checkMedical) {
+                $medicalService->save($member, array_intersect_key($this->medical, $medicalFields->keyBy('id')->all()), onlyIfFilled: true);
+            }
+
+            return $member;
+        }));
 
         if (! $member) {
             return null;
@@ -178,7 +249,7 @@ class Form extends Component
         return $this->redirectRoute('admin.members.show', $member, navigate: true);
     }
 
-    public function render()
+    public function render(MedicalRecordService $medicalService)
     {
         $holders = strlen((string) $this->holder_search) >= 2 && ! $this->holder_id
             ? Member::search($this->holder_search)->whereNull('holder_id')->whereKeyNot($this->member?->id)->limit(6)->get()
@@ -187,6 +258,7 @@ class Form extends Component
         return view('livewire.admin.members.form', [
             'categories' => MemberCategory::active()->get(),
             'holders' => $holders,
+            'medicalFields' => auth()->user()->can('fichas_medicas.editar') ? $medicalService->activeFields() : collect(),
         ])->title($this->member ? 'Editar socio' : 'Nuevo socio');
     }
 }

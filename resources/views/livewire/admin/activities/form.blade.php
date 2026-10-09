@@ -25,7 +25,7 @@
                     <h2 class="font-semibold text-slate-900">Horarios</h2>
                     <button type="button" wire:click="addSchedule" class="btn-secondary btn-sm"><x-icon name="plus" class="size-4" /> Agregar horario</button>
                 </div>
-                <div class="space-y-3">
+                <div class="space-y-3" x-data="{ repeating: null, days: [] }">
                     @forelse ($schedules as $i => $schedule)
                         <div class="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 sm:grid-cols-[1fr_auto_auto_1fr_auto]" wire:key="sch-{{ $i }}">
                             <select wire:model="schedules.{{ $i }}.day_of_week" class="form-input" aria-label="Día">
@@ -45,7 +45,25 @@
                             @else
                                 <input wire:model="schedules.{{ $i }}.location" class="form-input" placeholder="Lugar" aria-label="Lugar">
                             @endif
-                            <button type="button" wire:click="removeSchedule({{ $i }})" class="btn-ghost text-red-600"><x-icon name="trash" class="size-4" /></button>
+                            <div class="flex items-center gap-1">
+                                <button type="button" x-on:click="repeating = repeating === {{ $i }} ? null : {{ $i }}; days = []" class="btn-ghost" title="Repetir en otros días" aria-label="Repetir en otros días"><x-icon name="refresh" class="size-4" /></button>
+                                <button type="button" wire:click="removeSchedule({{ $i }})" class="btn-ghost text-red-600" aria-label="Quitar horario"><x-icon name="trash" class="size-4" /></button>
+                            </div>
+                            <div x-show="repeating === {{ $i }}" x-cloak class="col-span-full rounded-lg border border-slate-200 bg-white p-3">
+                                <p class="mb-2 text-sm text-slate-600">Repetir este horario el:</p>
+                                <div class="flex flex-wrap gap-x-4 gap-y-2">
+                                    @foreach (\App\Models\ActivitySchedule::DAYS as $day => $label)
+                                        @continue((int) $day === (int) $schedule['day_of_week'])
+                                        <label class="flex items-center gap-1.5 text-sm text-slate-700">
+                                            <input type="checkbox" value="{{ $day }}" x-model="days" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> {{ $label }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                                <div class="mt-3 flex justify-end gap-2">
+                                    <button type="button" x-on:click="repeating = null" class="btn-secondary btn-sm">Cancelar</button>
+                                    <button type="button" x-bind:disabled="days.length === 0" x-on:click="$wire.repeatSchedule({{ $i }}, days); repeating = null" class="btn-primary btn-sm"><x-icon name="check" class="size-4" /> Repetir</button>
+                                </div>
+                            </div>
                             @error("schedules.$i.end_time") <p class="form-error col-span-full">{{ $message }}</p> @enderror
                             @error("schedules.$i.start_time") <p class="form-error col-span-full">{{ $message }}</p> @enderror
                         </div>

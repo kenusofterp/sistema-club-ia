@@ -107,7 +107,7 @@
         {{-- Pestañas --}}
         <div class="xl:col-span-3">
             <div class="mb-4 flex gap-1 overflow-x-auto border-b border-slate-200">
-                @foreach (['cuenta' => 'Cuenta corriente', ...(uses_gym() ? ['planes' => 'Planes'] : []), 'actividades' => 'Actividades', 'clases' => 'Clases', 'reservas' => 'Reservas', 'accesos' => 'Accesos', 'historial' => 'Historial'] as $key => $label)
+                @foreach (['cuenta' => 'Cuenta corriente', ...(uses_gym() ? ['planes' => 'Planes'] : []), 'actividades' => 'Actividades', 'clases' => 'Clases', ...(auth()->user()->can('fichas_medicas.ver') ? ['ficha' => 'Ficha médica'] : []), 'reservas' => 'Reservas', 'accesos' => 'Accesos', 'historial' => 'Historial'] as $key => $label)
                     <button type="button" wire:click="$set('tab', '{{ $key }}')"
                             @class(['-mb-px border-b-2 px-4 py-2.5 text-sm font-medium whitespace-nowrap', 'border-brand-600 text-brand-700' => $tab === $key, 'border-transparent text-slate-500 hover:text-slate-800' => $tab !== $key])>{{ $label }}</button>
                 @endforeach
@@ -310,6 +310,8 @@
                             </tbody>
                         </table>
                     </div>
+                @elseif ($tab === 'ficha' && auth()->user()->can('fichas_medicas.ver'))
+                    <livewire:admin.members.medical-record :member="$member" :key="'medical-'.$member->id" />
                 @elseif ($tab === 'historial')
                     <div class="card divide-y divide-slate-100">
                         @forelse ($audits as $audit)

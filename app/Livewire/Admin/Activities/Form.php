@@ -100,6 +100,38 @@ class Form extends Component
         $this->schedules = array_values($this->schedules);
     }
 
+    /**
+     * Copia el horario de una fila a otros días (mismo horario y lugar). Si el día ya tiene ese
+     * mismo horario no se duplica. Después ordena por día y hora.
+     *
+     * @param  array<int, int|string>  $days
+     */
+    public function repeatSchedule(int $index, array $days): void
+    {
+        $source = $this->schedules[$index] ?? null;
+        if (! $source) {
+            return;
+        }
+
+        foreach (array_unique(array_map('intval', $days)) as $day) {
+            if ($day < 1 || $day > 7) {
+                continue;
+            }
+            $exists = collect($this->schedules)->contains(fn (array $s) => (int) $s['day_of_week'] === $day
+                && $s['start_time'] === $source['start_time']
+                && $s['end_time'] === $source['end_time']);
+            if (! $exists) {
+                $this->schedules[] = [...$source, 'day_of_week' => $day];
+            }
+        }
+
+        $this->schedules = collect($this->schedules)
+            ->sortBy([fn (array $a, array $b) => (int) $a['day_of_week'] <=> (int) $b['day_of_week'], ['start_time', 'asc']])
+            ->values()
+            ->all();
+        $this->resetValidation('schedules.*');
+    }
+
     public function save()
     {
         $this->authorize('actividades.gestionar');

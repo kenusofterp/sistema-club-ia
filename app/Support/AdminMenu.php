@@ -27,6 +27,7 @@ final class AdminMenu
                 ['label' => 'Socios', 'route' => 'admin.members.index', 'icon' => 'users', 'can' => 'socios.ver', 'active' => 'admin.members.*',
                     'badge' => fn () => Member::where('status', MemberStatus::Pending)->count() ?: null],
                 ['label' => 'Categorías', 'route' => 'admin.categories', 'icon' => 'tag', 'can' => 'categorias.gestionar'],
+                ['label' => 'Ficha médica', 'route' => 'admin.medical-form', 'icon' => 'heart', 'can' => 'fichas_medicas.configurar'],
                 ['label' => 'Control de acceso', 'route' => 'admin.access', 'icon' => 'qr', 'can' => 'acceso.registrar'],
             ]],
             ['title' => activity_label(true), 'items' => [

@@ -40,12 +40,17 @@
                     </select>
                 </x-field>
                 <x-field label="Categoría" for="member_category_id" error="member_category_id" required>
-                    <select id="member_category_id" wire:model="member_category_id" class="form-input">
-                        <option value="">Seleccionar…</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }} — {{ money($category->monthly_fee) }} ({{ $category->ageRangeLabel() }})</option>
-                        @endforeach
-                    </select>
+                    <div class="flex gap-2">
+                        <select id="member_category_id" wire:model="member_category_id" class="form-input min-w-0 flex-1">
+                            <option value="">Seleccionar…</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }} — {{ money($category->monthly_fee) }} ({{ $category->ageRangeLabel() }})</option>
+                            @endforeach
+                        </select>
+                        @can('categorias.gestionar')
+                            <button type="button" wire:click="openCategoryModal" class="btn-secondary shrink-0 px-3" title="Nueva categoría" aria-label="Nueva categoría"><x-icon name="plus" class="size-4" /></button>
+                        @endcan
+                    </div>
                 </x-field>
                 <x-field label="Fecha de ingreso" for="admission_date" error="admission_date">
                     <input id="admission_date" type="date" wire:model="admission_date" class="form-input">
@@ -105,6 +110,14 @@
             </div>
         </div>
 
+        @if ($medicalFields->isNotEmpty())
+            <div class="card p-6">
+                <h2 class="mb-1 font-semibold text-slate-900">Ficha médica</h2>
+                <p class="mb-5 text-sm text-slate-500">{{ $member?->medicalRecord ? 'Datos médicos del socio.' : 'Podés dejarla vacía y completarla más tarde desde la ficha del socio.' }}</p>
+                <x-medical-fields :fields="$medicalFields" model="medical" />
+            </div>
+        @endif
+
         <div class="card p-6">
             <h2 class="mb-5 font-semibold text-slate-900">Observaciones</h2>
             <div class="grid gap-5 md:grid-cols-2">
@@ -124,4 +137,33 @@
             </button>
         </div>
     </form>
+
+    @can('categorias.gestionar')
+        <x-modal wire:model="showCategoryModal" title="Nueva categoría" max-width="max-w-lg">
+            <form wire:submit="saveCategory" id="quick-category-form" class="grid gap-4 sm:grid-cols-2">
+                <x-field label="Nombre" for="new_category_name" error="newCategory.name" required class="sm:col-span-2">
+                    <input id="new_category_name" wire:model="newCategory.name" class="form-input">
+                </x-field>
+                <x-field label="Descripción" for="new_category_description" error="newCategory.description" class="sm:col-span-2">
+                    <input id="new_category_description" wire:model="newCategory.description" class="form-input">
+                </x-field>
+                <x-field label="Cuota mensual" for="new_category_monthly_fee" error="newCategory.monthly_fee" required>
+                    <input id="new_category_monthly_fee" type="number" step="0.01" min="0" wire:model="newCategory.monthly_fee" class="form-input">
+                </x-field>
+                <x-field label="Derecho de ingreso" for="new_category_admission_fee" error="newCategory.admission_fee" required>
+                    <input id="new_category_admission_fee" type="number" step="0.01" min="0" wire:model="newCategory.admission_fee" class="form-input">
+                </x-field>
+                <x-field label="Edad mínima" for="new_category_min_age" error="newCategory.min_age">
+                    <input id="new_category_min_age" type="number" min="0" wire:model="newCategory.min_age" class="form-input">
+                </x-field>
+                <x-field label="Edad máxima" for="new_category_max_age" error="newCategory.max_age">
+                    <input id="new_category_max_age" type="number" min="0" wire:model="newCategory.max_age" class="form-input">
+                </x-field>
+            </form>
+            <x-slot:footer>
+                <button type="button" class="btn-secondary" x-on:click="open = false">Cancelar</button>
+                <button type="submit" form="quick-category-form" class="btn-primary" wire:loading.attr="disabled" wire:target="saveCategory">Crear y seleccionar</button>
+            </x-slot:footer>
+        </x-modal>
+    @endcan
 </div>

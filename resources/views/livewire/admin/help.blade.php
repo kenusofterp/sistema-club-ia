@@ -181,6 +181,15 @@
                     <li><strong>Suspender</strong>, <strong>dar de baja</strong> o <strong>reactivar</strong>. Un socio suspendido o dado de baja no genera cuotas ni puede ingresar.</li>
                     <li>Ver o imprimir el <strong>carnet</strong> con código QR.</li>
                 </ul>
+
+                <h3>Ficha médica</h3>
+                <p>Primero armá el modelo en <strong>Socios › Ficha médica</strong>: agregá las preguntas (grupo sanguíneo, alergias, medicación, apto físico…) eligiendo el tipo de respuesta (texto, sí/no, fecha, número, una o varias opciones de una lista), si es obligatoria y en qué sección va. Con las flechas cambiás el orden y a la derecha ves una vista previa.</p>
+                <ul>
+                    <li>En el <strong>alta del socio</strong> aparece la sección <em>Ficha médica</em>. Podés dejarla vacía y completarla después; si cargás algo, se piden los campos obligatorios.</li>
+                    <li>Más adelante se ve y se modifica desde la pestaña <strong>Ficha médica</strong> de la ficha del socio, que indica si está completa y quién la actualizó por última vez.</li>
+                    <li>Podés cambiar el modelo cuando quieras. Un campo que ya tiene respuestas no se puede borrar ni cambiar de tipo: <strong>desactivalo</strong> y deja de pedirse, pero lo cargado se sigue viendo.</li>
+                    <li>Permisos: <em>ver</em> (por ejemplo, los profesores), <em>completar y modificar</em> y <em>armar el modelo</em>.</li>
+                </ul>
             </section>
 
             {{-- ============================================================ --}}

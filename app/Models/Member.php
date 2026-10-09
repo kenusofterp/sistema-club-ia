@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -149,6 +150,11 @@ class Member extends Model
     public function holder(): BelongsTo
     {
         return $this->belongsTo(Member::class, 'holder_id');
+    }
+
+    public function medicalRecord(): HasOne
+    {
+        return $this->hasOne(MedicalRecord::class);
     }
 
     public function dependents(): HasMany

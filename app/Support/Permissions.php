@@ -22,6 +22,9 @@ final class Permissions
                 'socios.editar' => 'Editar socios y cambiar su estado',
                 'socios.eliminar' => 'Eliminar socios',
                 'categorias.gestionar' => 'Gestionar categorías de socios',
+                'fichas_medicas.ver' => 'Ver la ficha médica de los socios',
+                'fichas_medicas.editar' => 'Completar y modificar la ficha médica de los socios',
+                'fichas_medicas.configurar' => 'Armar el modelo de ficha médica (preguntas y campos)',
             ],
             'Actividades' => [
                 'actividades.ver' => 'Ver actividades',
@@ -92,7 +95,7 @@ final class Permissions
             ],
             'secretaria' => [
                 'label' => 'Secretaría',
-                'permissions' => ['dashboard.ver', 'socios.ver', 'socios.crear', 'socios.editar', 'actividades.ver', 'inscripciones.gestionar', 'cuotas.ver', 'pagos.ver', 'pagos.registrar', 'reservas.ver', 'reservas.gestionar', 'acceso.registrar', 'mensajes.ver', 'avisos.gestionar', 'suscripciones.gestionar', 'agenda.ver', 'agenda.gestionar', 'agenda.todas', 'torneos.gestionar', 'mensajes.enviar'],
+                'permissions' => ['dashboard.ver', 'socios.ver', 'socios.crear', 'socios.editar', 'actividades.ver', 'inscripciones.gestionar', 'cuotas.ver', 'pagos.ver', 'pagos.registrar', 'reservas.ver', 'reservas.gestionar', 'acceso.registrar', 'mensajes.ver', 'avisos.gestionar', 'suscripciones.gestionar', 'agenda.ver', 'agenda.gestionar', 'agenda.todas', 'torneos.gestionar', 'mensajes.enviar', 'fichas_medicas.ver', 'fichas_medicas.editar'],
             ],
             'recepcion' => [
                 'label' => 'Recepción',
@@ -100,11 +103,11 @@ final class Permissions
             ],
             'coordinacion' => [
                 'label' => 'Coordinación',
-                'permissions' => ['dashboard.ver', 'socios.ver', 'socios.crear', 'socios.editar', 'actividades.ver', 'actividades.gestionar', 'inscripciones.gestionar', 'cuotas.ver', 'pagos.ver', 'pagos.registrar', 'comprobantes.revisar', 'rendiciones.gestionar', 'agenda.ver', 'agenda.gestionar', 'agenda.todas', 'avisos.gestionar', 'torneos.gestionar', 'mensajes.enviar'],
+                'permissions' => ['dashboard.ver', 'socios.ver', 'socios.crear', 'socios.editar', 'actividades.ver', 'actividades.gestionar', 'inscripciones.gestionar', 'cuotas.ver', 'pagos.ver', 'pagos.registrar', 'comprobantes.revisar', 'rendiciones.gestionar', 'agenda.ver', 'agenda.gestionar', 'agenda.todas', 'avisos.gestionar', 'torneos.gestionar', 'mensajes.enviar', 'fichas_medicas.ver', 'fichas_medicas.editar'],
             ],
             'profesor' => [
                 'label' => 'Profesor/a',
-                'permissions' => ['actividades.ver', 'socios.ver', 'agenda.ver', 'agenda.gestionar', 'cobros.propios', 'cobros.niveles', 'torneos.gestionar', 'mensajes.enviar'],
+                'permissions' => ['actividades.ver', 'socios.ver', 'agenda.ver', 'agenda.gestionar', 'cobros.propios', 'cobros.niveles', 'torneos.gestionar', 'mensajes.enviar', 'fichas_medicas.ver'],
             ],
             'comunicacion' => [
                 'label' => 'Comunicación',
