@@ -61,11 +61,19 @@
 
         <div class="space-y-6">
             <div class="card grid gap-4 p-6">
+                @if ((float) $credit > 0)
+                    <div class="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">
+                        Tiene <strong>{{ money($credit) }}</strong> de saldo a favor.
+                        @if ($method !== 'saldo')
+                            <button type="button" wire:click="$set('method', 'saldo')" class="font-semibold underline">Usarlo para este pago</button>
+                        @endif
+                    </div>
+                @endif
                 <x-field label="Importe" for="amount" error="amount" required help="Podés registrar un pago parcial.">
                     <input id="amount" type="number" step="0.01" min="0" wire:model="amount" class="form-input text-lg font-semibold">
                 </x-field>
                 <x-field label="Medio de pago" for="method" error="method" required>
-                    <select id="method" wire:model="method" class="form-input">
+                    <select id="method" wire:model.live="method" class="form-input">
                         @foreach ($methods as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                         @endforeach

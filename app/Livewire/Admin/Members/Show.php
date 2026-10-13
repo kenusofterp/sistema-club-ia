@@ -175,6 +175,9 @@ class Show extends Component
             'cuenta' => [
                 'fees' => $member->fees()->with('activity')->orderByDesc('due_date')->orderByDesc('id')->limit(60)->get(),
                 'payments' => $member->payments()->with('fees')->latest('payment_date')->latest('id')->limit(30)->get(),
+                'refunds' => $member->refunds()->with('fee')->latest('refund_date')->latest('id')->limit(30)->get(),
+                'credit' => $member->creditBalance(),
+                'credits' => $member->credits()->latest('id')->limit(30)->get(),
             ],
             'actividades' => [
                 'enrollments' => $member->enrollments()->with('activity')->orderByRaw("status = 'activa' desc")->latest('start_date')->get(),

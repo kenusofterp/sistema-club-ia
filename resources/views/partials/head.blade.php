@@ -27,6 +27,10 @@
 <link rel="apple-touch-icon" href="{{ route('pwa.icon', 192) }}">
 
 @fonts
+@auth
+    {{-- Foto con cámara y recorte (debe cargarse antes de que arranque Alpine). --}}
+    <script src="{{ asset('js/photo-capture.js') }}?v={{ @filemtime(public_path('js/photo-capture.js')) }}"></script>
+@endauth
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <style>

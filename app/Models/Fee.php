@@ -12,9 +12,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /** Cargo en la cuenta corriente del socio (cuota social, actividad, reserva, etc.). */
-#[Fillable(['member_id', 'instructor_id', 'type', 'activity_id', 'reservation_id', 'lesson_id', 'tournament_id', 'subscription_id', 'period', 'concept', 'amount', 'surcharge', 'paid_amount', 'due_date', 'status', 'cancel_reason', 'created_by'])]
+#[Fillable(['member_id', 'instructor_id', 'type', 'activity_id', 'reservation_id', 'lesson_id', 'tournament_id', 'extra_charge_id', 'subscription_id', 'period', 'concept', 'amount', 'surcharge', 'paid_amount', 'due_date', 'status', 'cancel_reason', 'created_by'])]
 class Fee extends Model
 {
     use Auditable, BelongsToOrganization, HasFactory;
@@ -48,6 +49,11 @@ class Fee extends Model
         return $this->belongsTo(Tournament::class)->withTrashed();
     }
 
+    public function extraCharge(): BelongsTo
+    {
+        return $this->belongsTo(ExtraCharge::class)->withTrashed();
+    }
+
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class)->withTrashed();
@@ -77,6 +83,17 @@ class Fee extends Model
     public function payments(): BelongsToMany
     {
         return $this->belongsToMany(Payment::class)->withPivot('amount')->withTimestamps();
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /** Dinero de este cargo que quedó como saldo a favor del socio. */
+    public function credits(): HasMany
+    {
+        return $this->hasMany(MemberCredit::class)->where('amount', '>', 0);
     }
 
     public function scopeOpen(Builder $query): void

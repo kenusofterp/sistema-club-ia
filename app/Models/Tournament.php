@@ -46,6 +46,12 @@ class Tournament extends Model
         return $this->hasMany(Fee::class);
     }
 
+    /** Vestimenta / artículos del torneo (ej. la malla). */
+    public function extraCharges(): HasMany
+    {
+        return $this->hasMany(ExtraCharge::class);
+    }
+
     public function instructor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'instructor_id')->withTrashed();

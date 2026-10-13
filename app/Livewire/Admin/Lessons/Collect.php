@@ -86,6 +86,24 @@ class Collect extends Component
         }
     }
 
+    /** Paga las cuotas tildadas con el saldo a favor del alumno (hasta lo disponible). */
+    public function payWithCredit(CashCollectionService $cash): void
+    {
+        $this->validate(['memberId' => 'required|integer', 'feeIds' => 'required|array|min:1'], [], ['feeIds' => 'cuotas']);
+
+        $member = $this->students()->findOrFail($this->memberId);
+        $total = $this->openFees($member)->whereIn('id', array_map('intval', $this->feeIds))->reduce(fn (string $c, Fee $f) => bcadd($c, $f->balance(), 2), '0');
+        $credit = $member->creditBalance();
+        $amount = bccomp($total, $credit, 2) > 0 ? $credit : $total;
+
+        $payment = $this->attempt(fn () => $cash->payWithCredit(auth()->user(), $member, array_map('intval', $this->feeIds), $amount));
+
+        if ($payment) {
+            $this->notify('Pagado con saldo a favor: recibo '.$payment->receipt_number.' por '.money($payment->amount).'.');
+            $this->select($member->id);
+        }
+    }
+
     private function students()
     {
         return app(CashCollectionService::class)->studentsQuery(auth()->user());
@@ -103,6 +121,7 @@ class Collect extends Component
         return view('livewire.admin.lessons.collect', [
             'member' => $member,
             'fees' => $member ? $this->openFees($member) : collect(),
+            'credit' => $member?->creditBalance() ?? '0',
             'results' => ! $member && mb_strlen(trim($this->search)) >= 2
                 ? $this->students()->search($this->search)->orderBy('last_name')->limit(10)->get()
                 : collect(),

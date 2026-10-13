@@ -70,6 +70,21 @@ class CashCollectionService
         return $this->payments->register($member, $amount, PaymentMethod::Cash, $feeIds, today(), null, $notes ?: 'Cobrado por '.$teacher->name, $teacher);
     }
 
+    /**
+     * El profesor usa el saldo a favor del alumno (ej. de un torneo cancelado) para pagar cuotas de la entidad.
+     * No es efectivo: no se rinde.
+     *
+     * @param  array<int>  $feeIds
+     */
+    public function payWithCredit(User $teacher, Member $member, array $feeIds, string $amount): Payment
+    {
+        if (! $this->isStudentOf($teacher, $member)) {
+            throw new BusinessRuleException("{$member->fullName()} no es alumno/a de tus grupos.");
+        }
+
+        return $this->payments->register($member, $amount, PaymentMethod::AccountCredit, $feeIds, today(), null, 'Saldo a favor usado por '.$teacher->name, $teacher);
+    }
+
     public function requiresSettlement(): bool
     {
         return (bool) setting('payments.cash_requires_settlement', true);

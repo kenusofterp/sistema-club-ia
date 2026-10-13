@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\EnrollmentStatus;
 use App\Enums\FeeStatus;
 use App\Exceptions\BusinessRuleException;
+use App\Models\ExtraCharge;
 use App\Models\Member;
 use App\Models\MemberMessage;
 use App\Models\Tournament;
@@ -25,11 +26,13 @@ class MemberMessageService
 
     public const AUDIENCE_TOURNAMENT = 'torneo';
 
+    public const AUDIENCE_ITEM = 'adicional';
+
     public const AUDIENCE_LEVEL = 'nivel';
 
     public const AUDIENCE_ALL = 'todos';
 
-    public function __construct(private CashCollectionService $cash, private TournamentService $tournaments) {}
+    public function __construct(private CashCollectionService $cash, private TournamentService $tournaments, private ExtraChargeService $extraCharges) {}
 
     /** Destinatarios según el público elegido. El profesor (sin agenda.todas) solo alcanza a sus alumnos. */
     public function audienceQuery(User $sender, string $audience, ?int $targetId = null): Builder
@@ -45,6 +48,9 @@ class MemberMessageService
                 ->whereDate('due_date', '<=', today()->addDays(7))),
             self::AUDIENCE_TOURNAMENT => $this->tournaments->debtorsQuery(
                 $this->tournaments->queryFor($sender)->findOrFail((int) $targetId)
+            )->active(),
+            self::AUDIENCE_ITEM => $this->extraCharges->debtorsQuery(
+                $this->extraCharges->queryFor($sender)->findOrFail((int) $targetId)
             )->active(),
             self::AUDIENCE_LEVEL => $base->whereHas('enrollments', fn ($q) => $q
                 ->where('status', EnrollmentStatus::Active)
@@ -85,6 +91,16 @@ class MemberMessageService
             'title' => "Torneo {$tournament->name}: falta tu pago",
             'body' => "Hola! Te recordamos que el torneo {$tournament->name} cuesta ".money($tournament->price)
                 .' y se paga hasta el '.$tournament->payment_due_date->format('d/m').'. Podés pagarlo desde Mi cuenta (transferencia) o en efectivo con el profe.',
+        ];
+    }
+
+    /** @return array{title: string, body: string} texto sugerido para los que deben un adicional (vestimenta / artículo) */
+    public function itemReminder(ExtraCharge $charge): array
+    {
+        return [
+            'title' => "{$charge->name}: falta tu pago",
+            'body' => "Hola! Te recordamos que {$charge->name} (".$charge->contextLabel().') cuesta '.money($charge->price)
+                .' y se paga hasta el '.$charge->due_date->format('d/m').'. Podés pagarlo desde Mi cuenta (transferencia) o en efectivo con el profe. Si ya lo conseguiste por otro lado, avisale al profe.',
         ];
     }
 

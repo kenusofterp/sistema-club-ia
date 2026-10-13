@@ -39,6 +39,11 @@
                 <p class="mt-1 text-xs text-slate-500">Si recibís menos, se imputa primero a la cuota más antigua.</p>
 
                 <button type="button" wire:click="collect" wire:loading.attr="disabled" class="btn-primary mt-4 w-full py-3 text-base"><x-icon name="check" class="size-5" /> Registrar cobro</button>
+                @if ((float) $credit > 0)
+                    <button type="button" wire:click="payWithCredit" wire:loading.attr="disabled"
+                            wire:confirm="¿Pagar lo tildado con el saldo a favor ({{ money($credit) }} disponibles)?"
+                            class="btn-secondary mt-2 w-full py-3 text-base">Pagar con saldo a favor ({{ money($credit) }})</button>
+                @endif
             @endif
         </div>
     @else

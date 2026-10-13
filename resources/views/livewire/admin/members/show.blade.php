@@ -178,6 +178,46 @@
                             </table>
                         </div>
                     </div>
+                    @if ($credits->isNotEmpty())
+                        <div class="card mt-6">
+                            <div class="flex items-center justify-between gap-2 border-b border-slate-100 px-5 py-3">
+                                <h3 class="font-semibold text-slate-900">Saldo a favor</h3>
+                                <span @class(['font-display text-lg font-bold tabular-nums', 'text-emerald-700' => (float) $credit > 0, 'text-slate-400' => (float) $credit <= 0])>{{ money($credit) }}</span>
+                            </div>
+                            <ul class="divide-y divide-slate-100 text-sm">
+                                @foreach ($credits as $movement)
+                                    <li class="flex items-center justify-between gap-3 px-5 py-2.5" wire:key="cr-{{ $movement->id }}">
+                                        <span class="min-w-0"><span class="block truncate text-slate-700">{{ $movement->description }}</span><span class="text-xs text-slate-400">{{ $movement->created_at->format('d/m/Y') }}</span></span>
+                                        <span @class(['shrink-0 tabular-nums font-medium', 'text-emerald-700' => (float) $movement->amount > 0, 'text-slate-600' => (float) $movement->amount < 0])>{{ (float) $movement->amount > 0 ? '+' : '' }}{{ money($movement->amount) }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                            @if ((float) $credit > 0)
+                                <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">Se usa al cobrar: en <em>Registrar pago</em> elegí el medio «Saldo a favor».</p>
+                            @endif
+                        </div>
+                    @endif
+                    @if ($refunds->isNotEmpty())
+                        <div class="card mt-6">
+                            <div class="border-b border-slate-100 px-5 py-3"><h3 class="font-semibold text-slate-900">Devoluciones</h3></div>
+                            <div class="overflow-x-auto">
+                                <table class="data-table">
+                                    <thead><tr><th>Fecha</th><th>Concepto</th><th>Medio</th><th class="text-right">Importe</th><th>Nota</th></tr></thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @foreach ($refunds as $refund)
+                                            <tr wire:key="ref-{{ $refund->id }}">
+                                                <td>{{ $refund->refund_date->format('d/m/Y') }}</td>
+                                                <td class="text-sm">{{ $refund->fee?->concept }}</td>
+                                                <td>{{ $refund->method->label() }}</td>
+                                                <td class="text-right tabular-nums">{{ money($refund->amount) }}</td>
+                                                <td class="text-sm text-slate-500">{{ $refund->notes }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
                 @elseif ($tab === 'actividades')
                     @can('inscripciones.gestionar')
                         @if ($member->isActive())

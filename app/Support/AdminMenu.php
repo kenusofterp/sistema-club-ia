@@ -34,6 +34,7 @@ final class AdminMenu
                 ['label' => activity_label(true), 'route' => 'admin.activities.index', 'icon' => 'trophy', 'can' => 'actividades.ver', 'active' => 'admin.activities.*'],
                 ['label' => 'Inscripciones', 'route' => 'admin.enrollments', 'icon' => 'clipboard', 'can' => 'inscripciones.gestionar'],
                 ['label' => 'Torneos', 'route' => 'admin.tournaments.index', 'icon' => 'flag', 'can' => 'torneos.gestionar', 'active' => 'admin.tournaments.*'],
+                ['label' => 'Vestimenta y artículos', 'route' => 'admin.extra-charges.index', 'icon' => 'tag', 'can' => 'articulos.gestionar', 'active' => 'admin.extra-charges.*'],
             ]],
             ['title' => 'Agenda de clases', 'items' => [
                 ['label' => 'Clases de hoy', 'route' => 'admin.lessons.today', 'icon' => 'clock', 'can' => 'agenda.ver'],

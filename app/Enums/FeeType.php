@@ -16,6 +16,7 @@ enum FeeType: string
     case Lesson = 'clase';
     case Registration = 'inscripcion';
     case Tournament = 'torneo';
+    case Item = 'articulo';
     case Other = 'otro';
 
     public function label(): string
@@ -29,6 +30,7 @@ enum FeeType: string
             self::Lesson => 'Clase suelta',
             self::Registration => 'Inscripción anual',
             self::Tournament => 'Torneo',
+            self::Item => 'Vestimenta / artículo',
             self::Other => 'Otro cargo',
         };
     }
@@ -37,7 +39,7 @@ enum FeeType: string
     {
         return match ($this) {
             self::Membership, self::Registration => 'blue',
-            self::Tournament => 'yellow',
+            self::Tournament, self::Item => 'yellow',
             self::Activity, self::Plan, self::Lesson => 'green',
             default => 'gray',
         };

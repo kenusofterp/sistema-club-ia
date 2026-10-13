@@ -20,9 +20,15 @@
 
     <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-stat-card label="Anotados" :value="$summary['participants']" icon="users" />
-        <x-stat-card label="Cobrado" :value="money($summary['paid'])" icon="banknotes" />
-        <x-stat-card label="Adeudado" :value="money($summary['owed'])" icon="warning" />
-        <x-stat-card label="Deben" :value="$summary['debtors']" icon="clock" />
+        @if ($tournament->isCancelled())
+            <x-stat-card label="Cobrado sin devolver" :value="money($summary['toRefund'])" icon="banknotes" />
+            <x-stat-card label="Devuelto" :value="money($summary['refunded'])" icon="refresh" />
+            <x-stat-card label="Quedó a cuenta" :value="money($summary['credited'])" icon="credit-card" />
+        @else
+            <x-stat-card label="Cobrado" :value="money($summary['paid'])" icon="banknotes" />
+            <x-stat-card label="Adeudado" :value="money($summary['owed'])" icon="warning" />
+            <x-stat-card label="Deben" :value="$summary['debtors']" icon="clock" />
+        @endif
     </div>
 
     <div class="grid gap-6 xl:grid-cols-3">
@@ -56,12 +62,24 @@
                                             <x-badge color="gray">Sin cargo</x-badge>
                                         @endif
                                     </td>
-                                    <td class="text-right tabular-nums">{{ money($participant->fee?->paid_amount ?? 0) }}</td>
+                                    @php($refunded = $participant->fee?->refunds->sum('amount') ?? 0)
+                                    @php($credited = $participant->fee?->credits->sum('amount') ?? 0)
+                                    <td class="text-right tabular-nums">
+                                        {{ money($participant->fee?->paid_amount ?? 0) }}
+                                        @if ($refunded > 0)
+                                            <span class="block text-xs text-slate-500">devuelto {{ money($refunded) }}</span>
+                                        @endif
+                                        @if ($credited > 0)
+                                            <span class="block text-xs text-emerald-700">a cuenta {{ money($credited) }}</span>
+                                        @endif
+                                    </td>
                                     <td class="text-right tabular-nums">{{ $participant->fee && $participant->fee->isOpen() ? money($participant->fee->balance()) : '—' }}</td>
                                     <td class="text-right">
-                                        @unless ($tournament->isCancelled())
+                                        @if (! $tournament->isCancelled())
                                             <button type="button" wire:click="remove({{ $participant->member_id }})" wire:confirm="¿Quitar a {{ $participant->member->fullName() }} del torneo? Se anula su cargo." class="btn-ghost btn-sm text-red-600" title="Quitar"><x-icon name="trash" class="size-4" /></button>
-                                        @endunless
+                                        @elseif ($participant->fee && (float) $participant->fee->paid_amount > 0)
+                                            <button type="button" wire:click="askRefund({{ $participant->fee->id }})" class="btn-secondary btn-sm whitespace-nowrap">Devolver o dejar a cuenta</button>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -98,6 +116,33 @@
                 </div>
             @endunless
 
+            @can('articulos.gestionar')
+                <div class="card p-5 text-sm">
+                    <div class="mb-3 flex items-center justify-between gap-2">
+                        <h2 class="font-semibold text-slate-900">Vestimenta y adicionales</h2>
+                        @unless ($tournament->isCancelled())
+                            <a href="{{ route('admin.extra-charges.create', ['torneo' => $tournament->id]) }}" wire:navigate class="btn-secondary btn-sm"><x-icon name="plus" class="size-4" /> Agregar</a>
+                        @endunless
+                    </div>
+                    <ul class="space-y-2">
+                        @forelse ($extraCharges as $charge)
+                            <li>
+                                <a href="{{ route('admin.extra-charges.show', $charge) }}" wire:navigate class="flex items-center justify-between gap-2 rounded-lg bg-slate-50 p-3 hover:bg-slate-100">
+                                    <span><span class="font-medium text-slate-800">{{ $charge->name }}</span> <span class="text-xs text-slate-500">· {{ money($charge->price) }} · {{ $charge->charged_count }} alumnos</span></span>
+                                    @if ($charge->debtors_count > 0)
+                                        <span class="text-xs font-semibold text-red-600">{{ $charge->debtors_count }} deben</span>
+                                    @else
+                                        <span class="text-xs font-semibold text-emerald-700">al día</span>
+                                    @endif
+                                </a>
+                            </li>
+                        @empty
+                            <li class="text-slate-500">Ej.: la malla o la remera que hay que comprar para el torneo.</li>
+                        @endforelse
+                    </ul>
+                </div>
+            @endcan
+
             <div class="card p-5 text-sm">
                 <h2 class="mb-3 font-semibold text-slate-900">Datos</h2>
                 <dl class="space-y-2">
@@ -121,8 +166,50 @@
         </div>
     </div>
 
+    <x-modal wire:model="showRefund" title="¿Qué hacemos con la plata?" max-width="max-w-md">
+        <div class="space-y-4">
+            <fieldset class="space-y-2">
+                <label class="flex items-start gap-2 text-sm">
+                    <input type="radio" wire:model.live="refundDestination" value="devolver" class="mt-0.5 border-slate-300 text-brand-600 focus:ring-brand-500">
+                    <span><strong>Se la devuelvo</strong><span class="block text-slate-500">Registrá cómo y cuándo se la devolviste.</span></span>
+                </label>
+                <label class="flex items-start gap-2 text-sm">
+                    <input type="radio" wire:model.live="refundDestination" value="a_cuenta" class="mt-0.5 border-slate-300 text-brand-600 focus:ring-brand-500">
+                    <span><strong>Queda a cuenta</strong><span class="block text-slate-500">Saldo a favor: lo usás después para pagar otra cosa (ej. la próxima cuota) al cobrarle.</span></span>
+                </label>
+            </fieldset>
+            <div class="grid grid-cols-2 gap-3">
+                <x-field label="Importe" for="refundAmount" error="refundAmount" required :help="$refundPaid ? 'Pagó '.money($refundPaid).'.' : null">
+                    <input id="refundAmount" type="number" step="0.01" min="0" wire:model="refundAmount" class="form-input">
+                </x-field>
+                @if ($refundDestination === 'devolver')
+                    <x-field label="Fecha" for="refundDate" error="refundDate" required>
+                        <input id="refundDate" type="date" wire:model="refundDate" max="{{ today()->toDateString() }}" class="form-input">
+                    </x-field>
+                @endif
+            </div>
+            @if ($refundDestination === 'devolver')
+                <x-field label="¿Cómo se devolvió?" for="refundMethod" error="refundMethod" required>
+                    <select id="refundMethod" wire:model="refundMethod" class="form-input">
+                        @foreach (\App\Enums\PaymentMethod::manualOptions() as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </x-field>
+            @endif
+            <p class="text-xs text-slate-500">Si no se puede devolver ni dejar a cuenta, no registres nada: el cargo ya está anulado y no debe.</p>
+            <x-field label="Nota (opcional)" for="refundNotes" error="refundNotes">
+                <input id="refundNotes" wire:model="refundNotes" class="form-input" placeholder="ej. N° de transferencia">
+            </x-field>
+        </div>
+        <x-slot:footer>
+            <button type="button" class="btn-secondary" x-on:click="open = false">Cancelar</button>
+            <button type="button" wire:click="confirmRefund" class="btn-primary">Confirmar</button>
+        </x-slot:footer>
+    </x-modal>
+
     <x-modal wire:model="showCancel" title="Cancelar torneo" max-width="max-w-md">
-        <p class="text-sm text-slate-600">Se anulan los cargos de quienes no pagaron. A quienes ya pagaron tenés que anularles el pago o devolverles el dinero.</p>
+        <p class="text-sm text-slate-600">Se anulan todos los cargos del torneo: nadie queda debiendo. A quienes ya pagaron, si se puede, les registrás la devolución desde la lista de participantes.</p>
         <x-field label="Motivo" for="cancelReason" error="cancelReason" required class="mt-4">
             <input id="cancelReason" wire:model="cancelReason" class="form-input">
         </x-field>

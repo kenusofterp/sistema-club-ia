@@ -81,6 +81,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     Route::get('/torneos/nuevo', Admin\Tournaments\Form::class)->name('tournaments.create')->middleware('can:torneos.gestionar');
     Route::get('/torneos/{tournament}', Admin\Tournaments\Show::class)->name('tournaments.show')->middleware('can:torneos.gestionar');
     Route::get('/torneos/{tournament}/editar', Admin\Tournaments\Form::class)->name('tournaments.edit')->middleware('can:torneos.gestionar');
+    Route::get('/adicionales', Admin\ExtraCharges\Index::class)->name('extra-charges.index')->middleware('can:articulos.gestionar');
+    Route::get('/adicionales/nuevo', Admin\ExtraCharges\Form::class)->name('extra-charges.create')->middleware('can:articulos.gestionar');
+    Route::get('/adicionales/{extraCharge}', Admin\ExtraCharges\Show::class)->name('extra-charges.show')->middleware('can:articulos.gestionar');
 
     // Tesorería
     Route::get('/cuotas', Admin\Fees\Index::class)->name('fees')->middleware('can:cuotas.ver');

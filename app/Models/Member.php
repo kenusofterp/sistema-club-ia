@@ -205,6 +205,24 @@ class Member extends Model
         return $this->hasMany(Payment::class);
     }
 
+    /** Devoluciones de dinero (ej. torneo cancelado). */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /** Movimientos del saldo a favor. */
+    public function credits(): HasMany
+    {
+        return $this->hasMany(MemberCredit::class);
+    }
+
+    /** Saldo a favor disponible para pagar. */
+    public function creditBalance(): string
+    {
+        return number_format((float) $this->credits()->sum('amount'), 2, '.', '');
+    }
+
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);
@@ -296,7 +314,7 @@ class Member extends Model
     }
 
     /**
-     * Cuotas vencidas con la entidad. Las deudas con un profesor y los torneos no bloquean
+     * Cuotas vencidas con la entidad. Las deudas con un profesor, los torneos y la vestimenta / artículos no bloquean
      * ingreso, reservas ni inscripciones.
      */
     public function overdueFeesCount(): int
@@ -304,7 +322,7 @@ class Member extends Model
         return $this->fees()
             ->where('status', FeeStatus::Overdue)
             ->whereNull('instructor_id')
-            ->where('type', '!=', FeeType::Tournament)
+            ->whereNotIn('type', [FeeType::Tournament, FeeType::Item])
             ->count();
     }
 

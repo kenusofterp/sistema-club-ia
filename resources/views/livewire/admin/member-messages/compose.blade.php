@@ -7,6 +7,7 @@
                 <select id="audience" wire:model.live="audience" class="form-input">
                     <option value="deudores">Los que deben (vencido o vence esta semana)</option>
                     <option value="torneo">Los que deben un torneo</option>
+                    <option value="adicional">Los que deben vestimenta / un artículo</option>
                     <option value="nivel">Todos los alumnos de un {{ mb_strtolower(activity_label()) }}</option>
                     <option value="todos">Todos mis alumnos</option>
                 </select>
@@ -18,6 +19,15 @@
                         <option value="">Elegí el torneo…</option>
                         @foreach ($tournaments as $item)
                             <option value="{{ $item->id }}">{{ $item->name }} ({{ $item->startsOn()?->format('d/m/Y') }})</option>
+                        @endforeach
+                    </select>
+                </x-field>
+            @elseif ($audience === 'adicional')
+                <x-field label="Vestimenta / artículo" for="extraChargeId" error="extraChargeId" required>
+                    <select id="extraChargeId" wire:model.live="extraChargeId" class="form-input">
+                        <option value="">Elegí…</option>
+                        @foreach ($extraCharges as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }} ({{ $item->contextLabel() }})</option>
                         @endforeach
                     </select>
                 </x-field>

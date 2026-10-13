@@ -6,6 +6,7 @@ use App\Exceptions\BusinessRuleException;
 use App\Livewire\Concerns\InteractsWithUi;
 use App\Models\Activity;
 use App\Models\MemberMessage;
+use App\Services\ExtraChargeService;
 use App\Services\LevelLessonService;
 use App\Services\MemberMessageService;
 use App\Services\TournamentService;
@@ -29,6 +30,9 @@ class Compose extends Component
 
     public ?int $activityId = null;
 
+    #[Url(as: 'adicional')]
+    public ?int $extraChargeId = null;
+
     public string $title = '';
 
     public string $body = '';
@@ -37,6 +41,9 @@ class Compose extends Component
     {
         if ($this->tournamentId) {
             $this->audience = MemberMessageService::AUDIENCE_TOURNAMENT;
+        }
+        if ($this->extraChargeId) {
+            $this->audience = MemberMessageService::AUDIENCE_ITEM;
         }
         $this->fillTemplate($service);
     }
@@ -51,6 +58,11 @@ class Compose extends Component
         $this->fillTemplate($service);
     }
 
+    public function updatedExtraChargeId(MemberMessageService $service): void
+    {
+        $this->fillTemplate($service);
+    }
+
     /** Texto sugerido según el público (se puede editar). */
     private function fillTemplate(MemberMessageService $service): void
     {
@@ -58,6 +70,9 @@ class Compose extends Component
             MemberMessageService::AUDIENCE_DEBTORS => $service->debtReminder(),
             MemberMessageService::AUDIENCE_TOURNAMENT => ($tournament = $this->tournament())
                 ? $service->tournamentReminder($tournament)
+                : null,
+            MemberMessageService::AUDIENCE_ITEM => ($charge = $this->extraCharge())
+                ? $service->itemReminder($charge)
                 : null,
             default => null,
         };
@@ -75,10 +90,18 @@ class Compose extends Component
             : null;
     }
 
+    private function extraCharge()
+    {
+        return $this->extraChargeId
+            ? app(ExtraChargeService::class)->queryFor(auth()->user())->find($this->extraChargeId)
+            : null;
+    }
+
     private function targetId(): ?int
     {
         return match ($this->audience) {
             MemberMessageService::AUDIENCE_TOURNAMENT => $this->tournamentId,
+            MemberMessageService::AUDIENCE_ITEM => $this->extraChargeId,
             MemberMessageService::AUDIENCE_LEVEL => $this->activityId,
             default => null,
         };
@@ -88,13 +111,15 @@ class Compose extends Component
     {
         $this->authorize('mensajes.enviar');
         $this->validate([
-            'audience' => 'required|in:deudores,torneo,nivel,todos',
+            'audience' => 'required|in:deudores,torneo,adicional,nivel,todos',
             'tournamentId' => 'required_if:audience,torneo|nullable|integer',
+            'extraChargeId' => 'required_if:audience,adicional|nullable|integer',
             'activityId' => 'required_if:audience,nivel|nullable|integer',
             'title' => 'required|string|max:120',
             'body' => 'required|string|max:1000',
         ], [
             'tournamentId.required_if' => 'Elegí el torneo.',
+            'extraChargeId.required_if' => 'Elegí la vestimenta o el artículo.',
             'activityId.required_if' => 'Elegí el '.mb_strtolower(activity_label()).'.',
         ], ['title' => 'título', 'body' => 'mensaje']);
 
@@ -116,6 +141,7 @@ class Compose extends Component
         return match ($this->audience) {
             MemberMessageService::AUDIENCE_DEBTORS => 'Los que deben',
             MemberMessageService::AUDIENCE_TOURNAMENT => 'Deben el torneo '.($this->tournament()?->name ?? ''),
+            MemberMessageService::AUDIENCE_ITEM => 'Deben '.($this->extraCharge()?->name ?? ''),
             MemberMessageService::AUDIENCE_LEVEL => activity_label().' '.(Activity::find($this->activityId)?->name ?? ''),
             default => 'Todos mis alumnos',
         };
@@ -129,6 +155,7 @@ class Compose extends Component
         $recipients = collect();
         $ready = match ($this->audience) {
             MemberMessageService::AUDIENCE_TOURNAMENT => (bool) $this->tournamentId,
+            MemberMessageService::AUDIENCE_ITEM => (bool) $this->extraChargeId,
             MemberMessageService::AUDIENCE_LEVEL => (bool) $this->activityId,
             default => true,
         };
@@ -143,6 +170,7 @@ class Compose extends Component
         return view('livewire.admin.member-messages.compose', [
             'recipients' => $recipients,
             'tournaments' => $tournaments->queryFor($user)->active()->with('days')->latest('id')->limit(30)->get(),
+            'extraCharges' => app(ExtraChargeService::class)->queryFor($user)->with(['tournament', 'activity'])->latest('id')->limit(30)->get(),
             'activities' => Activity::where('is_active', true)->when($mine !== null, fn ($q) => $q->whereIn('id', $mine))->orderBy('name')->get(['id', 'name']),
             'sent' => MemberMessage::withCount('recipients')
                 ->when(! $user->can('agenda.todas'), fn ($q) => $q->where('sender_id', $user->id))

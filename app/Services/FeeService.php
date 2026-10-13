@@ -130,6 +130,7 @@ class FeeService
         ?int $instructorId = null,
         ?int $lessonId = null,
         ?int $tournamentId = null,
+        ?int $extraChargeId = null,
     ): Fee {
         if (bccomp($amount, '0', 2) <= 0) {
             throw new BusinessRuleException('El importe del cargo debe ser mayor a cero.');
@@ -142,6 +143,7 @@ class FeeService
             'instructor_id' => $instructorId,
             'lesson_id' => $lessonId,
             'tournament_id' => $tournamentId,
+            'extra_charge_id' => $extraChargeId,
             'concept' => $concept,
             'amount' => $amount,
             'due_date' => $dueDate,
@@ -181,8 +183,8 @@ class FeeService
             ->chunkById(500, function ($fees) use ($percent, &$count) {
                 foreach ($fees as $fee) {
                     $surcharge = (string) $fee->surcharge;
-                    // Los torneos vencen pero no llevan recargo por mora.
-                    if ($fee->type !== FeeType::Tournament && bccomp($percent, '0', 2) > 0 && bccomp($surcharge, '0', 2) === 0) {
+                    // Los torneos y la vestimenta / artículos vencen pero no llevan recargo por mora.
+                    if (! in_array($fee->type, [FeeType::Tournament, FeeType::Item], true) && bccomp($percent, '0', 2) > 0 && bccomp($surcharge, '0', 2) === 0) {
                         $surcharge = bcdiv(bcmul((string) $fee->amount, $percent, 4), '100', 2);
                     }
 

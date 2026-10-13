@@ -34,7 +34,14 @@ class Tournaments extends Component
 
         $mine = Tournament::query()
             ->whereHas('participants', fn ($q) => $q->where('member_id', $member->id))
-            ->with(['days.activities', 'fees' => fn ($q) => $q->where('member_id', $member->id)->where('status', '!=', 'anulada')])
+            ->with([
+                'days.activities',
+                // Su cargo del torneo (si el torneo se canceló, el anulado, para mostrar lo devuelto).
+                'fees' => fn ($q) => $q->where('member_id', $member->id)->with(['refunds', 'credits'])->orderByRaw("status = 'anulada'")->latest('id'),
+                // Vestimenta / artículos del torneo que se le cobran a este alumno.
+                'extraCharges' => fn ($q) => $q->whereHas('fees', fn ($f) => $f->where('member_id', $member->id)->where('status', '!=', 'anulada'))
+                    ->with(['fees' => fn ($f) => $f->where('member_id', $member->id)->where('status', '!=', 'anulada')]),
+            ])
             ->get()
             ->sortByDesc(fn ($t) => $t->days->first()?->date)
             ->values();

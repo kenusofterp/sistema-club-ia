@@ -212,7 +212,7 @@ class Account extends Component
             'collectedThisMonth' => (string) $collectedThisMonth,
             'instructorOptions' => $this->instructorOptions(),
             'payFees' => $this->showPayment && $this->payMemberId ? $fees->where('member_id', $this->payMemberId)->values() : collect(),
-            'methods' => PaymentMethod::options(),
+            'methods' => PaymentMethod::manualOptions(),
         ]);
     }
 }

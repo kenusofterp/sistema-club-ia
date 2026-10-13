@@ -42,6 +42,19 @@
                             {{ $tournament->startsOn()?->format('d/m/Y') }}@if ($tournament->days->count() > 1) al {{ $tournament->endsOn()?->format('d/m/Y') }}@endif
                             @if ($tournament->isCancelled()) · <span class="text-red-600">Cancelado</span>@endif
                         </p>
+                        @if ($tournament->isCancelled() && $fee && $fee->refunds->isNotEmpty())
+                            <p class="mt-1 text-xs text-emerald-700">Te devolvimos {{ money($fee->refunds->sum('amount')) }}</p>
+                        @endif
+                        @if ($tournament->isCancelled() && $fee && $fee->credits->isNotEmpty())
+                            <p class="mt-1 text-xs text-emerald-700">Te quedaron {{ money($fee->credits->sum('amount')) }} a favor para tu próximo pago</p>
+                        @endif
+                        @foreach ($tournament->extraCharges as $charge)
+                            @php($itemFee = $charge->fees->first())
+                            <p class="mt-1 text-xs text-slate-600">
+                                + {{ $charge->name }} {{ money($charge->price) }}
+                                @if ($itemFee) · <span @class(['font-medium', 'text-emerald-700' => ! $itemFee->isOpen(), 'text-amber-700' => $itemFee->isOpen()])>{{ $itemFee->isOpen() ? 'a pagar' : 'pagado' }}</span>@endif
+                            </p>
+                        @endforeach
                     </div>
                     <div class="shrink-0 text-right">
                         @if ($fee)

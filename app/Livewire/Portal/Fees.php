@@ -105,6 +105,7 @@ class Fees extends Component
 
         return view('livewire.portal.fees', [
             'balance' => $member->balance(),
+            'credit' => $member->creditBalance(),
             'openFees' => $member->openFees()->with(['receipts' => fn ($q) => $q->where('status', 'pendiente')])->orderBy('due_date')->get(),
             'history' => $member->fees()->whereNotIn('status', ['pendiente', 'parcial', 'vencida'])->latest('due_date')->limit(36)->get(),
             'payments' => $member->payments()->latest('payment_date')->latest('id')->limit(24)->get(),

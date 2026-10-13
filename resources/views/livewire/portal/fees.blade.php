@@ -6,6 +6,9 @@
             <div>
                 <p class="text-sm text-slate-500">Saldo pendiente</p>
                 <p class="font-display text-3xl font-bold tabular-nums {{ bccomp($balance, '0', 2) > 0 ? 'text-red-600' : 'text-emerald-600' }}">{{ money($balance) }}</p>
+                @if (bccomp($credit, '0', 2) > 0)
+                    <p class="mt-1 text-sm text-emerald-700">Tenés <strong>{{ money($credit) }}</strong> a favor: se usa para tu próximo pago (avisale al profe o a la secretaría).</p>
+                @endif
             </div>
             @if ($receiptsEnabled && $openFees->isNotEmpty())
                 <button type="button" wire:click="openReport" class="btn-primary w-full sm:w-auto"><x-icon name="banknotes" class="size-5" /> Informar un pago</button>

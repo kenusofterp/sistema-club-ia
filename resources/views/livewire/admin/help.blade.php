@@ -17,6 +17,7 @@
         'becas' => '12b. Becas, aumentos e inscripción anual',
         'torneos' => '12c. Torneos',
         'mensajes-alumnos' => '12d. Mensajes a alumnos',
+        'vestimenta' => '12e. Vestimenta y artículos',
         'acceso' => '13. Control de acceso',
         'comunicacion' => '14. Mensajes y avisos',
         'sitio' => '15. Sitio web',
@@ -393,6 +394,7 @@
                 </ul>
                 <p>A cada participante se le genera el cargo del torneo, que se paga igual que la cuota: transferencia con comprobante desde <em>Mi cuenta</em>, efectivo con el profe (<em>Cobrar en efectivo</em>) o en secretaría. Al cobrar se elige qué se paga: la cuota, el torneo o ambos.</p>
                 <p>En el detalle del torneo se ve quién pagó y quién debe, con totales. Si un torneo no se paga a tiempo queda <em>Vencido</em>, pero no suma recargo ni bloquea el ingreso. Quitar a un participante anula su cargo (si ya pagó, primero hay que anular el pago).</p>
+                <p><strong>Si se cancela el torneo</strong>, se anulan todos los cargos y nadie queda debiendo. A quienes ya habían pagado, tocá <strong>Devolver o dejar a cuenta</strong> en su fila y elegí: <strong>se la devuelvo</strong> (importe, fecha y cómo: efectivo, transferencia…) o <strong>queda a cuenta</strong> como saldo a favor. El saldo a favor no se usa solo: al cobrarle otra cosa (por ejemplo, la cuota) elegís «Saldo a favor» en <em>Registrar pago</em> o <em>Pagar con saldo a favor</em> en <em>Cobrar en efectivo</em>; si no alcanza, el resto queda pendiente. Todo queda en la ficha del socio y el alumno lo ve en el portal. El pago original no se toca, así que no afecta a la cuota si se pagaron juntas.</p>
                 <x-manual.tip type="example">Torneo <strong>Primavera</strong>, $ 15.000, pagar hasta el 20/10. Sábado 25: Juvenil A y B; domingo 26: Mayores. Lucía (Juvenil A) se anota desde el portal; el profe suma a Pedro, que es de Infantil, como excepción. Lucía paga cuota + torneo juntos por transferencia; Pedro le paga solo el torneo en efectivo.</x-manual.tip>
             </section>
 
@@ -406,6 +408,18 @@
                     <li>todos los alumnos de un {{ mb_strtolower(activity_label()) }}, o todos.</li>
                 </ul>
                 <p>El texto viene sugerido y se puede editar. Llega como <strong>notificación al celular</strong> a quienes la activaron y queda en el portal, en <em>Mensajes</em> y en el inicio. El profesor solo puede escribirles a sus alumnos.</p>
+            </section>
+
+            {{-- ============================================================ --}}
+            <section id="vestimenta" class="scroll-mt-20">
+                <h2>12e. Vestimenta y artículos</h2>
+                <p>Para lo que el profe compra y los alumnos le pagan: la malla de un torneo, la remera del grupo, un buzo…</p>
+                <ol class="steps">
+                    <li>Desde el torneo (<em>Vestimenta y adicionales › Agregar</em>) o en <strong>Vestimenta y artículos › Nuevo adicional</strong>, cargá nombre, precio y fecha de pago.</li>
+                    <li>Elegí para qué es: un torneo, un {{ mb_strtolower(activity_label()) }} o alumnos sueltos. En torneo y {{ mb_strtolower(activity_label()) }} aparecen todos tildados: destildá a quienes no corresponde.</li>
+                    <li>A cada alumno tildado se le suma el cargo a su cuenta. Se paga como la cuota (efectivo con el profe, transferencia o secretaría), solo o junto con la cuota y el torneo.</li>
+                </ol>
+                <p>Si un alumno avisa que <strong>ya lo consiguió por otro lado</strong>, abrí el adicional y tocá <strong>Anular</strong> en su fila: se le anula solo a él y queda registrado el motivo. Si ya había pagado, primero anulá el pago. Con <strong>Cobrar también a…</strong> se lo cargás a alguien más. Si vence sin pagarse no suma recargo ni bloquea el ingreso.</p>
             </section>
 
             {{-- ============================================================ --}}

@@ -56,7 +56,7 @@
                     <input id="admission_date" type="date" wire:model="admission_date" class="form-input">
                 </x-field>
                 <div class="md:col-span-2">
-                    <x-image-upload model="photo" :file="$photo" :current="$member?->photoUrl()" label="Foto (para el carnet)" aspect="aspect-square" help="JPG o PNG, máximo 3 MB." />
+                    <x-photo-capture model="photo" :file="$photo" :current="$member?->photoUrl()" label="Foto (para el carnet)" />
                 </div>
             </div>
         </div>

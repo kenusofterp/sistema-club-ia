@@ -74,10 +74,20 @@ class Create extends Component
         $this->syncAmount();
     }
 
+    public function updatedMethod(): void
+    {
+        $this->syncAmount();
+    }
+
     private function syncAmount(): void
     {
         $total = Fee::whereIn('id', $this->selected)->where('member_id', $this->memberId)->get()
             ->reduce(fn ($carry, Fee $fee) => bcadd($carry, $fee->balance(), 2), '0');
+        // Con saldo a favor, se usa como máximo lo disponible (el resto queda pendiente o se paga aparte).
+        if ($this->method === PaymentMethod::AccountCredit->value && $this->memberId) {
+            $credit = Member::find($this->memberId)?->creditBalance() ?? '0';
+            $total = bccomp($total, $credit, 2) > 0 ? $credit : $total;
+        }
         $this->amount = $total;
     }
 
@@ -116,6 +126,19 @@ class Create extends Component
         return $this->redirectRoute('admin.members.show', $this->memberId, navigate: true);
     }
 
+    /** Medios de pago; "Saldo a favor" solo si el socio tiene. */
+    private function methods(?Member $member): array
+    {
+        $methods = PaymentMethod::manualOptions();
+        $credit = $member?->creditBalance() ?? '0';
+
+        if (bccomp($credit, '0', 2) > 0) {
+            $methods[PaymentMethod::AccountCredit->value] = 'Saldo a favor ('.money($credit).' disponibles)';
+        }
+
+        return $methods;
+    }
+
     public function render()
     {
         $member = $this->memberId ? Member::with('category')->find($this->memberId) : null;
@@ -126,7 +149,8 @@ class Create extends Component
             'results' => ! $this->memberId && strlen($this->memberSearch) >= 2
                 ? Member::search($this->memberSearch)->whereIn('status', ['activo', 'suspendido', 'baja'])->limit(8)->get()
                 : collect(),
-            'methods' => PaymentMethod::options(),
+            'methods' => $this->methods($member),
+            'credit' => $member?->creditBalance() ?? '0',
         ]);
     }
 }

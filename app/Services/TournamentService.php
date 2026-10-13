@@ -8,6 +8,8 @@ use App\Enums\FeeType;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Fee;
 use App\Models\Member;
+use App\Models\MemberCredit;
+use App\Models\Refund;
 use App\Models\Tournament;
 use App\Models\TournamentDay;
 use App\Models\TournamentParticipant;
@@ -206,7 +208,8 @@ class TournamentService
     }
 
     /**
-     * Cancela el torneo y anula los cargos sin pagos.
+     * Cancela el torneo y anula todos sus cargos: nadie queda debiendo. Lo que ya se pagó queda
+     * registrado en el cargo (paid_amount) para devolverlo con RefundService, si corresponde.
      *
      * @return int participantes que ya habían pagado algo (para devolverles el dinero)
      */
@@ -218,8 +221,10 @@ class TournamentService
 
         return DB::transaction(function () use ($tournament, $reason) {
             $withPayments = 0;
-            foreach ($tournament->fees()->where('status', '!=', FeeStatus::Cancelled)->get() as $fee) {
+            foreach ($tournament->fees()->where('status', '!=', FeeStatus::Cancelled)->lockForUpdate()->get() as $fee) {
                 if (bccomp((string) $fee->paid_amount, '0', 2) > 0) {
+                    // Con pagos: se anula igual (no queda deuda) y conserva lo pagado para la devolución.
+                    $fee->update(['status' => FeeStatus::Cancelled, 'cancel_reason' => 'Torneo cancelado']);
                     $withPayments++;
                 } else {
                     $this->fees->cancel($fee, 'Torneo cancelado');
@@ -240,7 +245,7 @@ class TournamentService
             ->whereIn('status', FeeStatus::open()));
     }
 
-    /** @return array{participants: int, paid: string, owed: string, debtors: int} */
+    /** @return array{participants: int, paid: string, owed: string, debtors: int, toRefund: string, refunded: string, credited: string} */
     public function summary(Tournament $tournament): array
     {
         $totals = $tournament->fees()
@@ -253,6 +258,10 @@ class TournamentService
             'paid' => (string) $totals->paid,
             'owed' => (string) $totals->owed,
             'debtors' => $this->debtorsQuery($tournament)->count(),
+            // Torneo cancelado: lo cobrado que todavía no se devolvió, y lo ya devuelto.
+            'toRefund' => $tournament->isCancelled() ? (string) $tournament->fees()->sum('paid_amount') : '0',
+            'refunded' => (string) Refund::whereIn('fee_id', $tournament->fees()->select('id'))->sum('amount'),
+            'credited' => (string) MemberCredit::whereIn('fee_id', $tournament->fees()->select('id'))->where('amount', '>', 0)->sum('amount'),
         ];
     }
 

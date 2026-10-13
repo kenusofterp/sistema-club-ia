@@ -8,10 +8,12 @@ use App\Enums\PaymentStatus;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Fee;
 use App\Models\Member;
+use App\Models\MemberCredit;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\PaymentReceivedNotification;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PaymentService
@@ -73,6 +75,10 @@ class PaymentService
                 throw new BusinessRuleException('El importe ('.money($amount).') supera el saldo de los cargos seleccionados ('.money($totalBalance).').');
             }
 
+            if ($method === PaymentMethod::AccountCredit) {
+                $this->assertCreditAvailable($member, $fees, $amount);
+            }
+
             $payment = Payment::create([
                 'receipt_number' => $this->nextReceiptNumber($member->organization_id),
                 'member_id' => $member->id,
@@ -103,6 +109,16 @@ class PaymentService
                 $remaining = bcsub($remaining, $applied, 2);
             }
 
+            if ($method === PaymentMethod::AccountCredit) {
+                MemberCredit::create([
+                    'member_id' => $member->id,
+                    'amount' => bcmul($amount, '-1', 2),
+                    'payment_id' => $payment->id,
+                    'description' => 'Pago con saldo a favor (recibo '.$payment->receipt_number.')',
+                    'created_by' => $receivedBy?->id ?? auth()->id(),
+                ]);
+            }
+
             return $payment;
         });
 
@@ -112,6 +128,24 @@ class PaymentService
         }
 
         return $payment;
+    }
+
+    /**
+     * El saldo a favor es dinero de la entidad: no paga cargos de un profesor, y no puede usarse
+     * más de lo disponible. Se bloquea al socio para que dos cobros simultáneos no usen el mismo saldo.
+     */
+    private function assertCreditAvailable(Member $member, Collection $fees, string $amount): void
+    {
+        if ($fees->contains(fn (Fee $fee) => $fee->instructor_id !== null)) {
+            throw new BusinessRuleException('El saldo a favor no se puede usar para cargos de un profesor.');
+        }
+
+        Member::query()->whereKey($member->id)->lockForUpdate()->first();
+        $available = $member->creditBalance();
+
+        if (bccomp($amount, $available, 2) > 0) {
+            throw new BusinessRuleException('El saldo a favor disponible es '.money($available).'.');
+        }
     }
 
     /**
@@ -144,6 +178,11 @@ class PaymentService
         DB::transaction(function () use ($payment, $reason, $by) {
             $fees = $payment->fees()->lockForUpdate()->get();
 
+            // Si ya se devolvió o se dejó a cuenta dinero de alguno de esos cargos, anular el pago lo contaría dos veces.
+            if ($fees->contains(fn (Fee $fee) => $fee->refunds()->exists() || MemberCredit::where('fee_id', $fee->id)->exists())) {
+                throw new BusinessRuleException('Ya se registró una devolución (o se dejó a cuenta dinero) de este pago; no se puede anular.');
+            }
+
             foreach ($fees as $fee) {
                 $fee->paid_amount = bcsub((string) $fee->paid_amount, (string) $fee->pivot->amount, 2);
                 if ($fee->status !== FeeStatus::Cancelled) {
@@ -152,6 +191,16 @@ class PaymentService
                 }
                 $fee->save();
                 $this->subscriptions->handleFeeReverted($fee);
+            }
+
+            if ($payment->method === PaymentMethod::AccountCredit) {
+                MemberCredit::create([
+                    'member_id' => $payment->member_id,
+                    'amount' => $payment->amount,
+                    'payment_id' => $payment->id,
+                    'description' => 'Pago anulado (recibo '.$payment->receipt_number.'): vuelve el saldo a favor',
+                    'created_by' => $by?->id,
+                ]);
             }
 
             $payment->update([

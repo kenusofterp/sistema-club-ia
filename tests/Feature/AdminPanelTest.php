@@ -23,6 +23,8 @@ use App\Services\PaymentService;
 use App\Support\Permissions;
 use Database\Seeders\ClubBaseSeeder;
 use Database\Seeders\SiteContentSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -110,6 +112,27 @@ class AdminPanelTest extends TestCase
         $member = Member::where('document_number', '35123456')->first();
         $this->assertSame(MemberStatus::Active, $member->status);
         $this->assertNotNull($member->user_id);
+    }
+
+    public function test_member_form_offers_camera_and_saves_cropped_photo(): void
+    {
+        Storage::fake('public');
+        $this->actingAs($this->staff());
+        $member = $this->activeMember();
+
+        $this->get(route('admin.members.edit', $member))->assertOk()
+            ->assertSee('photoCapture', false)
+            ->assertSee('js/photo-capture.js', false)
+            ->assertSee('Sacar foto');
+
+        // Lo que sube el navegador después de recortar: un JPG cuadrado.
+        Livewire::test(MemberForm::class, ['member' => $member])
+            ->set('photo', UploadedFile::fake()->image('foto.jpg', 600, 600))
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertNotNull($member->fresh()->photo_path);
+        Storage::disk('public')->assertExists($member->fresh()->photo_path);
     }
 
     public function test_duplicate_document_is_rejected(): void
