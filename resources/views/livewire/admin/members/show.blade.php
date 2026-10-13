@@ -148,19 +148,31 @@
                         <div class="border-b border-slate-100 px-5 py-3"><h3 class="font-semibold text-slate-900">Pagos</h3></div>
                         <div class="overflow-x-auto">
                             <table class="data-table">
-                                <thead><tr><th>Recibo</th><th>Fecha</th><th>Medio</th><th class="text-right">Importe</th><th>Estado</th><th></th></tr></thead>
+                                <thead><tr><th>Recibo</th><th>Fecha</th><th>Concepto</th><th>Medio</th><th class="text-right">Importe</th><th>Estado</th><th></th></tr></thead>
                                 <tbody class="divide-y divide-slate-100">
                                     @forelse ($payments as $payment)
                                         <tr wire:key="pay-{{ $payment->id }}">
                                             <td class="font-medium">{{ $payment->receipt_number }}</td>
                                             <td>{{ $payment->payment_date->format('d/m/Y') }}</td>
+                                            <td class="text-sm">
+                                                @forelse ($payment->fees as $fee)
+                                                    <span class="block">
+                                                        {{ $fee->concept }}
+                                                        @if ($payment->fees->count() > 1 || bccomp((string) $fee->pivot->amount, (string) $payment->amount, 2) !== 0)
+                                                            <span class="text-xs text-slate-500 tabular-nums">· {{ money($fee->pivot->amount) }}</span>
+                                                        @endif
+                                                    </span>
+                                                @empty
+                                                    <span class="text-slate-400">—</span>
+                                                @endforelse
+                                            </td>
                                             <td>{{ $payment->method->label() }}</td>
                                             <td class="text-right tabular-nums">{{ money($payment->amount) }}</td>
                                             <td><x-badge :status="$payment->status" /></td>
                                             <td class="text-right"><a href="{{ route('admin.payments.receipt', $payment) }}" target="_blank" class="btn-ghost btn-sm"><x-icon name="printer" class="size-4" /></a></td>
                                         </tr>
                                     @empty
-                                        <tr><td colspan="6"><x-empty-state icon="banknotes" title="Sin pagos" /></td></tr>
+                                        <tr><td colspan="7"><x-empty-state icon="banknotes" title="Sin pagos" /></td></tr>
                                     @endforelse
                                 </tbody>
                             </table>

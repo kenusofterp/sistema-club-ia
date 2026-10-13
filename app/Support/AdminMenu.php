@@ -28,7 +28,7 @@ final class AdminMenu
                     'badge' => fn () => Member::where('status', MemberStatus::Pending)->count() ?: null],
                 ['label' => 'Categorías', 'route' => 'admin.categories', 'icon' => 'tag', 'can' => 'categorias.gestionar'],
                 ['label' => 'Ficha médica', 'route' => 'admin.medical-form', 'icon' => 'heart', 'can' => 'fichas_medicas.configurar'],
-                ['label' => 'Control de acceso', 'route' => 'admin.access', 'icon' => 'qr', 'can' => 'acceso.registrar'],
+                ['label' => 'Control de acceso', 'route' => 'admin.access', 'icon' => 'qr', 'can' => ['acceso.registrar', 'agenda.gestionar']],
             ]],
             ['title' => activity_label(true), 'items' => [
                 ['label' => activity_label(true), 'route' => 'admin.activities.index', 'icon' => 'trophy', 'can' => 'actividades.ver', 'active' => 'admin.activities.*'],
@@ -88,7 +88,8 @@ final class AdminMenu
             ->reject(fn (array $group) => ($group['gym'] ?? false) && ! uses_gym())
             ->map(function (array $group) use ($user, $withoutOrganization) {
                 $group['items'] = collect($group['items'])
-                    ->filter(fn (array $item) => ! isset($item['can']) || $user->can($item['can']))
+                    // 'can' admite una lista: alcanza con tener alguno de los permisos.
+                    ->filter(fn (array $item) => ! isset($item['can']) || $user->canAny((array) $item['can']))
                     ->filter(fn (array $item) => ! isset($item['when']) || ($item['when'])())
                     ->filter(fn (array $item) => ! $withoutOrganization || in_array($item['route'], ['admin.organizations', 'admin.help'], true))
                     ->map(function (array $item) {

@@ -111,8 +111,11 @@
                                     <li class="p-4 text-sm text-slate-500">Sin alumnos.</li>
                                 @endforelse
                             </ul>
+                            @php($attendanceLocked = $lesson->date->lt(today()) && ! $pastAttendanceAllowed)
                             <div class="flex flex-wrap gap-2 border-t border-slate-100 p-4">
-                                @if ($lesson->isScheduled())
+                                @if ($attendanceLocked && in_array($lesson->status, [\App\Enums\LessonStatus::Scheduled, \App\Enums\LessonStatus::Given], true))
+                                    <p class="w-full text-center text-xs text-slate-500">La asistencia de días anteriores no se puede tomar ni corregir (ver Configuración).</p>
+                                @elseif ($lesson->isScheduled())
                                     @if (! $lesson->date->isFuture())
                                         <button type="button" wire:click="markGiven({{ $lesson->id }})" class="btn-primary flex-1"><x-icon name="check" class="size-5" /> Guardar asistencia</button>
                                     @endif

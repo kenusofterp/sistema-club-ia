@@ -69,7 +69,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     Route::get('/socios/{member}/editar', Admin\Members\Form::class)->name('members.edit')->middleware('can:socios.editar');
     Route::get('/categorias', Admin\Categories\Index::class)->name('categories')->middleware('can:categorias.gestionar');
     Route::get('/ficha-medica', Admin\MedicalForm\Index::class)->name('medical-form')->middleware('can:fichas_medicas.configurar');
-    Route::get('/control-de-acceso', Admin\Access\Check::class)->name('access')->middleware('can:acceso.registrar');
+    // Ingreso (acceso.registrar) o asistencia por nivel (agenda.gestionar): se valida en el componente.
+    Route::get('/control-de-acceso', Admin\Access\Check::class)->name('access');
 
     // Actividades
     Route::get('/actividades', Admin\Activities\Index::class)->name('activities.index')->middleware('can:actividades.ver');

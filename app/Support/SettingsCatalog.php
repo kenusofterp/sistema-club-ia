@@ -100,6 +100,7 @@ final class SettingsCatalog
             ['group' => 'lessons', 'key' => 'activities.label_plural', 'type' => 'string', 'label' => 'Cómo se llaman las actividades (plural)', 'value' => 'Actividades'],
             ['group' => 'lessons', 'key' => 'lessons.generate_weeks', 'type' => 'integer', 'label' => 'Semanas de clases que se generan por adelantado para cada actividad', 'value' => 4, 'help' => 'Las clases de las actividades con horario aparecen en la agenda para tomar asistencia y que los alumnos avisen si faltan.'],
             ['group' => 'lessons', 'key' => 'lessons.absence_notice_enabled', 'type' => 'boolean', 'label' => 'Los alumnos pueden avisar desde la app que no van a una clase', 'value' => true],
+            ['group' => 'lessons', 'key' => 'lessons.past_attendance_allowed', 'type' => 'boolean', 'label' => 'Se puede tomar o corregir asistencia de días anteriores', 'value' => true, 'help' => 'Si lo desactivás, la asistencia solo se toma el mismo día de la clase (en Clases de hoy, la agenda y Control de acceso).'],
 
             // Cobros
             ['group' => 'payments', 'key' => 'payments.receipts_enabled', 'type' => 'boolean', 'label' => 'Los socios pueden informar pagos subiendo el comprobante de transferencia', 'value' => true],

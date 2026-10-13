@@ -209,6 +209,7 @@ class LessonService
     public function markGiven(Lesson $lesson, array $attendance, ?User $by = null): Lesson
     {
         $this->assertScheduled($lesson);
+        $this->assertAttendanceDate($lesson);
         if ($lesson->date->isAfter(today())) {
             throw new BusinessRuleException('No se puede marcar como dada una clase de una fecha futura.');
         }
@@ -262,6 +263,8 @@ class LessonService
     /** Vuelve a dejar programada una clase dada (corrección): anula los cargos de clase suelta sin pagos. */
     public function reopen(Lesson $lesson): Lesson
     {
+        $this->assertAttendanceDate($lesson);
+
         if ($lesson->status !== LessonStatus::Given) {
             throw new BusinessRuleException('Solo se pueden reabrir clases dadas.');
         }
@@ -411,6 +414,19 @@ class LessonService
         $conflict = $this->instructorConflict($instructor, $date, $start, $end, $ignoreLessonId);
         if ($conflict) {
             throw new BusinessRuleException("{$instructor->name} ya tiene una clase de {$conflict->timeRange()} en {$conflict->organization->name} ({$conflict->facility->name}).");
+        }
+    }
+
+    /** ¿Se puede tomar o corregir asistencia de días anteriores? (configurable por entidad) */
+    public function pastAttendanceAllowed(): bool
+    {
+        return (bool) setting('lessons.past_attendance_allowed', true);
+    }
+
+    private function assertAttendanceDate(Lesson $lesson): void
+    {
+        if ($lesson->date->lt(today()) && ! $this->pastAttendanceAllowed()) {
+            throw new BusinessRuleException('La asistencia solo se puede tomar o corregir el mismo día de la clase.');
         }
     }
 

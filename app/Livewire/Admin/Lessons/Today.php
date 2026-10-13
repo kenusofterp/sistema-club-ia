@@ -194,6 +194,7 @@ class Today extends Component
             'cashPending' => $user->can('cobros.niveles') && $cash->requiresSettlement() ? $cash->pendingTotal($user) : null,
             'scheduledCount' => $lessons->where('status', LessonStatus::Scheduled)->whereNotNull('activity_id')->count(),
             'activityLabel' => activity_label(),
+            'pastAttendanceAllowed' => app(LessonService::class)->pastAttendanceAllowed(),
         ]);
     }
 }

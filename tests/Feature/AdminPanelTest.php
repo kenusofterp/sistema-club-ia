@@ -55,7 +55,8 @@ class AdminPanelTest extends TestCase
             $this->get(route($route))->assertOk();
         }
 
-        $this->get(route('admin.members.show', $member))->assertOk()->assertSee($member->fullName());
+        $this->get(route('admin.members.show', $member))->assertOk()->assertSee($member->fullName())
+            ->assertSee($payment->receipt_number)->assertSee($fee->concept); // concepto pagado en la lista de pagos
         $this->get(route('admin.members.edit', $member))->assertOk();
         $this->get(route('admin.activities.edit', Activity::first()->id))->assertOk();
         $this->get(route('admin.payments.receipt', $payment))->assertOk()->assertSee($payment->receipt_number);

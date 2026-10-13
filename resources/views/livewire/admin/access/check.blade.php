@@ -1,6 +1,73 @@
 <div>
-    <x-page-header title="Control de acceso" :subtitle="$todayCount.' ingresos permitidos hoy'" />
+    <x-page-header title="Control de acceso" :subtitle="$mode === 'ingreso' ? $todayCount.' ingresos permitidos hoy' : 'Tomá lista: todos presentes, destildá a los que faltan'" />
 
+    @if ($canAccess && $canRollCall)
+        <div class="mb-4 inline-flex rounded-lg bg-slate-100 p-1 text-sm">
+            <button type="button" wire:click="setMode('ingreso')" @class(['flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium', 'bg-white text-slate-900 shadow-sm' => $mode === 'ingreso', 'text-slate-500' => $mode !== 'ingreso'])><x-icon name="qr" class="size-4" /> Ingreso</button>
+            <button type="button" wire:click="setMode('asistencia')" @class(['flex items-center gap-1.5 rounded-md px-3 py-1.5 font-medium', 'bg-white text-slate-900 shadow-sm' => $mode === 'asistencia', 'text-slate-500' => $mode !== 'asistencia'])><x-icon name="clipboard" class="size-4" /> Asistencia por {{ mb_strtolower(activity_label()) }}</button>
+        </div>
+    @endif
+
+    @if ($mode === 'asistencia')
+        <div class="mx-auto max-w-2xl space-y-4">
+            <div class="card grid gap-3 p-4 sm:grid-cols-[1fr_11rem]">
+                <x-field :label="activity_label()" for="activityId">
+                    <select id="activityId" wire:model.live="activityId" class="form-input">
+                        <option value="">Elegí…</option>
+                        @foreach ($activities as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                        @endforeach
+                    </select>
+                </x-field>
+                <x-field label="Fecha" for="date" error="date">
+                    <input id="date" type="date" wire:model.live="date" max="{{ today()->toDateString() }}" @unless ($pastAllowed) min="{{ today()->toDateString() }}" readonly @endunless class="form-input">
+                </x-field>
+            </div>
+
+            @if ($activities->isEmpty())
+                <div class="card"><x-empty-state icon="clipboard" :title="'No tenés '.mb_strtolower(activity_label(true)).' asignados'" /></div>
+            @elseif ($suspended)
+                <div class="rounded-lg bg-red-50 p-4 text-sm text-red-700">La clase de ese día está suspendida.</div>
+            @elseif ($activityId)
+                @php($presentCount = $roster->count() - count($absent))
+                <div class="card overflow-hidden">
+                    <div class="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50 px-4 py-3 text-sm">
+                        <span class="text-slate-600">Presentes <strong class="text-slate-900">{{ $presentCount }}</strong> de {{ $roster->count() }}
+                            @if ($lesson?->status === \App\Enums\LessonStatus::Given) · <span class="text-emerald-700">asistencia ya guardada</span>@endif
+                        </span>
+                        @if (count($absent))
+                            <button type="button" wire:click="allPresent" class="font-medium text-brand-700">Todos presentes</button>
+                        @endif
+                    </div>
+                    <ul class="divide-y divide-slate-100">
+                        @forelse ($roster as $row)
+                            @php($isPresent = ! in_array($row['member']->id, $absent, true))
+                            <li wire:key="rc-{{ $row['member']->id }}">
+                                <label class="flex cursor-pointer items-center gap-3 px-4 py-3">
+                                    <input type="checkbox" @checked($isPresent) wire:click="toggleAbsent({{ $row['member']->id }})"
+                                           class="size-6 shrink-0 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                                    <span class="min-w-0 flex-1">
+                                        <span @class(['block truncate font-medium', 'text-slate-800' => $isPresent, 'text-slate-400 line-through' => ! $isPresent])>{{ $row['member']->sortableName() }}</span>
+                                        @if ($row['notice'])
+                                            <span class="block truncate text-xs text-sky-700">{{ $row['notice'] }}</span>
+                                        @endif
+                                    </span>
+                                    <span @class(['text-xs font-semibold', 'text-emerald-700' => $isPresent, 'text-red-600' => ! $isPresent])>{{ $isPresent ? 'Presente' : 'Ausente' }}</span>
+                                </label>
+                            </li>
+                        @empty
+                            <li class="p-6 text-center text-sm text-slate-500">Este {{ mb_strtolower(activity_label()) }} no tiene alumnos inscriptos.</li>
+                        @endforelse
+                    </ul>
+                    @if ($roster->isNotEmpty())
+                        <div class="border-t border-slate-100 p-4">
+                            <button type="button" wire:click="saveAttendance" class="btn-primary w-full py-3 text-base"><x-icon name="check" class="size-5" /> Guardar asistencia</button>
+                        </div>
+                    @endif
+                </div>
+            @endif
+        </div>
+    @else
     <div class="grid gap-6 lg:grid-cols-5">
         <div class="space-y-6 lg:col-span-3">
             <div class="card p-6"
@@ -89,4 +156,5 @@
             </ul>
         </div>
     </div>
+    @endif
 </div>
