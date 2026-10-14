@@ -20,6 +20,7 @@ use App\Models\MemberCategory;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Services\PaymentService;
+use App\Support\Manual;
 use App\Support\Permissions;
 use Database\Seeders\ClubBaseSeeder;
 use Database\Seeders\SiteContentSeeder;
@@ -133,6 +134,28 @@ class AdminPanelTest extends TestCase
 
         $this->assertNotNull($member->fresh()->photo_path);
         Storage::disk('public')->assertExists($member->fresh()->photo_path);
+    }
+
+    public function test_manual_shows_every_section_and_has_a_printable_version(): void
+    {
+        $this->actingAs($this->staff('profesor'));
+
+        $screen = $this->get(route('admin.help'))->assertOk()
+            ->assertSee('Primeros pasos: profe que alquila canchas')
+            ->assertSee(route('admin.help.print'), false);
+
+        $print = $this->get(route('admin.help.print'))->assertOk()
+            ->assertSee('Contenido')
+            ->assertSee('Imprimir / Guardar PDF')
+            ->assertSee('@page', false);
+
+        // Cada tema del índice tiene su sección, en pantalla y en la versión para imprimir.
+        foreach (Manual::groups() as $group) {
+            foreach (array_keys($group['items']) as $id) {
+                $screen->assertSee('id="'.$id.'"', false);
+                $print->assertSee('id="'.$id.'"', false);
+            }
+        }
     }
 
     public function test_duplicate_document_is_rejected(): void

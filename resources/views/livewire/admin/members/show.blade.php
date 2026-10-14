@@ -20,6 +20,7 @@
             <div class="relative" x-data="{ open: false }" x-on:click.outside="open = false">
                 <button type="button" x-on:click="open = !open" class="btn-secondary px-2.5" aria-label="Más acciones"><x-icon name="chevron-down" class="size-4" /></button>
                 <div x-show="open" x-cloak x-transition class="absolute right-0 z-20 mt-2 w-60 rounded-xl bg-white py-2 shadow-lg ring-1 ring-slate-900/10">
+                    <a href="{{ route('admin.members.card', $member) }}" target="_blank" class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-50"><x-icon name="printer" class="size-4" /> Imprimir carnet</a>
                     <a href="{{ $member->verificationUrl() }}" target="_blank" class="flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-50"><x-icon name="qr" class="size-4" /> Verificar carnet</a>
                     @can('socios.editar')
                         @if ($member->user?->is_active)

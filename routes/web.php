@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\MemberCardController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\PwaController;
@@ -59,6 +60,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     Route::get('/', Admin\Dashboard::class)->name('dashboard');
     Route::get('/perfil', Admin\Profile::class)->name('profile');
     Route::get('/ayuda', Admin\Help::class)->name('help');
+    Route::view('/ayuda/imprimir', 'help-print')->name('help.print');
     Route::post('/entidad', [OrganizationSwitchController::class, 'admin'])->name('organization.switch');
     Route::get('/entidades', Admin\Organizations\Index::class)->name('organizations')->middleware('can:plataforma');
 
@@ -66,6 +68,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     Route::get('/socios', Admin\Members\Index::class)->name('members.index')->middleware('can:socios.ver');
     Route::get('/socios/nuevo', Admin\Members\Form::class)->name('members.create')->middleware('can:socios.crear');
     Route::get('/socios/{member}', Admin\Members\Show::class)->name('members.show')->middleware('can:socios.ver');
+    Route::get('/socios/{member}/carnet', [MemberCardController::class, 'admin'])->name('members.card')->middleware('can:socios.ver');
     Route::get('/socios/{member}/editar', Admin\Members\Form::class)->name('members.edit')->middleware('can:socios.editar');
     Route::get('/categorias', Admin\Categories\Index::class)->name('categories')->middleware('can:categorias.gestionar');
     Route::get('/ficha-medica', Admin\MedicalForm\Index::class)->name('medical-form')->middleware('can:fichas_medicas.configurar');
@@ -153,6 +156,7 @@ Route::prefix('portal')->name('portal.')->middleware(['auth', 'active', 'member'
     Route::get('/reservas', Portal\Reservations::class)->name('reservations');
     Route::get('/clases', Portal\Lessons::class)->name('lessons');
     Route::get('/carnet', Portal\Card::class)->name('card');
+    Route::get('/carnet/imprimir', [MemberCardController::class, 'member'])->name('card.print');
     Route::get('/mi-plan', Portal\Plans::class)->name('plans')->middleware('gym');
     Route::get('/mis-datos', Portal\Profile::class)->name('profile');
     Route::get('/recibo/{payment}', [ReceiptController::class, 'member'])->name('receipt');

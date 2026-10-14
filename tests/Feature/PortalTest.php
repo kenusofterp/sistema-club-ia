@@ -33,6 +33,36 @@ class PortalTest extends TestCase
         $this->get(route('portal.profile'))->assertOk();
     }
 
+    public function test_member_prints_own_card_with_photo_data_and_qr(): void
+    {
+        $user = $this->memberUser();
+        $member = $user->member;
+        $this->actingAs($user);
+
+        $this->get(route('portal.card'))->assertOk()->assertSee(route('portal.card.print'), false);
+        $this->get(route('portal.card.print'))->assertOk()
+            ->assertSee($member->first_name)
+            ->assertSee($member->document_number)
+            ->assertSee($member->member_number)
+            ->assertSee('Imprimir / Guardar PDF')
+            ->assertSee('<svg', false)
+            ->assertSee('85.6mm', false);
+    }
+
+    public function test_staff_prints_a_member_card_and_members_cannot_print_others(): void
+    {
+        $member = $this->activeMember();
+        $this->actingAs($this->staff('secretaria'));
+        $this->get(route('admin.members.card', $member))->assertOk()->assertSee($member->last_name);
+        $this->get(route('admin.members.show', $member))->assertOk()->assertSee('Imprimir carnet');
+
+        // Un socio solo imprime el suyo: la ruta del portal no recibe a otro socio.
+        $other = $this->memberUser();
+        $this->actingAs($other);
+        $this->get(route('portal.card.print'))->assertOk()->assertDontSee($member->document_number);
+        $this->get(route('admin.members.card', $member))->assertRedirect(); // el panel lo manda a su portal
+    }
+
     public function test_member_can_only_see_own_receipts(): void
     {
         $user = $this->memberUser();

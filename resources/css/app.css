@@ -157,7 +157,8 @@
     }
 }
 
+/* La impresión del manual se hace desde Manual › Imprimir / PDF (resources/views/help-print.blade.php),
+   con sus propios estilos en resources/views/help/styles.blade.php. */
 @media print {
     .manual figure button { box-shadow: none; }
-    .manual section { break-inside: avoid-page; }
 }

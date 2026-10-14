@@ -38,5 +38,6 @@
             @if ($overdue) · {{ $overdue }} {{ $overdue === 1 ? 'cuota vencida' : 'cuotas vencidas' }} @endif
         </p>
     </div>
-    <p class="text-center text-xs text-slate-500">Presentá este código en el ingreso al club. Agregá el portal a la pantalla de inicio para tenerlo siempre a mano.</p>
+    <a href="{{ route('portal.card.print') }}" target="_blank" class="btn-secondary w-full"><x-icon name="printer" class="size-4" /> Imprimir mi carnet</a>
+    <p class="text-center text-xs text-slate-500">Presentá este código en el ingreso al club. Agregá el portal a la pantalla de inicio para tenerlo siempre a mano, o imprimilo en tamaño tarjeta.</p>
 </div>

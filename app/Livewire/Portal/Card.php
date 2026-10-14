@@ -3,8 +3,6 @@
 namespace App\Livewire\Portal;
 
 use App\Livewire\Portal\Concerns\ForCurrentMember;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -19,16 +17,9 @@ class Card extends Component
     {
         $member = $this->member()->load('category');
 
-        $qr = (new QRCode(new QROptions([
-            'outputBase64' => false,
-            'svgAddXmlHeader' => false,
-            'drawLightModules' => false,
-            'addQuietzone' => true,
-        ])))->render($member->verificationUrl());
-
         return view('livewire.portal.card', [
             'member' => $member,
-            'qr' => $qr,
+            'qr' => $member->qrSvg(),
             'overdue' => $member->overdueFeesCount(),
         ]);
     }

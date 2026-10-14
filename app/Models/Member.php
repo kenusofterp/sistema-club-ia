@@ -9,6 +9,8 @@ use App\Enums\MemberStatus;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -339,5 +341,16 @@ class Member extends Model
     public function verificationUrl(): string
     {
         return route('member.verify', $this->uuid);
+    }
+
+    /** QR del carnet (SVG) que apunta a la verificación pública del socio. */
+    public function qrSvg(): string
+    {
+        return (new QRCode(new QROptions([
+            'outputBase64' => false,
+            'svgAddXmlHeader' => false,
+            'drawLightModules' => false,
+            'addQuietzone' => false,
+        ])))->render($this->verificationUrl());
     }
 }

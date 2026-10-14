@@ -145,11 +145,8 @@
             <x-field label="Referencia" for="reference" error="reference" help="N° de transferencia, factura o recibo.">
                 <input id="reference" wire:model="reference" class="form-input">
             </x-field>
-            <x-field label="Comprobante (foto o PDF)" for="attachment" error="attachment" class="sm:col-span-2">
-                <input id="attachment" type="file" wire:model="attachment" accept="image/*,application/pdf" class="form-input">
-                @if ($currentAttachment && ! $attachment)
-                    <a href="{{ $currentAttachment }}" target="_blank" class="mt-1 inline-block text-sm font-medium text-brand-700">Ver el comprobante cargado</a>
-                @endif
+            <x-field label="Comprobante (foto o PDF)" for="attachment" error="attachment" class="sm:col-span-2" help="Sacale una foto con la cámara de la compu o del celular, o subí el archivo.">
+                <x-document-capture model="attachment" :file="$attachment" :current="$currentAttachment" />
             </x-field>
         </form>
         <x-slot:footer>

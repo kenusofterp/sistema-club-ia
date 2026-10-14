@@ -6,7 +6,7 @@
         default => ['border-sky-200 bg-sky-50 text-sky-900', 'info', 'Consejo'],
     };
 @endphp
-<div class="my-4 rounded-xl border p-4 text-sm {{ $classes }}">
+<div class="tip-box my-4 rounded-xl border p-4 text-sm {{ $classes }}">
     <p class="mb-1 flex items-center gap-2 font-semibold"><x-icon :name="$icon" class="size-4" /> {{ $title ?? $default }}</p>
     <div class="space-y-2 leading-relaxed">{{ $slot }}</div>
 </div>

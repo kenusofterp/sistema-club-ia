@@ -12,6 +12,8 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Services\ExpenseService;
 use App\Services\PaymentService;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -63,6 +65,28 @@ class ExpenseTest extends TestCase
         $this->assertTrue($expense->expense_date->isToday());
         $this->assertSame(today()->startOfMonth()->toDateString(), $expense->period->toDateString());
         $this->assertSame($this->admin->id, $expense->created_by);
+    }
+
+    public function test_receipt_can_be_a_camera_photo(): void
+    {
+        Storage::fake('public');
+        $this->actingAs($this->admin);
+
+        // Lo que sube el navegador al sacar la foto: un JPG completo (sin recorte).
+        Livewire::test(ExpensesIndex::class)
+            ->call('create')
+            ->assertSee('Sacar foto')
+            ->assertSee('documentCapture', false)
+            ->set('category', 'otros')
+            ->set('amount', '12500')
+            ->set('attachment', UploadedFile::fake()->image('comprobante.jpg', 1200, 1600))
+            ->assertSee('Comprobante listo')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $expense = Expense::latest('id')->first();
+        $this->assertNotNull($expense->attachment_path);
+        Storage::disk('public')->assertExists($expense->attachment_path);
     }
 
     public function test_rent_status_shows_last_payment_and_whether_this_month_is_paid(): void
