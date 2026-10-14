@@ -17,8 +17,10 @@ use App\Models\Activity;
 use App\Models\Fee;
 use App\Models\Member;
 use App\Models\MemberCategory;
+use App\Models\Organization;
 use App\Models\Payment;
 use App\Models\Setting;
+use App\Models\User;
 use App\Services\PaymentService;
 use App\Support\Manual;
 use App\Support\Permissions;
@@ -296,5 +298,45 @@ class AdminPanelTest extends TestCase
 
         // Tampoco se lo puede abrir para editar desde esta pantalla.
         Livewire::test(UsersIndex::class)->call('edit', $super->id)->assertNotFound();
+    }
+
+    public function test_a_user_from_another_organization_can_be_added_by_email(): void
+    {
+        $other = $this->makeOrganization('Club Norte', 'norte');
+        $person = Organization::runFor($other, function () {
+            $user = User::factory()->create(['name' => 'Ana Norte', 'email' => 'ana@norte.com']);
+            $user->assignRole('tesorero');
+
+            return $user;
+        });
+        $hash = $person->password;
+
+        $this->actingAs($this->staff());
+        Livewire::test(UsersIndex::class)
+            ->call('create')
+            ->set('email', 'ANA@norte.com')
+            ->assertSet('existingUserId', $person->id)
+            ->assertSee('Ya hay una cuenta con este correo')
+            ->set('roles', ['secretaria'])
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSet('showForm', false);
+
+        $person->refresh();
+        $this->assertSame(1, User::where('email', 'ana@norte.com')->count());
+        $this->assertSame(['secretaria'], $person->roles()->pluck('name')->all());
+        $this->assertSame('Ana Norte', $person->name);
+        $this->assertSame($hash, $person->password);
+        // Los roles de la otra entidad siguen intactos.
+        Organization::runFor($other, fn () => $this->assertSame(['tesorero'], $person->roles()->pluck('name')->all()));
+
+        // Si ya tiene acceso aquí, se avisa en lugar de duplicar.
+        Livewire::test(UsersIndex::class)
+            ->call('create')
+            ->set('email', 'ana@norte.com')
+            ->set('roles', ['tesorero'])
+            ->call('save')
+            ->assertHasErrors('email');
+        $this->assertSame(['secretaria'], $person->roles()->pluck('name')->all());
     }
 }

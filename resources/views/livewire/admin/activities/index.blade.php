@@ -2,7 +2,7 @@
     <x-page-header :title="activity_label(true)" subtitle="Grupos, horarios, profesores, cupos y cuotas">
         <x-slot:actions>
             @can('actividades.gestionar')
-                <button type="button" wire:click="openIncrease" class="btn-secondary"><x-icon name="arrow-up" class="size-4" /> Aumentar cuotas</button>
+                <button type="button" wire:click="openIncrease" class="btn-secondary"><x-icon name="trending-up" class="size-4" /> Aumentar cuotas</button>
                 <a href="{{ route('admin.activities.create') }}" wire:navigate class="btn-primary"><x-icon name="plus" class="size-4" /> Agregar {{ mb_strtolower(activity_label()) }}</a>
             @endcan
         </x-slot:actions>

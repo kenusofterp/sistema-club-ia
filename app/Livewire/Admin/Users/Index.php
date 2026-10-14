@@ -51,6 +51,12 @@ class Index extends Component
     /** @var array<int, string> sedes de la entidad actual donde da clases */
     public array $facilityIds = [];
 
+    /**
+     * Al agregar, cuenta que ya existe con ese correo (de otra entidad o de un socio): no se crea
+     * otra, se le dan roles en esta entidad sin tocar su nombre ni su contraseña.
+     */
+    public ?int $existingUserId = null;
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -77,9 +83,25 @@ class Index extends Component
         $this->showForm = true;
     }
 
+    public function updatedEmail(): void
+    {
+        if ($this->editingId) {
+            return;
+        }
+
+        $this->existingUserId = $this->findByEmail()?->id;
+        $this->resetValidation(['email', 'name', 'password']);
+    }
+
     public function save(): void
     {
         $this->authorize('usuarios.gestionar');
+
+        if (! $this->editingId && ($existing = $this->findByEmail())) {
+            $this->addExisting($existing);
+
+            return;
+        }
 
         $this->validate([
             'name' => 'required|string|max:120',
@@ -140,6 +162,47 @@ class Index extends Component
         $this->notify($this->editingId ? 'Usuario actualizado.' : 'Usuario creado.');
     }
 
+    /** Da acceso a esta entidad a una cuenta que ya existe (la misma persona puede estar en varias). */
+    private function addExisting(User $user): void
+    {
+        if ($user->is_super_admin) {
+            $this->addError('email', 'Ese correo es de un super administrador: ya tiene acceso a todas las entidades.');
+
+            return;
+        }
+
+        if ($user->roles()->exists()) {
+            $this->addError('email', 'Esa persona ya tiene acceso a esta entidad. Buscala en la lista para editar sus roles.');
+
+            return;
+        }
+
+        $this->validate([
+            'roles' => 'required|array|min:1',
+            'roles.*' => Rule::exists('roles', 'name'),
+            'facilityIds' => 'array',
+            'facilityIds.*' => org_exists('facilities'),
+        ], [
+            'roles.required' => 'Asigná al menos un rol.',
+            'roles.min' => 'Asigná al menos un rol.',
+        ]);
+
+        DB::transaction(function () use ($user) {
+            $user->syncRoles($this->roles); // en la entidad actual
+            $user->facilities()->syncWithoutDetaching(array_map('intval', $this->facilityIds));
+        });
+
+        $this->showForm = false;
+        $this->notify("{$user->name} ahora tiene acceso a esta entidad. Ingresa con su correo y contraseña de siempre.");
+    }
+
+    private function findByEmail(): ?User
+    {
+        $email = mb_strtolower(trim($this->email));
+
+        return $email === '' ? null : User::whereRaw('lower(email) = ?', [$email])->first();
+    }
+
     /** Quita todos los roles del usuario en esta entidad (sigue existiendo en las demás). */
     public function removeFromOrganization(int $id): void
     {
@@ -172,7 +235,7 @@ class Index extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['editingId', 'name', 'email', 'phone', 'password', 'is_active', 'roles', 'sendInvite', 'facilityIds']);
+        $this->reset(['editingId', 'name', 'email', 'phone', 'password', 'is_active', 'roles', 'sendInvite', 'facilityIds', 'existingUserId']);
         $this->resetValidation();
     }
 

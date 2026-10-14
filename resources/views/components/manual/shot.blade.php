@@ -1,8 +1,10 @@
 @props(['src', 'caption' => null])
-{{-- Captura de pantalla del manual de uso (public/images/manual). Clic para ampliar. --}}
+{{-- Captura de pantalla del manual de uso (public/images/manual). Clic para ampliar.
+     En la versión para imprimir se cargan de entrada: con lazy, las que no se vieron no salen en el PDF. --}}
+@php($loading = request()->routeIs('admin.help.print') ? 'eager' : 'lazy')
 <figure class="my-5" x-data="{ zoom: false }">
     <button type="button" x-on:click="zoom = true" class="block w-full cursor-zoom-in overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm transition hover:shadow-md">
-        <img src="{{ asset('images/manual/'.$src) }}" alt="{{ $caption }}" loading="lazy" class="w-full">
+        <img src="{{ asset('images/manual/'.$src) }}" alt="{{ $caption }}" loading="{{ $loading }}" class="w-full">
     </button>
     @if ($caption)
         <figcaption class="mt-2 text-center text-xs text-slate-500">{{ $caption }}</figcaption>

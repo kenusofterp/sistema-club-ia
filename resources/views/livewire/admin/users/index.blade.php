@@ -48,21 +48,28 @@
 
     <x-modal wire:model="showForm" :title="$editingId ? 'Editar usuario' : 'Agregar usuario'">
         <form wire:submit="save" id="user-form" class="grid gap-4 sm:grid-cols-2">
-            <x-field label="Nombre" for="name" error="name" required>
-                <input id="name" wire:model="name" class="form-input">
-            </x-field>
             <x-field label="Correo electrónico" for="email" error="email" required>
-                <input id="email" type="email" wire:model="email" class="form-input">
+                <input id="email" type="email" @if ($editingId) wire:model="email" @else wire:model.blur="email" @endif class="form-input">
             </x-field>
-            <x-field label="Teléfono" for="phone" error="phone">
-                <input id="phone" wire:model="phone" class="form-input">
-            </x-field>
-            <x-field :label="$editingId ? 'Nueva contraseña (opcional)' : 'Contraseña'" for="password" error="password">
-                <input id="password" type="password" wire:model="password" class="form-input" autocomplete="new-password">
-            </x-field>
-            @unless ($editingId)
-                <label class="flex items-center gap-2 text-sm text-slate-600 sm:col-span-2"><input type="checkbox" wire:model="sendInvite" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Si no se define contraseña, enviar un correo para que la cree</label>
-            @endunless
+            @if ($existingUserId)
+                <div class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 sm:col-span-2">
+                    <p class="font-semibold">Ya hay una cuenta con este correo.</p>
+                    <p class="mt-0.5">No se crea otra: elegí sus roles en {{ $currentOrganization?->name }} y va a poder ingresar acá con su correo y contraseña de siempre. Su nombre y contraseña no cambian.</p>
+                </div>
+            @else
+                <x-field label="Nombre" for="name" error="name" required>
+                    <input id="name" wire:model="name" class="form-input">
+                </x-field>
+                <x-field label="Teléfono" for="phone" error="phone">
+                    <input id="phone" wire:model="phone" class="form-input">
+                </x-field>
+                <x-field :label="$editingId ? 'Nueva contraseña (opcional)' : 'Contraseña'" for="password" error="password">
+                    <input id="password" type="password" wire:model="password" class="form-input" autocomplete="new-password">
+                </x-field>
+                @unless ($editingId)
+                    <label class="flex items-center gap-2 text-sm text-slate-600 sm:col-span-2"><input type="checkbox" wire:model="sendInvite" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Si no se define contraseña, enviar un correo para que la cree</label>
+                @endunless
+            @endif
             <div class="sm:col-span-2">
                 <span class="form-label">Roles en {{ $currentOrganization?->name }}</span>
                 <div class="grid gap-2 sm:grid-cols-2">
@@ -88,8 +95,10 @@
                     <p class="form-help">Solo para profesores. Las sedes de otras entidades se asignan desde cada entidad.</p>
                 </div>
             @endif
-            <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model="is_active" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Usuario activo</label>
-            @error('is_active') <p class="form-error sm:col-span-2">{{ $message }}</p> @enderror
+            @unless ($existingUserId)
+                <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model="is_active" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Usuario activo</label>
+                @error('is_active') <p class="form-error sm:col-span-2">{{ $message }}</p> @enderror
+            @endunless
         </form>
         <x-slot:footer>
             <button type="button" class="btn-secondary" x-on:click="open = false">Cancelar</button>
