@@ -9,6 +9,7 @@
         'socios' => '5. Cargar socios',
         'cuotas' => '6. Cuotas y cargos',
         'pagos' => '7. Cobrar y emitir recibos',
+        'gastos' => '7b. Gastos y resultado del mes',
         'actividades' => '8. Actividades e inscripciones',
         'instalaciones' => '9. Instalaciones y reservas',
         'gimnasio' => '10. Gimnasio: planes',
@@ -227,6 +228,22 @@
                 </x-manual.tip>
                 <p>El listado de <strong>Pagos</strong> permite filtrar por fecha y medio, reimprimir recibos, exportar a planilla y <strong>anular</strong> un pago mal cargado (los cargos vuelven a quedar pendientes).</p>
                 <x-manual.shot src="13-pagos.png" caption="Listado de pagos." />
+            </section>
+
+            {{-- ============================================================ --}}
+            <section id="gastos" class="scroll-mt-20">
+                <h2>7b. Gastos y resultado del mes</h2>
+                <p>Lo que se cobra son los <strong>pagos</strong>; lo que se paga (el alquiler del salón, la luz, sueldos, insumos…) se registra en <strong>Tesorería › Gastos</strong>. Con las dos cosas el tablero muestra cuánto entró, cuánto salió y cuánto quedó.</p>
+                <ol class="steps">
+                    <li>Tocá <strong>Registrar gasto</strong> y elegí la categoría (o escribí una nueva).</li>
+                    <li>Para el <strong>alquiler</strong>, elegí la categoría <em>Alquiler</em> y el salón en <em>Instalación</em>, y el <em>mes al que corresponde</em>. El sistema te recuerda cuánto y cuándo se pagó el anterior.</li>
+                    <li>Cargá la fecha en que lo pagaste, el importe y el medio. Si querés, el número de transferencia y una foto del recibo.</li>
+                </ol>
+                <x-manual.tip type="example">
+                    El 5/10 se pagan $ 150.000 por transferencia por el alquiler de octubre del salón. Arriba de la lista queda la tarjeta <em>Alquiler · Salón</em> con el último pago y si octubre está pago. En noviembre, el botón <strong>Repetir</strong> (↻) de esa fila abre el formulario ya completo para noviembre: solo hay que ajustar el importe si aumentó.
+                </x-manual.tip>
+                <p>En el <strong>Tablero</strong> aparecen <em>Recaudado este mes</em>, <em>Gastado este mes</em>, el <em>Resultado del mes</em> (recaudado menos gastos y devoluciones), el gráfico de los últimos 12 meses con las dos barras, los gastos del mes por categoría y la lista de <strong>Deudores</strong> con cuánto debe cada uno y desde cuándo.</p>
+                <p>Permisos: <em>Ver los gastos</em> y <em>Registrar, corregir y eliminar gastos</em> (en Tesorería, dentro de Roles y permisos).</p>
             </section>
 
             {{-- ============================================================ --}}
@@ -489,7 +506,7 @@
                 <h2>17. Auditoría y reportes</h2>
                 <p><strong>Auditoría</strong> registra quién creó, modificó o anuló cada dato y cuándo, con el detalle de los cambios. Útil para controlar anulaciones de pagos o cambios de cuotas.</p>
                 <x-manual.shot src="27-auditoria.png" caption="Registro de auditoría." />
-                <p>Los listados de <strong>Socios</strong>, <strong>Pagos</strong> y <strong>Cuotas</strong> tienen botón de <strong>Exportar</strong> a planilla (respetando los filtros aplicados). El <strong>Tablero</strong> resume socios activos, recaudación del mes, deuda vencida, recaudación de los últimos 12 meses y reservas del día.</p>
+                <p>Los listados de <strong>Socios</strong>, <strong>Pagos</strong> y <strong>Cuotas</strong> tienen botón de <strong>Exportar</strong> a planilla (respetando los filtros aplicados). El <strong>Tablero</strong> resume lo recaudado, lo gastado y el resultado del mes, la deuda vencida y los deudores, socios activos, lo recaudado y gastado en los últimos 12 meses y las reservas del día.</p>
                 <x-manual.shot src="28-tablero.png" caption="Tablero principal con los indicadores de la entidad." />
             </section>
 

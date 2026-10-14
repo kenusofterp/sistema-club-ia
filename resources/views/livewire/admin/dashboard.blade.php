@@ -29,18 +29,31 @@
             </div>
         @endif
 
+        {{-- Finanzas del mes: lo que entró, lo que salió, lo que quedó y lo que deben --}}
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <x-stat-card label="Socios activos" :value="number_format($activeMembers, 0, ',', '.')" icon="users"
-                         :hint="$pendingMembers ? $pendingMembers.' solicitudes pendientes' : 'Sin solicitudes pendientes'"
-                         :href="auth()->user()->can('socios.ver') ? route('admin.members.index') : null" />
-            <x-stat-card label="Recaudación del mes" :value="money($incomeThisMonth)" icon="banknotes" tone="sky"
+            <x-stat-card label="Recaudado este mes" :value="money($incomeThisMonth)" icon="banknotes" tone="sky"
                          :hint="$incomeDelta !== null ? ($incomeDelta >= 0 ? '▲ ' : '▼ ').abs($incomeDelta).'% vs. mismo período del mes anterior' : null"
                          :href="auth()->user()->can('pagos.ver') ? route('admin.payments.index') : null" />
+            <x-stat-card label="Gastado este mes" :value="money($expensesThisMonth)" icon="credit-card" tone="amber"
+                         :hint="bccomp($refundsThisMonth, '0', 2) > 0 ? 'Además, '.money($refundsThisMonth).' en devoluciones' : ($expensesByCategory->isNotEmpty() ? 'Mayor gasto: '.$expensesByCategory->keys()->first() : 'Sin gastos registrados')"
+                         :href="auth()->user()->can('gastos.ver') ? route('admin.expenses') : null" />
+            <x-stat-card label="Resultado del mes" :value="money($resultThisMonth)" icon="chart"
+                         :tone="bccomp($resultThisMonth, '0', 2) >= 0 ? 'green' : 'red'"
+                         :hint="bccomp($resultThisMonth, '0', 2) >= 0 ? 'Recaudado menos gastos: quedó a favor' : 'Se gastó más de lo recaudado'" />
             <x-stat-card label="Deuda vencida" :value="money($overdueTotal)" icon="warning" tone="red"
                          :hint="$overdueMembers.' socios con cuotas vencidas'"
                          :href="auth()->user()->can('cuotas.ver') ? route('admin.fees', ['status' => 'vencida']) : null" />
-            <x-stat-card label="Inscripciones activas" :value="number_format($activeEnrollments, 0, ',', '.')" icon="trophy" tone="amber"
-                         :hint="$todayReservations->count().' reservas para hoy'" />
+        </div>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <x-stat-card label="Socios activos" :value="number_format($activeMembers, 0, ',', '.')" icon="users"
+                         :hint="$pendingMembers ? $pendingMembers.' solicitudes pendientes' : 'Sin solicitudes pendientes'"
+                         :href="auth()->user()->can('socios.ver') ? route('admin.members.index') : null" />
+            <x-stat-card label="Inscripciones activas" :value="number_format($activeEnrollments, 0, ',', '.')" icon="trophy" tone="amber" />
+            <x-stat-card label="Reservas para hoy" :value="$todayReservations->count()" icon="calendar" tone="sky"
+                         :href="auth()->user()->can('reservas.ver') ? route('admin.reservations') : null" />
+            <x-stat-card label="Mensajes sin leer" :value="$unreadMessages" icon="inbox"
+                         :href="auth()->user()->can('mensajes.ver') ? route('admin.messages') : null" />
         </div>
 
         @if ($gymStats)
@@ -57,19 +70,23 @@
         @endif
 
         <div class="mt-6 grid gap-6 xl:grid-cols-3">
-            {{-- Recaudación mensual: una sola serie, barras con tooltip por mes --}}
+            {{-- Recaudado vs. gastado: dos series, barras agrupadas por mes con tooltip --}}
             <div class="card p-6 xl:col-span-2">
-                <div class="flex items-start justify-between gap-4">
+                <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <h2 class="font-semibold text-slate-900">Recaudación mensual</h2>
-                        <p class="text-sm text-slate-500">Pagos confirmados de los últimos 12 meses</p>
+                        <h2 class="font-semibold text-slate-900">Recaudado y gastado por mes</h2>
+                        <p class="text-sm text-slate-500">Últimos 12 meses</p>
                     </div>
-                    @can('reportes.ver')
-                        <a href="{{ route('admin.export', 'pagos') }}" class="btn-ghost btn-sm"><x-icon name="download" class="size-4" /> CSV</a>
-                    @endcan
+                    <div class="flex items-center gap-4 text-xs text-slate-600">
+                        <span class="flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-brand-500"></span> Recaudado</span>
+                        <span class="flex items-center gap-1.5"><span class="size-2.5 rounded-sm bg-slate-400"></span> Gastado</span>
+                        @can('reportes.ver')
+                            <a href="{{ route('admin.export', 'pagos') }}" class="btn-ghost btn-sm"><x-icon name="download" class="size-4" /> CSV</a>
+                        @endcan
+                    </div>
                 </div>
 
-                <div class="relative mt-6 h-64" x-data="{ hover: null }" role="img" aria-label="Gráfico de barras de recaudación mensual">
+                <div class="relative mt-6 h-64" x-data="{ hover: null }" role="img" aria-label="Gráfico de barras de lo recaudado y lo gastado por mes">
                     {{-- Grilla tenue --}}
                     <div class="pointer-events-none absolute inset-0 bottom-6 flex flex-col justify-between">
                         @foreach ([1, 0.75, 0.5, 0.25, 0] as $tick)
@@ -81,16 +98,21 @@
                     </div>
                     <div class="absolute inset-0 bottom-6 left-16 flex items-end gap-[2px]">
                         @foreach ($chart as $i => $bar)
-                            <div class="group relative flex h-full flex-1 cursor-default items-end justify-center"
+                            @php($top = max($bar['value'], $bar['expenses']) / $chartMax * 100)
+                            <div class="group relative flex h-full flex-1 cursor-default items-end justify-center gap-[2px] rounded-t-md transition-colors"
+                                 :class="hover === {{ $i }} && 'bg-slate-50'"
                                  x-on:mouseenter="hover = {{ $i }}" x-on:mouseleave="hover = null">
-                                <div class="w-full max-w-10 rounded-t-[4px] transition-colors {{ $loop->last ? 'bg-brand-600' : 'bg-brand-400' }}"
-                                     :class="hover === {{ $i }} && 'bg-brand-700'"
+                                <div class="w-full max-w-5 rounded-t-[4px] bg-brand-500"
                                      style="height: {{ $bar['value'] > 0 ? max(1, $bar['value'] / $chartMax * 100) : 0 }}%"></div>
+                                <div class="w-full max-w-5 rounded-t-[4px] bg-slate-400"
+                                     style="height: {{ $bar['expenses'] > 0 ? max(1, $bar['expenses'] / $chartMax * 100) : 0 }}%"></div>
                                 <div x-show="hover === {{ $i }}" x-cloak
-                                     class="absolute bottom-full z-10 mb-2 rounded-lg bg-slate-900 px-3 py-2 text-xs whitespace-nowrap text-white shadow-lg"
-                                     style="bottom: calc({{ $bar['value'] / $chartMax * 100 }}% + 8px)">
+                                     class="absolute z-10 mb-2 rounded-lg bg-slate-900 px-3 py-2 text-xs whitespace-nowrap text-white shadow-lg {{ $i > 8 ? 'right-0' : ($i < 3 ? 'left-0' : '') }}"
+                                     style="bottom: calc({{ min($top, 70) }}% + 8px)">
                                     <p class="text-white/70">{{ $bar['full'] }}</p>
-                                    <p class="font-semibold tabular-nums">{{ money($bar['value']) }}</p>
+                                    <p class="tabular-nums"><span class="mr-1 inline-block size-2 rounded-sm bg-brand-400"></span>Recaudado: <strong>{{ money($bar['value']) }}</strong></p>
+                                    <p class="tabular-nums"><span class="mr-1 inline-block size-2 rounded-sm bg-slate-400"></span>Gastado: <strong>{{ money($bar['expenses']) }}</strong></p>
+                                    <p class="mt-1 border-t border-white/20 pt-1 tabular-nums">Resultado: <strong>{{ money($bar['value'] - $bar['expenses']) }}</strong></p>
                                 </div>
                             </div>
                         @endforeach
@@ -102,13 +124,68 @@
                     </div>
                 </div>
                 <table class="sr-only">
-                    <caption>Recaudación mensual</caption>
+                    <caption>Recaudado y gastado por mes</caption>
+                    <thead><tr><th>Mes</th><th>Recaudado</th><th>Gastado</th></tr></thead>
                     <tbody>
                         @foreach ($chart as $bar)
-                            <tr><th>{{ $bar['full'] }}</th><td>{{ money($bar['value']) }}</td></tr>
+                            <tr><th>{{ $bar['full'] }}</th><td>{{ money($bar['value']) }}</td><td>{{ money($bar['expenses']) }}</td></tr>
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            {{-- Deudores: socios con cuotas o cargos vencidos, de mayor a menor deuda --}}
+            <div class="card">
+                <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+                    <h2 class="font-semibold text-slate-900">Deudores</h2>
+                    @can('cuotas.ver')<a href="{{ route('admin.fees', ['status' => 'vencida']) }}" wire:navigate class="text-sm font-medium text-brand-700">Ver todos</a>@endcan
+                </div>
+                <ul class="divide-y divide-slate-100">
+                    @forelse ($debtors as $debtor)
+                        <li>
+                            <a @can('socios.ver') href="{{ route('admin.members.show', $debtor) }}" wire:navigate @endcan class="flex items-center justify-between gap-3 px-6 py-3 hover:bg-slate-50">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-slate-800">{{ $debtor->fullName() }}</p>
+                                    <p class="text-xs text-slate-500">Debe desde el {{ \Illuminate\Support\Carbon::parse($debtor->oldest_due)->format('d/m/Y') }}</p>
+                                </div>
+                                <span class="text-sm font-semibold text-red-600 tabular-nums">{{ money($debtor->debt) }}</span>
+                            </a>
+                        </li>
+                    @empty
+                        <li class="px-6 py-8 text-center text-sm text-slate-500">Nadie tiene cuotas vencidas. 🎉</li>
+                    @endforelse
+                </ul>
+                @if ($overdueMembers > $debtors->count())
+                    <p class="border-t border-slate-100 px-6 py-3 text-xs text-slate-500">Y {{ $overdueMembers - $debtors->count() }} socios más.</p>
+                @endif
+            </div>
+        </div>
+
+        <div class="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+            {{-- Gastos del mes por categoría --}}
+            <div class="card p-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-semibold text-slate-900">Gastos del mes</h2>
+                    @can('gastos.ver')<a href="{{ route('admin.expenses') }}" wire:navigate class="text-sm font-medium text-brand-700">Ver gastos</a>@endcan
+                </div>
+                <ul class="mt-5 space-y-4">
+                    @forelse ($expensesByCategory as $name => $amount)
+                        <li>
+                            <div class="mb-1 flex justify-between gap-3 text-sm">
+                                <span class="truncate text-slate-700">{{ $name }}</span>
+                                <span class="font-medium text-slate-900 tabular-nums">{{ money($amount) }}</span>
+                            </div>
+                            <div class="h-2 rounded-full bg-slate-100">
+                                <div class="h-2 rounded-full bg-slate-400" style="width: {{ bccomp($expensesThisMonth, '0', 2) > 0 ? $amount / $expensesThisMonth * 100 : 0 }}%"></div>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="text-sm text-slate-500">
+                            Todavía no se registraron gastos este mes.
+                            @can('gastos.gestionar')<a href="{{ route('admin.expenses') }}" wire:navigate class="font-medium text-brand-700">Registrar el alquiler u otro gasto</a>.@endcan
+                        </li>
+                    @endforelse
+                </ul>
             </div>
 
             {{-- Socios por categoría --}}
@@ -130,9 +207,7 @@
                     @endforelse
                 </ul>
             </div>
-        </div>
 
-        <div class="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
             <div class="card">
                 <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
                     <h2 class="font-semibold text-slate-900">Últimos pagos</h2>

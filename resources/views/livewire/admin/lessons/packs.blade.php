@@ -164,7 +164,7 @@
                     @endif
                 </x-field>
                 <x-field label="Comienza" for="sellStart" error="sellStart" required>
-                    <input id="sellStart" type="date" wire:model="sellStart" class="form-input">
+                    <x-date-input id="sellStart" wire:model="sellStart" />
                 </x-field>
                 <label class="flex items-center gap-2 text-sm text-slate-700">
                     <input type="checkbox" wire:model="sellAutoRenew" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500"> Renovar automáticamente al vencer

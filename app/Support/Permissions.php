@@ -42,6 +42,8 @@ final class Permissions
                 'comprobantes.revisar' => 'Revisar y aprobar comprobantes de transferencia',
                 'cobros.niveles' => 'Cobrar en efectivo a los alumnos de sus actividades o niveles',
                 'rendiciones.gestionar' => 'Confirmar las rendiciones de efectivo de los profesores',
+                'gastos.ver' => 'Ver los gastos (alquileres, servicios, sueldos…)',
+                'gastos.gestionar' => 'Registrar, corregir y eliminar gastos',
             ],
             'Gimnasio' => [
                 'planes.gestionar' => 'Crear y editar planes / membresías',
@@ -92,7 +94,7 @@ final class Permissions
             ],
             'tesorero' => [
                 'label' => 'Tesorería',
-                'permissions' => ['dashboard.ver', 'reportes.ver', 'socios.ver', 'cuotas.ver', 'cuotas.gestionar', 'pagos.ver', 'pagos.registrar', 'pagos.anular', 'reservas.ver', 'suscripciones.gestionar', 'comprobantes.revisar', 'rendiciones.gestionar'],
+                'permissions' => ['dashboard.ver', 'reportes.ver', 'socios.ver', 'cuotas.ver', 'cuotas.gestionar', 'pagos.ver', 'pagos.registrar', 'pagos.anular', 'reservas.ver', 'suscripciones.gestionar', 'comprobantes.revisar', 'rendiciones.gestionar', 'gastos.ver', 'gastos.gestionar'],
             ],
             'secretaria' => [
                 'label' => 'Secretaría',

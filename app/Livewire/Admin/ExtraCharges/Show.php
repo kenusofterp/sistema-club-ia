@@ -8,6 +8,7 @@ use App\Models\ExtraCharge;
 use App\Models\Member;
 use App\Services\ExtraChargeService;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /** Quién pagó, quién debe y a quién se le anuló (ej. "la consiguió por otro lado"). */
@@ -17,6 +18,10 @@ class Show extends Component
     use InteractsWithUi;
 
     public ExtraCharge $extraCharge;
+
+    /** todos | deben | pagaron | anulados */
+    #[Url(as: 'ver')]
+    public string $filter = 'todos';
 
     // ---- Anular a un alumno ----
     public bool $showCancel = false;
@@ -136,6 +141,12 @@ class Show extends Component
             ->get()
             ->unique('member_id')
             ->sortBy(fn ($fee) => [$fee->status === FeeStatus::Cancelled ? 1 : 0, $fee->member?->sortableName()])
+            ->filter(fn ($fee) => match ($this->filter) {
+                'deben' => $fee->isOpen(),
+                'pagaron' => $fee->status === FeeStatus::Paid,
+                'anulados' => $fee->status === FeeStatus::Cancelled,
+                default => true,
+            })
             ->values();
 
         return view('livewire.admin.extra-charges.show', [

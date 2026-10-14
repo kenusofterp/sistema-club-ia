@@ -33,7 +33,7 @@
                     </select>
                 </x-field>
                 <x-field label="Fecha" for="date" error="date">
-                    <input id="date" type="date" wire:model.live="date" min="{{ today()->toDateString() }}" max="{{ $maxDate }}" class="form-input">
+                    <x-date-input id="date" wire:model.live="date" :min="today()->toDateString()" :max="$maxDate" />
                 </x-field>
                 <x-field label="Duración" for="slots">
                     <select id="slots" wire:model="slotCount" class="form-input">

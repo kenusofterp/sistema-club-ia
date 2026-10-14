@@ -5,6 +5,7 @@
         'red' => 'bg-red-50 text-red-600',
         'amber' => 'bg-amber-50 text-amber-600',
         'sky' => 'bg-sky-50 text-sky-600',
+        'green' => 'bg-emerald-50 text-emerald-600',
     ];
 @endphp
 <{{ $href ? 'a' : 'div' }} @if ($href) href="{{ $href }}" wire:navigate @endif class="card flex items-start gap-4 p-5 {{ $href ? 'transition hover:border-brand-300 hover:shadow' : '' }}">

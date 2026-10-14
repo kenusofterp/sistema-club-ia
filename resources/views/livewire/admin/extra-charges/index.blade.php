@@ -21,7 +21,13 @@
                             <td class="text-right tabular-nums">{{ money($charge->price) }}</td>
                             <td>{{ $charge->due_date->format('d/m/Y') }}</td>
                             <td class="text-right tabular-nums">{{ $charge->charged_count }}</td>
-                            <td @class(['text-right tabular-nums', 'font-semibold text-red-600' => $charge->debtors_count > 0])>{{ $charge->debtors_count }}</td>
+                            <td @class(['text-right tabular-nums', 'font-semibold text-red-600' => $charge->debtors_count > 0])>
+                                @if ($charge->debtors_count > 0)
+                                    <a href="{{ route('admin.extra-charges.show', ['extraCharge' => $charge, 'ver' => 'deben']) }}" wire:navigate class="hover:underline">{{ $charge->debtors_count }}</a>
+                                @else
+                                    0
+                                @endif
+                            </td>
                             <td class="text-right tabular-nums">{{ money($charge->paid_total ?? 0) }}</td>
                         </tr>
                     @empty

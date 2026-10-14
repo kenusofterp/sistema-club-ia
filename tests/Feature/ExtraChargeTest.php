@@ -137,6 +137,23 @@ class ExtraChargeTest extends TestCase
         $this->assertSame(FeeStatus::Pending, Fee::where('extra_charge_id', $charge->id)->where('member_id', $b->id)->sole()->status);
     }
 
+    public function test_list_filters_who_owes_and_who_paid(): void
+    {
+        [$a, $b, $c] = [$this->student(), $this->student(), $this->student()];
+        $charge = $this->malla($this->tournamentWith([$a, $b, $c]), [$a, $b, $c]);
+        app(CashCollectionService::class)->collect($this->teacher, $a, [Fee::where('extra_charge_id', $charge->id)->where('member_id', $a->id)->value('id')], '25000');
+        app(ExtraChargeService::class)->cancelFor($charge, $c, 'Ya la tenía');
+        $this->actingAs($this->teacher);
+
+        $names = fn (string $filter) => Livewire::withQueryParams(['ver' => $filter])->test(ExtraChargeShow::class, ['extraCharge' => $charge])
+            ->viewData('rows')->pluck('member_id')->all();
+
+        $this->assertSame([$b->id], $names('deben'));
+        $this->assertSame([$a->id], $names('pagaron'));
+        $this->assertSame([$c->id], $names('anulados'));
+        $this->assertCount(3, $names('todos'));
+    }
+
     public function test_cannot_cancel_if_already_paid(): void
     {
         $a = $this->student();

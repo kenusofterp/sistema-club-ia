@@ -25,7 +25,7 @@
                                 <input id="{{ $id }}" type="number" step="any" wire:model="{{ $key }}" class="form-input">
                                 @break
                             @case(\App\Enums\MedicalFieldType::Date)
-                                <input id="{{ $id }}" type="date" wire:model="{{ $key }}" class="form-input">
+                                <x-date-input id="{{ $id }}" wire:model="{{ $key }}" />
                                 @break
                             @case(\App\Enums\MedicalFieldType::YesNo)
                                 <div class="flex gap-5 pt-1">

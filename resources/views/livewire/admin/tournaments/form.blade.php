@@ -28,7 +28,7 @@
                         <div class="rounded-lg bg-slate-50 p-4" wire:key="day-{{ $i }}">
                             <div class="grid gap-3 sm:grid-cols-[12rem_1fr_auto]">
                                 <x-field label="Fecha" for="days-{{ $i }}-date" :error="'days.'.$i.'.date'" required>
-                                    <input id="days-{{ $i }}-date" type="date" wire:model="days.{{ $i }}.date" class="form-input">
+                                    <x-date-input id="days-{{ $i }}-date" wire:model="days.{{ $i }}.date" />
                                 </x-field>
                                 <x-field label="Nota (opcional)" for="days-{{ $i }}-notes" :error="'days.'.$i.'.notes'">
                                     <input id="days-{{ $i }}-notes" wire:model="days.{{ $i }}.notes" class="form-input" placeholder="ej. 9 a 13 h, cancha 2">
@@ -61,7 +61,7 @@
                     <input id="price" type="number" step="0.01" min="0" wire:model="price" class="form-input">
                 </x-field>
                 <x-field label="Fecha máxima de pago" for="payment_due_date" error="payment_due_date" required>
-                    <input id="payment_due_date" type="date" wire:model="payment_due_date" class="form-input">
+                    <x-date-input id="payment_due_date" wire:model="payment_due_date" />
                 </x-field>
                 <fieldset class="space-y-2">
                     <legend class="form-label">¿Quiénes participan?</legend>

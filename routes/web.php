@@ -108,6 +108,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     });
     Route::get('/comprobantes', Admin\Receipts\Index::class)->name('receipts')->middleware('can:comprobantes.revisar');
     Route::get('/rendiciones', Admin\Settlements\Index::class)->name('settlements')->middleware('can:rendiciones.gestionar');
+    Route::get('/gastos', Admin\Expenses\Index::class)->name('expenses')->middleware('can:gastos.ver');
 
     // Instalaciones
     Route::get('/instalaciones', Admin\Facilities\Index::class)->name('facilities')->middleware('can:instalaciones.gestionar');

@@ -23,8 +23,8 @@
                 @endforeach
             </select>
             <div class="flex gap-2">
-                <input type="date" wire:model.live="from" class="form-input" title="Desde">
-                <input type="date" wire:model.live="to" class="form-input" title="Hasta">
+                <x-date-input wire:model.live="from" title="Desde" />
+                <x-date-input wire:model.live="to" title="Hasta" />
             </div>
         </div>
         <div class="divide-y divide-slate-100">

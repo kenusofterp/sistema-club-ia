@@ -80,7 +80,7 @@
                     </select>
                 </x-field>
                 <x-field label="Fecha" for="payment_date" error="payment_date" required>
-                    <input id="payment_date" type="date" wire:model="payment_date" max="{{ today()->toDateString() }}" class="form-input">
+                    <x-date-input id="payment_date" wire:model="payment_date" :max="today()->toDateString()" />
                 </x-field>
                 <x-field label="Referencia / N° de operación" for="reference" error="reference">
                     <input id="reference" wire:model="reference" class="form-input">

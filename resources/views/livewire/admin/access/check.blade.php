@@ -20,7 +20,7 @@
                     </select>
                 </x-field>
                 <x-field label="Fecha" for="date" error="date">
-                    <input id="date" type="date" wire:model.live="date" max="{{ today()->toDateString() }}" @unless ($pastAllowed) min="{{ today()->toDateString() }}" readonly @endunless class="form-input">
+                    <x-date-input id="date" wire:model.live="date" :max="today()->toDateString()" :min="$pastAllowed ? null : today()->toDateString()" :readonly="! $pastAllowed" />
                 </x-field>
             </div>
 

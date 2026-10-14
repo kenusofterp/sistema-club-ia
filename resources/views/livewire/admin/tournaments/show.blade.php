@@ -127,7 +127,7 @@
                     <ul class="space-y-2">
                         @forelse ($extraCharges as $charge)
                             <li>
-                                <a href="{{ route('admin.extra-charges.show', $charge) }}" wire:navigate class="flex items-center justify-between gap-2 rounded-lg bg-slate-50 p-3 hover:bg-slate-100">
+                                <a href="{{ route('admin.extra-charges.show', $charge->debtors_count > 0 ? ['extraCharge' => $charge, 'ver' => 'deben'] : $charge) }}" wire:navigate class="flex items-center justify-between gap-2 rounded-lg bg-slate-50 p-3 hover:bg-slate-100">
                                     <span><span class="font-medium text-slate-800">{{ $charge->name }}</span> <span class="text-xs text-slate-500">· {{ money($charge->price) }} · {{ $charge->charged_count }} alumnos</span></span>
                                     @if ($charge->debtors_count > 0)
                                         <span class="text-xs font-semibold text-red-600">{{ $charge->debtors_count }} deben</span>
@@ -184,7 +184,7 @@
                 </x-field>
                 @if ($refundDestination === 'devolver')
                     <x-field label="Fecha" for="refundDate" error="refundDate" required>
-                        <input id="refundDate" type="date" wire:model="refundDate" max="{{ today()->toDateString() }}" class="form-input">
+                        <x-date-input id="refundDate" wire:model="refundDate" :max="today()->toDateString()" />
                     </x-field>
                 @endif
             </div>

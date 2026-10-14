@@ -409,7 +409,7 @@
                     <input id="chargeAmount" type="number" step="0.01" min="0" wire:model="chargeAmount" class="form-input">
                 </x-field>
                 <x-field label="Vencimiento" for="chargeDueDate" error="chargeDueDate" required>
-                    <input id="chargeDueDate" type="date" wire:model="chargeDueDate" class="form-input">
+                    <x-date-input id="chargeDueDate" wire:model="chargeDueDate" />
                 </x-field>
             </div>
         </div>

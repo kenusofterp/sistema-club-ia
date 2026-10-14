@@ -226,7 +226,7 @@
             </x-field>
 
             <x-field label="Fecha" for="formDate" error="formDate" required>
-                <input id="formDate" type="date" wire:model.live="formDate" class="form-input">
+                <x-date-input id="formDate" wire:model.live="formDate" />
             </x-field>
             <div class="grid grid-cols-2 gap-3">
                 <x-field label="Inicio" for="startTime" error="startTime" required>
@@ -301,7 +301,7 @@
                                 @endforeach
                             </div>
                             <x-field label="Hasta" for="until" error="until">
-                                <input id="until" type="date" wire:model="until" class="form-input">
+                                <x-date-input id="until" wire:model="until" />
                             </x-field>
                         </div>
                         @error('days')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror

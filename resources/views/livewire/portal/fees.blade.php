@@ -141,7 +141,7 @@
                 </div>
                 <div>
                     <label for="transferDate" class="form-label">Fecha</label>
-                    <input id="transferDate" type="date" wire:model="transferDate" class="form-input">
+                    <x-date-input id="transferDate" wire:model="transferDate" />
                     @error('transferDate')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
             </div>

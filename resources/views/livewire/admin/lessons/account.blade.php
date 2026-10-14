@@ -116,7 +116,7 @@
                     <input id="amount" type="number" step="0.01" min="0" wire:model="amount" class="form-input">
                 </x-field>
                 <x-field label="Fecha" for="paymentDate" error="paymentDate" required>
-                    <input id="paymentDate" type="date" wire:model="paymentDate" class="form-input">
+                    <x-date-input id="paymentDate" wire:model="paymentDate" />
                 </x-field>
                 <x-field label="Medio de pago" for="method" error="method" required>
                     <select id="method" wire:model="method" class="form-input">

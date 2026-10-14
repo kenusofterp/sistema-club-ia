@@ -5,14 +5,17 @@ namespace App\Livewire\Admin;
 use App\Enums\EnrollmentStatus;
 use App\Enums\FeeStatus;
 use App\Enums\MemberStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\SubscriptionStatus;
 use App\Models\AccessLog;
 use App\Models\ContactMessage;
 use App\Models\Enrollment;
+use App\Models\Expense;
 use App\Models\Fee;
 use App\Models\Member;
 use App\Models\Payment;
+use App\Models\Refund;
 use App\Models\Reservation;
 use App\Models\Subscription;
 use Illuminate\Support\Facades\DB;
@@ -36,30 +39,40 @@ class Dashboard extends Component
         $monthStart = today()->startOfMonth();
         $prevStart = $monthStart->copy()->subMonthNoOverflow();
 
-        $incomeThisMonth = (string) Payment::confirmed()->whereDate('payment_date', '>=', $monthStart)->sum('amount');
-        $incomePrevMonth = (string) Payment::confirmed()
+        // Dinero que entró: los pagos con saldo a favor no son plata nueva (ya se contó al cobrarse).
+        $income = fn () => Payment::confirmed()->where('method', '!=', PaymentMethod::AccountCredit);
+
+        $incomeThisMonth = (string) $income()->whereDate('payment_date', '>=', $monthStart)->sum('amount');
+        $incomePrevMonth = (string) $income()
             ->whereBetween('payment_date', [$prevStart, $prevStart->copy()->day(min(today()->day, $prevStart->daysInMonth))])
             ->sum('amount');
+        $expensesThisMonth = (string) Expense::whereDate('expense_date', '>=', $monthStart)->sum('amount');
+        $refundsThisMonth = (string) Refund::whereDate('refund_date', '>=', $monthStart)->sum('amount');
 
         $overdue = Fee::where('status', FeeStatus::Overdue)
             ->selectRaw('COALESCE(SUM(amount + surcharge - paid_amount), 0) as total, COUNT(DISTINCT member_id) as members')
             ->first();
 
-        // Recaudación de los últimos 12 meses.
+        // Recaudación y gastos de los últimos 12 meses.
         $from = $monthStart->copy()->subMonthsNoOverflow(11);
-        $byMonth = Payment::confirmed()
+        $incomeByMonth = $income()
             ->whereDate('payment_date', '>=', $from)
             ->selectRaw("to_char(payment_date, 'YYYY-MM') as ym, SUM(amount) as total")
             ->groupBy('ym')
             ->pluck('total', 'ym');
+        $expensesByMonth = Expense::whereDate('expense_date', '>=', $from)
+            ->selectRaw("to_char(expense_date, 'YYYY-MM') as ym, SUM(amount) as total")
+            ->groupBy('ym')
+            ->pluck('total', 'ym');
 
-        $chart = collect(range(0, 11))->map(function ($i) use ($from, $byMonth) {
+        $chart = collect(range(0, 11))->map(function ($i) use ($from, $incomeByMonth, $expensesByMonth) {
             $month = $from->copy()->addMonthsNoOverflow($i);
 
             return [
                 'label' => ucfirst($month->translatedFormat('M')),
                 'full' => ucfirst($month->translatedFormat('F Y')),
-                'value' => (float) ($byMonth[$month->format('Y-m')] ?? 0),
+                'value' => (float) ($incomeByMonth[$month->format('Y-m')] ?? 0),
+                'expenses' => (float) ($expensesByMonth[$month->format('Y-m')] ?? 0),
             ];
         });
 
@@ -70,12 +83,26 @@ class Dashboard extends Component
             'incomeDelta' => bccomp($incomePrevMonth, '0', 2) > 0
                 ? round(((float) $incomeThisMonth - (float) $incomePrevMonth) / (float) $incomePrevMonth * 100)
                 : null,
+            'expensesThisMonth' => $expensesThisMonth,
+            'refundsThisMonth' => $refundsThisMonth,
+            'resultThisMonth' => bcsub(bcsub($incomeThisMonth, $expensesThisMonth, 2), $refundsThisMonth, 2),
+            'expensesByCategory' => Expense::whereDate('expense_date', '>=', $monthStart)
+                ->selectRaw('category, SUM(amount) as total')->groupBy('category')->orderByDesc('total')->pluck('total', 'category'),
             'overdueTotal' => (string) $overdue->total,
+            // Quiénes deben (cuotas y cargos vencidos), de mayor a menor deuda.
+            'debtors' => Member::query()
+                ->join('fees', 'fees.member_id', '=', 'members.id')
+                ->where('fees.status', FeeStatus::Overdue)
+                ->select('members.*', DB::raw('SUM(fees.amount + fees.surcharge - fees.paid_amount) as debt'), DB::raw('MIN(fees.due_date) as oldest_due'))
+                ->groupBy('members.id')
+                ->orderByDesc('debt')
+                ->limit(8)
+                ->get(),
             'overdueMembers' => (int) $overdue->members,
             'activeEnrollments' => Enrollment::where('status', EnrollmentStatus::Active)->count(),
             'todayReservations' => Reservation::confirmed()->whereDate('date', today())->with(['facility', 'member'])->orderBy('start_time')->get(),
             'chart' => $chart,
-            'chartMax' => max(1, $chart->max('value')),
+            'chartMax' => max(1, $chart->max('value'), $chart->max('expenses')),
             'latestPayments' => Payment::with('member')->where('status', PaymentStatus::Confirmed)->latest('id')->limit(6)->get(),
             'pendingList' => Member::with('category')->where('status', MemberStatus::Pending)->latest()->limit(5)->get(),
             'unreadMessages' => ContactMessage::unread()->count(),

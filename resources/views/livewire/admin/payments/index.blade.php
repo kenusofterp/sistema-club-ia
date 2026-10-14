@@ -20,8 +20,8 @@
     <div class="card">
         <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-5">
             <input type="search" wire:model.live.debounce.400ms="search" placeholder="Recibo o socio…" class="form-input">
-            <input type="date" wire:model.live="from" class="form-input" title="Desde">
-            <input type="date" wire:model.live="to" class="form-input" title="Hasta">
+            <x-date-input wire:model.live="from" title="Desde" />
+            <x-date-input wire:model.live="to" title="Hasta" />
             <select wire:model.live="method" class="form-input">
                 <option value="">Todos los medios</option>
                 @foreach ($methods as $value => $label)

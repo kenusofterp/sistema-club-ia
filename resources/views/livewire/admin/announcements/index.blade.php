@@ -45,10 +45,10 @@
             </x-field>
             <div></div>
             <x-field label="Publicar desde" for="published_at" error="published_at" help="Vacío = borrador.">
-                <input id="published_at" type="datetime-local" wire:model="published_at" class="form-input">
+                <x-date-input id="published_at" wire:model="published_at" :time="true" />
             </x-field>
             <x-field label="Vence" for="expires_at" error="expires_at">
-                <input id="expires_at" type="datetime-local" wire:model="expires_at" class="form-input">
+                <x-date-input id="expires_at" wire:model="expires_at" :time="true" />
             </x-field>
         </form>
         <x-slot:footer>

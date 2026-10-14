@@ -13,7 +13,7 @@
                     <input id="price" type="number" step="0.01" min="0" wire:model="price" class="form-input">
                 </x-field>
                 <x-field label="Pagar hasta" for="due_date" error="due_date" required :help="$maxDueDate ? 'A más tardar el día del torneo ('.\Illuminate\Support\Carbon::parse($maxDueDate)->format('d/m').').' : null">
-                    <input id="due_date" type="date" wire:model="due_date" @if ($maxDueDate) max="{{ $maxDueDate }}" @endif class="form-input">
+                    <x-date-input id="due_date" wire:model="due_date" :max="$maxDueDate" />
                 </x-field>
                 <x-field label="Detalle (opcional)" for="description" error="description">
                     <input id="description" wire:model="description" class="form-input" placeholder="ej. talle, color">

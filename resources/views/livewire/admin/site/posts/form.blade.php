@@ -28,7 +28,7 @@
                     </select>
                 </x-field>
                 <x-field label="Fecha de publicación" for="published_at" error="published_at" help="Una fecha futura la programa.">
-                    <input id="published_at" type="datetime-local" wire:model="published_at" class="form-input">
+                    <x-date-input id="published_at" wire:model="published_at" :time="true" />
                 </x-field>
             </div>
             <div class="card p-6">

@@ -26,6 +26,14 @@
     </div>
 
     <div class="card">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 p-4">
+            <h2 class="font-semibold text-slate-900">Alumnos</h2>
+            <div class="inline-flex rounded-lg bg-slate-100 p-1 text-sm">
+                @foreach (['todos' => 'Todos', 'deben' => 'Deben', 'pagaron' => 'Pagaron', 'anulados' => 'Anulados'] as $value => $label)
+                    <button type="button" wire:click="$set('filter', '{{ $value }}')" @class(['rounded-md px-3 py-1 font-medium', 'bg-white text-slate-900 shadow-sm' => $filter === $value, 'text-slate-500' => $filter !== $value])>{{ $label }}</button>
+                @endforeach
+            </div>
+        </div>
         <div class="overflow-x-auto">
             <table class="data-table">
                 <thead><tr><th>Alumno</th><th>Estado</th><th class="text-right">Pagado</th><th class="text-right">Debe</th><th></th></tr></thead>
@@ -49,7 +57,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5"><x-empty-state icon="users" title="No se le cobró a nadie" /></td></tr>
+                        <tr><td colspan="5"><x-empty-state icon="users" :title="match ($filter) { 'deben' => 'Nadie debe', 'pagaron' => 'Todavía no pagó nadie', 'anulados' => 'No hay anulados', default => 'No se le cobró a nadie' }" /></td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -76,7 +84,7 @@
             <x-field label="Detalle" for="e-description" error="description"><input id="e-description" wire:model="description" class="form-input"></x-field>
             <div class="grid grid-cols-2 gap-3">
                 <x-field label="Precio" for="e-price" error="price" required><input id="e-price" type="number" step="0.01" min="0" wire:model="price" class="form-input"></x-field>
-                <x-field label="Pagar hasta" for="e-due" error="due_date" required><input id="e-due" type="date" wire:model="due_date" @if ($extraCharge->tournament?->startsOn()) max="{{ $extraCharge->tournament->startsOn()->toDateString() }}" @endif class="form-input"></x-field>
+                <x-field label="Pagar hasta" for="e-due" error="due_date" required><x-date-input id="e-due" wire:model="due_date" :max="$extraCharge->tournament?->startsOn()?->toDateString()" /></x-field>
             </div>
             <p class="text-xs text-slate-500">Se actualizan los cargos de quienes todavía no pagaron nada.</p>
         </div>

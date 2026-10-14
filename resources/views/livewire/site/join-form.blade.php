@@ -48,7 +48,7 @@
                             </x-field>
                         </div>
                         <x-field label="Fecha de nacimiento" for="j-birth" error="birth_date" required>
-                            <input id="j-birth" type="date" wire:model="birth_date" class="form-input" max="{{ now()->toDateString() }}">
+                            <x-date-input id="j-birth" wire:model="birth_date" :max="now()->toDateString()" />
                         </x-field>
                         <x-field label="Correo electrónico" for="j-email" error="email" required>
                             <input id="j-email" type="email" wire:model="email" class="form-input" autocomplete="email">

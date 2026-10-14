@@ -51,6 +51,7 @@ final class AdminMenu
                     'badge' => fn () => PaymentReceipt::where('status', ReceiptStatus::Pending)->count() ?: null],
                 ['label' => 'Rendiciones', 'route' => 'admin.settlements', 'icon' => 'credit-card', 'can' => 'rendiciones.gestionar',
                     'badge' => fn () => CashSettlement::where('status', SettlementStatus::Pending)->count() ?: null],
+                ['label' => 'Gastos', 'route' => 'admin.expenses', 'icon' => 'credit-card', 'can' => 'gastos.ver'],
             ]],
             ['title' => 'Gimnasio', 'gym' => true, 'items' => [
                 ['label' => 'Planes de socios', 'route' => 'admin.gym.subscriptions', 'icon' => 'id-card', 'can' => 'suscripciones.gestionar'],

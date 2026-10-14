@@ -9,7 +9,7 @@
 
     <div class="card mb-6 flex flex-wrap items-center gap-3 p-4">
         <button type="button" wire:click="shiftDate(-1)" class="btn-secondary px-2.5" aria-label="Día anterior"><x-icon name="chevron-left" class="size-4" /></button>
-        <input type="date" wire:model.live="date" class="form-input w-auto">
+        <x-date-input wire:model.live="date" class="w-32" />
         <button type="button" wire:click="shiftDate(1)" class="btn-secondary px-2.5" aria-label="Día siguiente"><x-icon name="chevron-right" class="size-4" /></button>
         <button type="button" wire:click="$set('date', '{{ today()->toDateString() }}')" class="btn-ghost btn-sm">Hoy</button>
         <p class="ml-auto font-medium text-slate-700">{{ ucfirst($day->translatedFormat('l j \d\e F')) }}</p>
@@ -77,7 +77,7 @@
             </x-field>
             <div class="grid grid-cols-3 gap-3">
                 <x-field label="Fecha" for="date-f" error="date">
-                    <input id="date-f" type="date" wire:model.live="date" class="form-input">
+                    <x-date-input id="date-f" wire:model.live="date" />
                 </x-field>
                 <x-field label="Horario" for="startTime" error="startTime" required>
                     <select id="startTime" wire:model="startTime" class="form-input">

@@ -29,7 +29,7 @@
                     <p class="rounded-lg bg-sky-50 p-3 text-xs text-sky-800 sm:col-span-2">{{ $existingPerson }} ya está registrada en el sistema: se completaron sus datos personales. Los cambios que hagas se actualizan en todas sus entidades.</p>
                 @endif
                 <x-field label="Fecha de nacimiento" for="birth_date" error="birth_date" required>
-                    <input id="birth_date" type="date" wire:model="birth_date" class="form-input">
+                    <x-date-input id="birth_date" wire:model="birth_date" :max="today()->toDateString()" />
                 </x-field>
                 <x-field label="Género" for="gender" error="gender">
                     <select id="gender" wire:model="gender" class="form-input">
@@ -53,7 +53,7 @@
                     </div>
                 </x-field>
                 <x-field label="Fecha de ingreso" for="admission_date" error="admission_date">
-                    <input id="admission_date" type="date" wire:model="admission_date" class="form-input">
+                    <x-date-input id="admission_date" wire:model="admission_date" />
                 </x-field>
                 <div class="md:col-span-2">
                     <x-photo-capture model="photo" :file="$photo" :current="$member?->photoUrl()" label="Foto (para el carnet)" />
