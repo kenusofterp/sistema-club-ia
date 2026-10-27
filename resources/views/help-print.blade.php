@@ -56,7 +56,7 @@
     <div class="title">
         <small>Sistema de gestión</small>
         <h1>Manual de uso</h1>
-        <p>Guía paso a paso: socios, cuotas y cobros, gastos, {{ mb_strtolower(activity_label(true)) }}, agenda de clases, torneos, control de acceso y portal del socio.</p>
+        <p>Guía paso a paso: socios, cuotas y cobros, gastos, {{ mb_strtolower(activity_label(true)) }}, agenda de clases, torneos, competencias con jueceo y resultados en vivo, control de acceso y portal del socio.</p>
     </div>
     <div>
         <div class="bar"></div>

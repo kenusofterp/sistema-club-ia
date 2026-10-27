@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompetitionResultsController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\MemberCardController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SiteController;
 use App\Livewire\Admin;
 use App\Livewire\Auth;
+use App\Livewire\Display;
 use App\Livewire\Portal;
 use App\Livewire\Site\JoinForm;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +29,10 @@ Route::get('/noticias/{post:slug}', [SiteController::class, 'post'])->name('site
 Route::get('/p/{page:slug}', [SiteController::class, 'page'])->name('site.page');
 Route::get('/asociate', JoinForm::class)->name('site.join');
 Route::get('/verificar/{uuid}', [SiteController::class, 'verify'])->whereUuid('uuid')->name('member.verify');
+
+// Pantallas públicas de competencia (TV/proyector): sin login, con el token de la competencia o del puesto.
+Route::get('/pantalla/puesto/{token}', Display\StationScreen::class)->name('display.station');
+Route::get('/pantalla/general/{token}', Display\RankingScreen::class)->name('display.ranking');
 
 // PWA
 Route::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');
@@ -84,6 +90,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active', 'admin'])-
     Route::get('/torneos/nuevo', Admin\Tournaments\Form::class)->name('tournaments.create')->middleware('can:torneos.gestionar');
     Route::get('/torneos/{tournament}', Admin\Tournaments\Show::class)->name('tournaments.show')->middleware('can:torneos.gestionar');
     Route::get('/torneos/{tournament}/editar', Admin\Tournaments\Form::class)->name('tournaments.edit')->middleware('can:torneos.gestionar');
+    // Competencias (jueceo)
+    Route::get('/competencias', Admin\Competitions\Index::class)->name('competitions.index')->middleware('can:competencias.gestionar');
+    Route::get('/competencias/nueva', Admin\Competitions\Form::class)->name('competitions.create')->middleware('can:competencias.gestionar');
+    Route::get('/competencias/{competition}', Admin\Competitions\Show::class)->name('competitions.show')->middleware('can:competencias.gestionar');
+    Route::get('/competencias/{competition}/editar', Admin\Competitions\Form::class)->name('competitions.edit')->middleware('can:competencias.gestionar');
+    Route::get('/competencias/{competition}/resultados', Admin\Competitions\Results::class)->name('competitions.results')->middleware('can:competencias.resultados');
+    Route::get('/competencias/{competition}/resultados/exportar', [CompetitionResultsController::class, 'csv'])->name('competitions.results.csv')->middleware('can:competencias.resultados');
+    Route::get('/competencias/{competition}/resultados/imprimir', [CompetitionResultsController::class, 'print'])->name('competitions.results.print')->middleware('can:competencias.resultados');
+    Route::get('/ejercicios', Admin\Exercises\Index::class)->name('exercises')->middleware('can:competencias.gestionar');
+    Route::get('/modificaciones-de-notas', Admin\ScoreChanges\Index::class)->name('score-changes')->middleware('can:notas.autorizar');
+    Route::get('/juez', Admin\Judge\Station::class)->name('judge')->middleware('can:notas.cargar');
+
     Route::get('/adicionales', Admin\ExtraCharges\Index::class)->name('extra-charges.index')->middleware('can:articulos.gestionar');
     Route::get('/adicionales/nuevo', Admin\ExtraCharges\Form::class)->name('extra-charges.create')->middleware('can:articulos.gestionar');
     Route::get('/adicionales/{extraCharge}', Admin\ExtraCharges\Show::class)->name('extra-charges.show')->middleware('can:articulos.gestionar');

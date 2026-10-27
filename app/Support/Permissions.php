@@ -33,6 +33,12 @@ final class Permissions
                 'torneos.gestionar' => 'Crear torneos, anotar alumnos y ver quién pagó',
                 'articulos.gestionar' => 'Cargar vestimenta y artículos a alumnos (y anularlos)',
             ],
+            'Competencias' => [
+                'competencias.gestionar' => 'Configurar competencias: ejercicios, criterios, puestos, jueces y participantes',
+                'competencias.resultados' => 'Ver y exportar los resultados de las competencias',
+                'notas.cargar' => 'Cargar notas como juez en el puesto asignado',
+                'notas.autorizar' => 'Autorizar o rechazar modificaciones de notas ya confirmadas',
+            ],
             'Tesorería' => [
                 'cuotas.ver' => 'Ver cuotas y cargos',
                 'cuotas.gestionar' => 'Generar, crear y anular cargos',
@@ -115,6 +121,18 @@ final class Permissions
             'comunicacion' => [
                 'label' => 'Comunicación',
                 'permissions' => ['sitio.gestionar', 'mensajes.ver', 'avisos.gestionar'],
+            ],
+            'organizador' => [
+                'label' => 'Organización de competencias',
+                'permissions' => ['competencias.gestionar', 'competencias.resultados', 'notas.autorizar'],
+            ],
+            'juez_principal' => [
+                'label' => 'Juez principal',
+                'permissions' => ['notas.cargar', 'notas.autorizar', 'competencias.resultados'],
+            ],
+            'juez' => [
+                'label' => 'Juez',
+                'permissions' => ['notas.cargar'],
             ],
         ];
     }

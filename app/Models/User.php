@@ -214,6 +214,11 @@ class User extends Authenticatable
             return route('admin.lessons.today');
         }
 
+        // Jueces: entran directo a su puesto para cargar notas desde el celular.
+        if (! $this->isSuperAdmin() && $this->organizationIdsWith('dashboard.ver') === [] && $this->organizationIdsWith('notas.cargar') !== []) {
+            return route('admin.judge');
+        }
+
         return route('admin.dashboard');
     }
 

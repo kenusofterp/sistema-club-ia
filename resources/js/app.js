@@ -146,3 +146,6 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 });
+
+// Tiempo real (Reverb) para las pantallas de competencia y del juez.
+import './echo';

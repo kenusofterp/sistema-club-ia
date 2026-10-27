@@ -21,6 +21,7 @@
     <div class="guide-cards">
         <a href="#primeros-pasos-profe" class="guide-card"><i>🎾</i><b>¿Sos profe y alquilás canchas?</b><span>Guía paso a paso para cargar las canchas que alquilás, registrar lo que pagás y armar la agenda de tus alumnos.</span></a>
         <a href="#niveles" class="guide-card"><i>👥</i><b>¿Academia por niveles?</b><span>Niveles con cuota mensual, asistencia desde el celular, comprobantes de transferencia y rendiciones.</span></a>
+        <a href="#primeros-pasos-competencias" class="guide-card"><i>🏅</i><b>¿Organizás una competencia?</b><span>Ejercicios y criterios, puestos con 3 jueces, notas desde el celular y resultados en vivo en la TV.</span></a>
         <a href="#faq" class="guide-card"><i>❓</i><b>¿Algo no funciona?</b><span>Preguntas frecuentes: cuotas duplicadas, la cámara no abre, un menú que no aparece…</span></a>
     </div>
     <x-manual.tip>
@@ -102,6 +103,106 @@
         <li><strong>Lluvia o feriado:</strong> en <em>Clases de hoy</em>, <strong>Suspender</strong> avisa a los alumnos con una notificación.</li>
         <li><strong>Fin de mes:</strong> mirá en el <em>Tablero</em> el resultado del mes y en <em>Gastos</em> que todas las canchas tengan el alquiler pago.</li>
     </ul>
+</section>
+
+{{-- ============================================================ --}}
+<section id="primeros-pasos-competencias" class="chapter">
+    <h2><span class="num">▶</span> Primeros pasos: organizar una competencia</h2>
+    <p class="lead">Para un club que <strong>organiza un torneo</strong> de gimnasia (u otro deporte con jueces): las gimnastas de varios clubes pasan por puestos de 3 jueces, los jueces cargan las notas desde el celular y los resultados se ven en vivo en una TV. Seguí este ejemplo de punta a punta; el detalle de cada paso está en <a href="#competencias">12f a 12l</a>.</p>
+    <div class="summary">
+        <p>La idea</p>
+        <ul>
+            <li>Los <strong>ejercicios</strong> (Salto, Viga…) se cargan una vez, con lo que mira cada juez, y se usan en todos los torneos.</li>
+            <li>Cada <strong>competencia</strong> tiene sus niveles, sus ejercicios, sus <strong>puestos</strong> (mesas de 3 jueces) y sus participantes.</li>
+            <li>Cada juez es un <strong>usuario</strong> del sistema que entra desde el celular directo a su puesto.</li>
+            <li>El puntaje es el <strong>promedio de los 3 jueces</strong>, con 3 decimales sin redondear.</li>
+        </ul>
+    </div>
+    <x-manual.tip type="example" title="El ejemplo que vamos a armar">
+        <strong>Copa de Invierno</strong>, sábado 15/8 en el gimnasio del club. Dos ejercicios: <strong>Salto</strong> y <strong>Viga</strong>. Dos niveles: <strong>Nivel 1</strong> y <strong>Nivel 2</strong>. Seis jueces (dos puestos de tres). Diez gimnastas de tres clubes.
+    </x-manual.tip>
+
+    <h3>1. Los roles y los jueces</h3>
+    <ol class="steps">
+        <li>En <strong>Administración › Roles y permisos</strong>, revisá que existan los roles <strong>Juez</strong>, <strong>Juez principal</strong> y <strong>Organización de competencias</strong>. Si no están, crealos con los permisos del grupo <em>Competencias</em> (ver <a href="#competencias">12f</a>).</li>
+        <li>En <strong>Administración › Usuarios › Agregar usuario</strong>, creá un usuario por juez con nombre, correo y contraseña:
+            <ul>
+                <li><em>Marta Ríos</em> → rol <strong>Juez principal</strong> (además de juzgar, autoriza los cambios de notas).</li>
+                <li><em>Sergio, Paula, Andrés, Vero y Lucas</em> → rol <strong>Juez</strong>.</li>
+            </ul>
+        </li>
+        <li>Si alguien más del club te ayuda a organizar, dale el rol <strong>Organización de competencias</strong>.</li>
+    </ol>
+    <x-manual.tip>Mandales a los jueces su usuario y contraseña unos días antes y pediles que entren una vez desde el celular. Si todavía no tienen puesto, ven «No tenés un puesto asignado»: está bien, quiere decir que el acceso funciona.</x-manual.tip>
+
+    <h3>2. Los ejercicios y sus criterios</h3>
+    <p>En <strong>Competencias › Ejercicios y criterios › Nuevo ejercicio</strong>, cargá cada ejercicio con sus criterios y tocá <strong>Guardar</strong>:</p>
+    <div class="overflow-x-auto">
+        <table class="manual-table">
+            <thead><tr><th>Ejercicio</th><th>Criterio</th><th>Tipo</th><th>Mín.</th><th>Máx.</th><th>Decimales</th><th>Peso</th></tr></thead>
+            <tbody>
+                <tr><td rowspan="2"><strong>Salto</strong></td><td>Ejecución</td><td>Puntaje</td><td>0</td><td>10</td><td>1</td><td>1</td></tr>
+                <tr><td>Faltas de aterrizaje</td><td>Deducción</td><td>0</td><td>2</td><td>1</td><td>1</td></tr>
+                <tr><td rowspan="3"><strong>Viga</strong></td><td>Ejecución</td><td>Puntaje</td><td>0</td><td>10</td><td>1</td><td>1</td></tr>
+                <tr><td>Caídas</td><td>Deducción</td><td>0</td><td>3</td><td>1</td><td>1</td></tr>
+                <tr><td>Giro completo</td><td>Sí / No</td><td>—</td><td>—</td><td>—</td><td>0,5</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>Con esto, si un juez de Viga pone Ejecución 8,5, Caídas 0,5 y Giro completo «Sí», su total es 8,5 − 0,5 + 0,5 = <strong>8,5</strong>.</p>
+
+    <h3>3. La competencia</h3>
+    <ol class="steps">
+        <li><strong>Competencias › Nueva competencia</strong>.</li>
+        <li>Nombre: <em>Copa de Invierno</em>. Fecha: <em>15/8</em>. Lugar: <em>Gimnasio del club</em>.</li>
+        <li>En <strong>Niveles y grupos</strong>: <em>Nivel 1</em> y <em>Nivel 2</em>. (Si el Nivel 2 se dividiera en A y B, le agregarías los grupos con <em>+ Grupo</em> y cada grupo tendría su propio ranking.)</li>
+        <li>En <strong>Ejercicios</strong>, tildá <em>Salto</em> y <em>Viga</em>.</li>
+        <li><strong>Guardar</strong>. La competencia queda en <strong>Borrador</strong>: todavía podés cambiar todo.</li>
+    </ol>
+
+    <h3>4. Los puestos y sus jueces</h3>
+    <ol class="steps">
+        <li>En la pestaña <strong>Puestos y jueces</strong>, <strong>Nuevo puesto</strong>: Ejercicio <em>Salto</em>, nombre <em>Salto 1</em>, nivel <em>Todos</em>. Guardar.</li>
+        <li>Otro <strong>Nuevo puesto</strong>: Ejercicio <em>Viga</em>, nombre <em>Viga 1</em>. Guardar.</li>
+        <li>En la tarjeta de <em>Salto 1</em> elegí <strong>Juez 1:</strong> Marta, <strong>Juez 2:</strong> Sergio, <strong>Juez 3:</strong> Paula, y tocá <strong>Guardar tribunal</strong>.</li>
+        <li>En <em>Viga 1</em>: Andrés, Vero y Lucas, y <strong>Guardar tribunal</strong>. Las dos tarjetas tienen que decir <strong>Tribunal completo</strong>.</li>
+    </ol>
+
+    <h3>5. Las participantes</h3>
+    <ol class="steps">
+        <li>En la pestaña <strong>Participantes</strong>, escribí el nombre en el buscador. Si es nueva, cargá <strong>Nombre</strong>, <strong>Apellido</strong> y <strong>Club / institución</strong> (ej.: <em>Sofía Gómez, Club Rival</em>).</li>
+        <li>Elegí el <strong>Nivel</strong> y dejá el <strong>Dorsal</strong> vacío: se numeran solas (1, 2, 3…). Tocá <strong>Inscribir</strong>.</li>
+        <li>Repetí hasta tener las diez. Las del club también aparecen en el buscador, porque son socias.</li>
+    </ol>
+
+    <h3>6. El orden de pasada</h3>
+    <ol class="steps">
+        <li>En la pestaña <strong>Colas de pasada</strong>, tocá <strong>Asignar automáticamente</strong>: las diez quedan en la cola de <em>Salto 1</em> y en la de <em>Viga 1</em>.</li>
+        <li>Si querés otro orden (por ejemplo, que el Nivel 1 pase primero), <strong>arrastrá</strong> a cada una a su lugar.</li>
+    </ol>
+
+    <h3>7. Antes de empezar: probá todo</h3>
+    <ol class="steps">
+        <li>En la pestaña <strong>Pantallas</strong>, copiá el enlace de la <strong>pantalla general</strong> y abrilo en la computadora conectada a la TV. Hacé doble clic para ponerla en pantalla completa.</li>
+        <li>Abrí la <strong>pantalla de cada puesto</strong> en una tablet o notebook al lado de la mesa de jueces (opcional).</li>
+        <li>Pediles a los seis jueces que entren desde el celular.</li>
+        <li>Tocá <strong>Iniciar competencia</strong>. Si falta algo (un juez, un puesto), el sistema te dice qué. Al iniciar, cada juez ve en su celular a la primera gimnasta de su cola.</li>
+    </ol>
+    <x-manual.tip type="warning">Desde que iniciás, los criterios de Salto y Viga <strong>quedan fijos</strong> para esta competencia. Revisalos antes de iniciar.</x-manual.tip>
+
+    <h3>8. Durante la competencia</h3>
+    <ul>
+        <li>Cada juez carga sus valores y toca <strong>Confirmar nota</strong>. Cuando confirman los tres, el puntaje se publica en la TV y aparece la siguiente gimnasta. Ejemplo: 8,4 / 8,5 / 8,5 → (8,4 + 8,5 + 8,5) / 3 = <strong>8,466</strong>.</li>
+        <li>Si una gimnasta no está lista: <em>Mandar al final</em>. Si no vino: <em>No se presentó</em> (en <em>Colas de pasada</em>).</li>
+        <li>Si un juez se equivocó en una nota ya confirmada, la pide corregir con <strong>Pedir cambio</strong> y otra persona la autoriza en <strong>Competencias › Modificaciones de notas</strong> (ver <a href="#competencias-dia">12i</a>).</li>
+    </ul>
+
+    <h3>9. Al terminar</h3>
+    <ol class="steps">
+        <li>Cuando ya no quedan pasadas pendientes, tocá <strong>Finalizar</strong>.</li>
+        <li>En <strong>Resultados</strong>, descargá el <strong>Excel (CSV)</strong> o usá <strong>Imprimir / PDF</strong> para mandarles los resultados a los clubes.</li>
+    </ol>
+    <x-manual.tip>Para el próximo torneo ya tenés los jueces y los ejercicios: solo creás la competencia nueva (paso 3) y seguís desde ahí. Las participantes que ya compitieron aparecen en el buscador.</x-manual.tip>
 </section>
 
 {{-- ============================================================ --}}
@@ -446,6 +547,234 @@
         <li>A cada alumno tildado se le suma el cargo, que se paga como la cuota (sola o junto con la cuota y el torneo).</li>
     </ol>
     <p>Si un alumno avisa que <strong>ya lo consiguió por otro lado</strong>, abrí el adicional y tocá <strong>Anular</strong> en su fila: se le anula solo a él y queda el motivo. Si ya había pagado, primero anulá el pago. Con <strong>Cobrar también a…</strong> se lo cargás a alguien más. Si vence sin pagarse no suma recargo ni bloquea el ingreso.</p>
+</section>
+
+{{-- ============================================================ --}}
+<section id="competencias">
+    <h2><span class="num">12f</span> Competencias: cómo funciona</h2>
+    <p>Para los torneos que <strong>organiza</strong> el club, con jueces que cargan las notas desde el celular y resultados en vivo en una TV. Las participantes pueden ser de cualquier club. (Es distinto de <a href="#torneos">12c. Torneos</a>, que sirve para cobrarles a tus alumnos los torneos a los que van.)</p>
+    <dl class="glossary">
+        <dt>Ejercicio</dt>
+        <dd>Lo que se evalúa: Salto, Suelo, Viga, Paralelas… Se crea una vez y se usa en todas las competencias.</dd>
+        <dt>Criterio</dt>
+        <dd>Cada ítem que carga el juez dentro de un ejercicio. Puede ser un <strong>puntaje</strong> (suma), una <strong>deducción</strong> (resta) o un <strong>sí/no</strong> (suma su peso si es «sí»). Tiene mínimo, máximo, decimales y peso.</dd>
+        <dt>Nivel y grupo</dt>
+        <dd>Las categorías en que compiten (Nivel 1, Nivel 2…). Un nivel puede dividirse en grupos (A, B). El ranking es por nivel o, si tiene grupos, por grupo.</dd>
+        <dt>Puesto</dt>
+        <dd>Una mesa de jueces que evalúa <strong>un</strong> ejercicio, con un tribunal fijo de <strong>3 jueces</strong> (Juez 1, 2 y 3). Puede haber varios puestos del mismo ejercicio para ir más rápido (Salto 1 y Salto 2).</dd>
+        <dt>Cola de pasada</dt>
+        <dd>El orden en que las participantes pasan por cada puesto. Cada participante pasa por <strong>un solo puesto por ejercicio</strong>.</dd>
+        <dt>Puntaje</dt>
+        <dd>El promedio de los totales de los 3 jueces, con <strong>3 decimales sin redondear</strong> (se corta: 8,4666… queda 8,466).</dd>
+        <dt>All-around</dt>
+        <dd>La suma de los puntajes de todos los ejercicios de la participante.</dd>
+    </dl>
+    <h3>Quién hace qué</h3>
+    <div class="overflow-x-auto">
+        <table class="manual-table">
+            <thead><tr><th>Rol</th><th>Qué puede hacer</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Organización de competencias</strong></td><td>Arma la competencia (ejercicios, puestos, jueces, participantes y colas), la inicia y la finaliza, ve los resultados y autoriza cambios de notas.</td></tr>
+                <tr><td><strong>Juez principal</strong></td><td>Juzga en su puesto, autoriza cambios de notas de otros jueces y ve los resultados.</td></tr>
+                <tr><td><strong>Juez</strong></td><td>Solo carga sus notas en el puesto que le asignaron. Al entrar al sistema va directo a su puesto.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <x-manual.tip>Si estos roles no aparecen en <em>Usuarios</em>, crealos en <strong>Roles y permisos</strong> marcando los permisos del grupo <em>Competencias</em>: <em>Cargar notas como juez</em> para el juez, y además <em>Autorizar o rechazar modificaciones</em> y <em>Ver y exportar los resultados</em> para el juez principal.</x-manual.tip>
+</section>
+
+{{-- ============================================================ --}}
+<section id="competencias-preparar">
+    <h2><span class="num">12g</span> Preparar una competencia, paso a paso</h2>
+    <p>Todo esto se hace antes del torneo, con la competencia en <strong>Borrador</strong>. Mientras está en borrador, se puede cambiar cualquier cosa.</p>
+
+    <h3>Paso 1 · Cargar los ejercicios y sus criterios</h3>
+    <ol class="steps">
+        <li>Entrá a <strong>Competencias › Ejercicios y criterios</strong> y tocá <strong>Nuevo ejercicio</strong>.</li>
+        <li>Escribí el <strong>Nombre</strong> (ej.: <em>Salto</em>) y, si querés, una descripción.</li>
+        <li>En <strong>Criterios de evaluación</strong>, agregá cada criterio con <em>Puntaje</em>, <em>Deducción</em> o <em>Sí / No</em>. Para cada uno completá el nombre, el <strong>mínimo</strong> y <strong>máximo</strong> que puede poner el juez, los <strong>decimales</strong> permitidos (0 a 3) y el <strong>peso</strong>. Con las flechas cambiás el orden en que los ve el juez.</li>
+        <li>Tocá <strong>Guardar</strong>. Repetí con cada ejercicio.</li>
+    </ol>
+    <p>El total de cada juez se calcula así: <strong>puntajes × peso − deducciones × peso + el peso de cada «Sí»</strong>. Si da negativo, queda en 0.</p>
+    <x-manual.tip type="example" title="Ejemplo: criterios de Salto">
+        <div class="overflow-x-auto">
+            <table class="manual-table">
+                <thead><tr><th>Criterio</th><th>Tipo</th><th>Mín.</th><th>Máx.</th><th>Decimales</th><th>Peso</th></tr></thead>
+                <tbody>
+                    <tr><td>Ejecución</td><td>Puntaje</td><td>0</td><td>10</td><td>1</td><td>1</td></tr>
+                    <tr><td>Faltas de aterrizaje</td><td>Deducción</td><td>0</td><td>2</td><td>1</td><td>1</td></tr>
+                    <tr><td>Carrera completa</td><td>Sí / No</td><td>—</td><td>—</td><td>—</td><td>0,5</td></tr>
+                </tbody>
+            </table>
+        </div>
+        Si un juez pone Ejecución <strong>8,5</strong>, Faltas <strong>0,3</strong> y Carrera completa <strong>Sí</strong>: 8,5 − 0,3 + 0,5 = <strong>8,7</strong>.
+    </x-manual.tip>
+
+    <h3>Paso 2 · Crear los usuarios de los jueces</h3>
+    <ol class="steps">
+        <li>En <strong>Administración › Usuarios › Agregar usuario</strong>, cargá nombre, correo y una contraseña para cada juez.</li>
+        <li>En <strong>roles en esta entidad</strong>, marcá <strong>Juez</strong> (o <strong>Juez principal</strong> para quien coordina a los jueces).</li>
+        <li>Pasales a los jueces su correo y contraseña. Conviene que entren una vez antes del torneo para probar y tildar <em>Mantener la sesión iniciada</em>.</li>
+    </ol>
+    <x-manual.tip>Los usuarios de jueces se reutilizan: para el próximo torneo no hace falta crearlos de nuevo, solo asignarlos a los puestos.</x-manual.tip>
+
+    <h3>Paso 3 · Crear la competencia</h3>
+    <ol class="steps">
+        <li>En <strong>Competencias › Nueva competencia</strong>, completá <strong>Nombre</strong>, <strong>Fecha</strong> y <strong>Lugar</strong>. Si es un torneo que además les cobrás a tus alumnos, podés <em>Vincular a un torneo</em>.</li>
+        <li>En <strong>Niveles y grupos</strong>, agregá cada nivel. Si un nivel compite dividido, agregale sus grupos con <em>+ Grupo</em>.</li>
+        <li>En <strong>Ejercicios</strong>, tildá los que se evalúan en esta competencia.</li>
+        <li>Tocá <strong>Guardar</strong>: se abre la competencia con sus pestañas.</li>
+    </ol>
+
+    <h3>Paso 4 · Armar los puestos y asignar los jueces</h3>
+    <ol class="steps">
+        <li>En la pestaña <strong>Puestos y jueces</strong>, tocá <strong>Nuevo puesto</strong>.</li>
+        <li>Elegí el <strong>Ejercicio</strong> y poné un nombre (el sistema sugiere uno, ej.: <em>Salto 1</em>). Si el puesto es solo para una categoría, elegila en <strong>Solo para el nivel</strong> y <strong>Grupo</strong>; si no, dejá <em>Todos</em>. Guardá.</li>
+        <li>En la tarjeta del puesto aparecen <strong>Juez 1</strong>, <strong>Juez 2</strong> y <strong>Juez 3</strong>: elegí un usuario en cada uno y tocá <strong>Guardar tribunal</strong>. Cuando están los tres, la tarjeta dice <strong>Tribunal completo</strong>.</li>
+        <li>Repetí con cada puesto. Cada ejercicio necesita al menos un puesto.</li>
+    </ol>
+    <x-manual.tip type="warning">Un juez puede estar en <strong>un solo puesto</strong> por competencia, y en la lista solo aparecen los usuarios con permiso para cargar notas. Si no ves a un juez, revisá su rol en <em>Usuarios</em>.</x-manual.tip>
+
+    <h3>Paso 5 · Inscribir a las participantes</h3>
+    <ol class="steps">
+        <li>En la pestaña <strong>Participantes</strong>, escribí en el buscador el nombre, documento o club.</li>
+        <li>Si ya compitió antes (o es socia del club), aparece en la lista: elegila. Si no, elegí la opción para cargarla nueva con <strong>Nombre</strong>, <strong>Apellido</strong>, <strong>DNI</strong> (opcional) y <strong>Club / institución</strong>.</li>
+        <li>Elegí su <strong>Nivel</strong> y <strong>Grupo</strong>. El <strong>Dorsal</strong> se puede dejar vacío: toma el siguiente número libre.</li>
+        <li>Tocá <strong>Inscribir</strong>. Para corregir el nivel o el dorsal, usá <em>Editar</em> en su fila; para sacarla, <em>Dar de baja</em>.</li>
+    </ol>
+
+    <h3>Paso 6 · Armar las colas de pasada</h3>
+    <ol class="steps">
+        <li>En la pestaña <strong>Colas de pasada</strong>, tocá <strong>Asignar automáticamente</strong>: reparte a todas las participantes que todavía no tienen puesto entre los puestos de cada ejercicio, respetando el nivel/grupo de cada puesto.</li>
+        <li>Para cambiar el orden, <strong>arrastrá</strong> a la participante a su lugar dentro de la cola.</li>
+        <li>Para sumar a alguien a mano, usá <em>Agregar participante…</em> debajo de la cola del puesto. Desde el menú de cada fila podés <em>Quitar de la cola</em> o <em>Pasar a</em> otro puesto del mismo ejercicio.</li>
+    </ol>
+    <x-manual.tip>Las colas se pueden armar y corregir también durante la competencia; por ejemplo, si una participante se inscribe a último momento.</x-manual.tip>
+
+    <h3>Paso 7 · Iniciar la competencia</h3>
+    <p>Arriba de la competencia, <strong>Iniciar competencia</strong>. El sistema controla que <strong>cada puesto tenga sus 3 jueces</strong> y que <strong>cada ejercicio tenga al menos un puesto</strong>; si falta algo, te dice qué. Al iniciar, los criterios de cada ejercicio <strong>quedan congelados</strong> para esta competencia: si después editás el ejercicio, las notas de este torneo no cambian.</p>
+</section>
+
+{{-- ============================================================ --}}
+<section id="competencias-jueces">
+    <h2><span class="num">12h</span> El juez: cargar notas desde el celular</h2>
+    <ol class="steps">
+        <li>El juez entra al sistema con su usuario desde el navegador del celular y va <strong>directo a su puesto</strong>. Ve el nombre del puesto, si es Juez 1, 2 o 3, y a la <strong>participante actual</strong> con su dorsal y club.</li>
+        <li>Completa cada criterio. Los puntajes y deducciones se escriben (el sistema avisa si el valor está fuera del rango o tiene más decimales de los permitidos) y los sí/no se marcan con un toque. Abajo ve <strong>Mi total</strong>.</li>
+        <li>Toca <strong>Confirmar nota</strong> y confirma. A partir de ahí su nota no se puede cambiar sin autorización.</li>
+        <li>Cuando confirman los 3 jueces, el puntaje se publica y en todos los celulares del puesto aparece la siguiente participante, sin tocar nada.</li>
+    </ol>
+    <ul>
+        <li><strong>Cada juez ve solo su nota</strong>, nunca la de los otros dos.</li>
+        <li><strong>Si se corta la señal:</strong> lo que el juez escribió queda guardado en el teléfono (aunque cierre la página) y, al confirmar, si no hay conexión aparece <em>Enviando…</em> y se reintenta solo hasta que llega. No hace falta volver a cargar nada.</li>
+        <li><strong>Mis notas anteriores:</strong> abajo de la pantalla están las notas que ya confirmó, por si necesita pedir un cambio.</li>
+        <li>Si no tiene puesto o no hay nadie en espera, la pantalla lo dice y se actualiza sola cuando hay novedades.</li>
+    </ul>
+</section>
+
+{{-- ============================================================ --}}
+<section id="competencias-dia">
+    <h2><span class="num">12i</span> Durante el torneo: colas, ausentes y cambios de notas</h2>
+    <h3>Seguir las colas</h3>
+    <p>En <strong>Colas de pasada</strong> la organización ve en vivo, puesto por puesto, quién está pasando, quién sigue y quién ya tiene puntaje. Se puede seguir reordenando arrastrando (lo que ya empezó a juzgarse no se mueve).</p>
+    <ul>
+        <li><strong>Mandar al final:</strong> si una participante no está lista cuando le toca (fue al baño, está en otro aparato), la pasa al final de la cola de ese puesto.</li>
+        <li><strong>No se presentó:</strong> la saca de la cola y no rankea en ese ejercicio. Si al final aparece, con <em>Volver a la cola</em> se la reincorpora.</li>
+    </ul>
+
+    <h3>Modificar una nota ya confirmada</h3>
+    <ol class="steps">
+        <li>El juez, en <em>Mis notas anteriores</em>, toca <strong>Pedir cambio</strong> en la nota, carga los <strong>valores correctos</strong> y el <strong>Motivo</strong>, y toca <strong>Enviar pedido</strong>. La nota sigue igual hasta que se autorice.</li>
+        <li>El pedido aparece en <strong>Competencias › Modificaciones de notas</strong> (el menú muestra cuántos hay pendientes), con los valores de <em>Antes</em> y el <em>Pedido</em>, y cómo cambian el total del juez y el puntaje del ejercicio.</li>
+        <li>Otra persona con permiso (el juez principal o la organización) toca <strong>Autorizar</strong> o <strong>Rechazar</strong>, con una nota opcional.</li>
+        <li>Al autorizar, se aplican los valores nuevos y se recalculan el puntaje, los rankings y las pantallas.</li>
+    </ol>
+    <x-manual.tip type="warning">Quien pide el cambio <strong>no puede autorizarlo</strong>: tiene que ser otra persona. Todo queda en el <em>Historial</em>: quién pidió, quién autorizó, el motivo y los valores anteriores y nuevos. Con la competencia finalizada ya no se pueden pedir cambios.</x-manual.tip>
+
+    <h3>Finalizar</h3>
+    <p>Cuando terminan todas las pasadas, <strong>Finalizar</strong> cierra la competencia: no se cargan más notas ni se piden cambios. Los resultados quedan disponibles. Si quedan pasadas pendientes, el sistema avisa cuántas: terminá de evaluarlas o marcalas como <em>No se presentó</em>.</p>
+</section>
+
+{{-- ============================================================ --}}
+<section id="competencias-pantallas">
+    <h2><span class="num">12j</span> Pantallas en vivo y resultados</h2>
+    <h3>Pantallas para la TV o el proyector</h3>
+    <p>En la pestaña <strong>Pantallas</strong> de la competencia están los enlaces. Se abren en cualquier computadora o Smart TV conectada a la TV, <strong>sin usuario</strong>. Doble clic la pone en pantalla completa.</p>
+    <ul>
+        <li><strong>Pantalla de cada puesto:</strong> la participante que está pasando, un ✓ por cada juez que ya confirmó, quiénes siguen, y las notas de los 3 jueces con el puntaje apenas se publica.</li>
+        <li><strong>Pantalla general (ranking):</strong> los 12 primeros de cada nivel/grupo, en el all-around y en cada ejercicio. Va rotando sola cada 20 segundos. Si hay empate en el puesto 12, aparecen todas las empatadas.</li>
+    </ul>
+    <x-manual.tip>Para cambiar la velocidad de rotación, agregá <code>?rotar=30</code> al final del enlace (segundos). Para mostrar solo el all-around, <code>?vista=general</code>. Las pantallas no piden usuario: no compartas los enlaces fuera del torneo.</x-manual.tip>
+
+    <h3>Rankings y empates</h3>
+    <ul>
+        <li>Se ordena por puntaje de mayor a menor, por nivel o por grupo.</li>
+        <li><strong>No hay desempate:</strong> quienes tienen el mismo puntaje comparten el puesto y el siguiente salta. Con 8,466 / 8,466 / 8,300 quedan <strong>1.ª, 1.ª y 3.ª</strong>.</li>
+        <li>Las que <em>no se presentaron</em> no rankean en ese ejercicio.</li>
+        <li>En el <strong>all-around</strong>, si a alguien le falta un ejercicio, rankea con lo que tiene y figura como <strong>incompleta</strong>.</li>
+    </ul>
+
+    <h3>Resultados, Excel y PDF</h3>
+    <p>En la competencia, <strong>Resultados</strong>: tabla por nivel/grupo con el puesto, el dorsal, el club, el puntaje de cada ejercicio y el all-around. Arriba: <strong>Excel (CSV)</strong> para descargar la planilla e <strong>Imprimir / PDF</strong> para imprimir o elegir <em>Guardar como PDF</em> y mandarla a los clubes.</p>
+</section>
+
+{{-- ============================================================ --}}
+<section id="competencias-ejemplo">
+    <h2><span class="num">12k</span> Ejemplo completo: Torneo Primavera</h2>
+    <p>El club organiza el <strong>Torneo Primavera</strong> el sábado, con 16 gimnastas de 4 clubes, en <strong>Salto</strong> y <strong>Suelo</strong>. Compiten en <strong>Nivel 1</strong> y en <strong>Nivel 2</strong>, que tiene <strong>Grupo A</strong> y <strong>Grupo B</strong>. Hay 9 jueces.</p>
+
+    <h3>Una semana antes</h3>
+    <ol class="steps">
+        <li><strong>Ejercicios:</strong> Laura, la organizadora, carga <em>Salto</em> con los criterios de la tabla de <a href="#competencias-preparar">12g</a>, y <em>Suelo</em> con <em>Ejecución</em> (puntaje 0 a 10, 1 decimal), <em>Penalización</em> (deducción 0 a 3, 1 decimal) y <em>Elemento obligatorio</em> (sí/no, peso 0,5).</li>
+        <li><strong>Jueces:</strong> crea 9 usuarios: Marta con rol <strong>Juez principal</strong> y los otros 8 con rol <strong>Juez</strong>.</li>
+        <li><strong>Competencia:</strong> <em>Nueva competencia</em> → «Torneo Primavera», sábado, «Gimnasio principal». Niveles: <em>Nivel 1</em> y <em>Nivel 2</em> (con grupos <em>A</em> y <em>B</em>). Ejercicios: Salto y Suelo.</li>
+        <li><strong>Puestos:</strong> como Salto es el más lento, arma dos puestos de Salto y uno de Suelo:
+            <div class="overflow-x-auto">
+                <table class="manual-table">
+                    <thead><tr><th>Puesto</th><th>Ejercicio</th><th>Juez 1</th><th>Juez 2</th><th>Juez 3</th></tr></thead>
+                    <tbody>
+                        <tr><td>Salto 1</td><td>Salto</td><td>Marta (principal)</td><td>Sergio</td><td>Paula</td></tr>
+                        <tr><td>Salto 2</td><td>Salto</td><td>Andrés</td><td>Vero</td><td>Lucas</td></tr>
+                        <tr><td>Suelo 1</td><td>Suelo</td><td>Carla</td><td>Nico</td><td>Inés</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </li>
+        <li><strong>Participantes:</strong> los clubes mandan sus listas. Laura inscribe a cada gimnasta con su nivel y grupo, dejando el dorsal vacío para que se numeren solas (1, 2, 3…). A Ana, que ya compitió en el torneo anterior, la encuentra en el buscador.</li>
+        <li><strong>Colas:</strong> en <em>Colas de pasada</em>, <em>Asignar automáticamente</em> reparte a las 16: la mitad a Salto 1 y la otra mitad a Salto 2, y todas a Suelo 1. Laura arrastra a las de Nivel 1 al principio, para que terminen temprano.</li>
+    </ol>
+
+    <h3>El sábado</h3>
+    <ol class="steps">
+        <li>Laura conecta una notebook a la TV con la <strong>pantalla general</strong>, y una tablet al lado de cada puesto con la <strong>pantalla del puesto</strong>.</li>
+        <li>Los 9 jueces entran desde el celular y cada uno ve su puesto. Laura toca <strong>Iniciar competencia</strong>.</li>
+        <li>En <em>Salto 1</em> pasa <strong>Ana</strong>. Los jueces cargan Ejecución 8,4 / 8,5 / 8,5, sin faltas, y los tres marcan «Carrera completa: No» (no suma). En la pantalla del puesto van apareciendo los ✓. Al confirmar el tercero se publica: (8,4 + 8,5 + 8,5) / 3 = 8,4666… → <strong>8,466</strong>, y aparece la siguiente.</li>
+        <li><strong>Bea</strong> saca 8,5 / 8,4 / 8,5 → también <strong>8,466</strong>; <strong>Caro</strong>, 7,9 / 8,2 / 8,0 → <strong>8,033</strong>. En la TV: Ana y Bea <strong>1.ª</strong>, Caro <strong>3.ª</strong>.</li>
+        <li>Cuando llaman a <strong>Dani</strong>, está en el vestuario: Laura toca <em>Mandar al final</em>. <strong>Flor</strong> no vino: <em>No se presentó</em>.</li>
+        <li>Sergio (Juez 2 de Salto 1) se da cuenta de que a Caro le puso 8,2 y era 8,5. En <em>Mis notas anteriores</em> toca <em>Pedir cambio</em>, corrige la ejecución y escribe el motivo «me equivoqué al tipear». A Laura le aparece el pedido: el puntaje de Caro pasaría de 8,033 a 8,133. Lo <strong>autoriza</strong> y la TV se actualiza. Sergio no podría haberlo autorizado él mismo.</li>
+        <li>Al terminar, Laura toca <strong>Finalizar</strong>, entra a <strong>Resultados</strong>, descarga el <em>Excel (CSV)</em> y guarda el <em>PDF</em> para mandarles a los clubes. Flor aparece sin nota en Salto y su all-around figura como <em>incompleto</em>.</li>
+    </ol>
+</section>
+
+{{-- ============================================================ --}}
+<section id="competencias-faq">
+    <h2><span class="num">12l</span> Competencias: preguntas frecuentes</h2>
+    <dl class="glossary">
+        <dt>No puedo iniciar la competencia.</dt>
+        <dd>Falta algo: un puesto sin sus 3 jueces o un ejercicio sin puesto. El mensaje dice cuál.</dd>
+        <dt>El juez no aparece para asignarlo a un puesto.</dt>
+        <dd>Revisá en <em>Usuarios</em> que tenga el rol Juez (o uno con permiso para cargar notas) en esta entidad, y que no esté ya en otro puesto de la misma competencia.</dd>
+        <dt>El juez entra y dice «No tenés un puesto asignado».</dt>
+        <dd>No está en ningún puesto de una competencia <strong>en curso</strong>. Asignalo en <em>Puestos y jueces</em> o iniciá la competencia.</dd>
+        <dt>Un juez se descompuso en medio del torneo.</dt>
+        <dd>En <em>Puestos y jueces</em>, reemplazalo por otro usuario en su lugar (Juez 1, 2 o 3) y <em>Guardar tribunal</em>. Las notas que ya confirmó se mantienen.</dd>
+        <dt>Me equivoqué en un criterio del ejercicio con la competencia ya iniciada.</dt>
+        <dd>Los criterios quedan congelados al iniciar, para que todas compitan con las mismas reglas. Cambiar el ejercicio solo afecta a las próximas competencias.</dd>
+        <dt>¿Por qué 8,4666 queda 8,466 y no 8,467?</dt>
+        <dd>El reglamento pide 3 decimales sin redondear: se cortan los decimales que sobran.</dd>
+        <dt>La TV no se actualiza al instante.</dt>
+        <dd>Si la conexión en vivo no está disponible, las pantallas se actualizan solas cada pocos segundos. Si no cambia nada, recargá la página.</dd>
+    </dl>
 </section>
 
 {{-- ============================================================ --}}

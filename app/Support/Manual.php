@@ -15,6 +15,7 @@ final class Manual
             ['title' => 'Por dónde empezar', 'items' => [
                 'primeros-pasos' => 'Primeros pasos: un club',
                 'primeros-pasos-profe' => 'Primeros pasos: profe que alquila canchas',
+                'primeros-pasos-competencias' => 'Primeros pasos: organizar una competencia',
                 'conceptos' => 'Conceptos básicos',
             ]],
             ['title' => 'Puesta en marcha', 'items' => [
@@ -40,6 +41,15 @@ final class Manual
                 'torneos' => '12c. Torneos',
                 'mensajes-alumnos' => '12d. Mensajes a alumnos',
                 'vestimenta' => '12e. Vestimenta y artículos',
+            ]],
+            ['title' => 'Competencias y jueceo', 'items' => [
+                'competencias' => '12f. Competencias: cómo funciona',
+                'competencias-preparar' => '12g. Preparar una competencia',
+                'competencias-jueces' => '12h. El juez en el celular',
+                'competencias-dia' => '12i. Durante el torneo',
+                'competencias-pantallas' => '12j. Pantallas y resultados',
+                'competencias-ejemplo' => '12k. Ejemplo: Torneo Primavera',
+                'competencias-faq' => '12l. Preguntas frecuentes',
             ]],
             ['title' => 'Día a día', 'items' => [
                 'acceso' => '13. Control de acceso y asistencia',

@@ -186,4 +186,30 @@ class MultiOrganizationTest extends TestCase
             $this->assertFalse(SiteSection::exists());
         });
     }
+
+    public function test_renaming_organization_updates_site_name_unless_customized(): void
+    {
+        $this->actingAs($this->staff());
+
+        Livewire::test(OrganizationsIndex::class)
+            ->call('create')->set('name', 'Los Tarcos')->set('type', 'club')->call('save')
+            ->assertHasNoErrors();
+        $org = Organization::where('slug', 'los-tarcos')->firstOrFail();
+
+        Livewire::test(OrganizationsIndex::class)
+            ->call('edit', $org->id)->set('name', 'Sociedad Española')->call('save')
+            ->assertHasNoErrors();
+
+        Organization::runFor($org, function () {
+            $this->assertSame('Sociedad Española', setting('site.name'));
+            $this->assertSame('SOC', setting('site.short_name'));
+            Setting::set('site.name', 'Sociedad Española de Gimnasia');
+        });
+
+        Livewire::test(OrganizationsIndex::class)
+            ->call('edit', $org->id)->set('name', 'Sociedad Española Club')->call('save')
+            ->assertHasNoErrors();
+
+        Organization::runFor($org, fn () => $this->assertSame('Sociedad Española de Gimnasia', setting('site.name')));
+    }
 }

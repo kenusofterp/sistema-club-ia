@@ -26,6 +26,10 @@
 <link rel="icon" href="{{ $favicon ?? route('pwa.icon', 192) }}">
 <link rel="apple-touch-icon" href="{{ route('pwa.icon', 192) }}">
 
+@if (! empty($realtime))
+    {{-- Tiempo real (Reverb): solo en las pantallas que lo necesitan (ver resources/js/echo.js). --}}
+    <meta name="realtime" content="1">
+@endif
 @fonts
 @auth
     {{-- Foto con cámara y recorte (debe cargarse antes de que arranque Alpine). --}}

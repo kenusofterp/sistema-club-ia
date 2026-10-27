@@ -95,6 +95,8 @@ class Index extends Component
             $data['is_default'] = true;
         }
 
+        $previousName = $this->editingId ? Organization::whereKey($this->editingId)->value('name') : null;
+
         $org = DB::transaction(function () use ($data) {
             if ($data['is_default']) {
                 Organization::query()->update(['is_default' => false]);
@@ -105,6 +107,8 @@ class Index extends Component
 
         if (! $this->editingId) {
             $provisioner->provision($org);
+        } elseif ($previousName !== null) {
+            $provisioner->rename($org, $previousName);
         }
 
         $this->showForm = false;

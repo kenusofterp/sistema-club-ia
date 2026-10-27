@@ -4,12 +4,14 @@ namespace App\Support;
 
 use App\Enums\MemberStatus;
 use App\Enums\ReceiptStatus;
+use App\Enums\ScoreChangeStatus;
 use App\Enums\SettlementStatus;
 use App\Models\CashSettlement;
 use App\Models\ContactMessage;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\PaymentReceipt;
+use App\Models\ScoreChangeRequest;
 use App\Models\User;
 
 /** Menú lateral del panel de administración, filtrado por permisos del usuario. */
@@ -35,6 +37,13 @@ final class AdminMenu
                 ['label' => 'Inscripciones', 'route' => 'admin.enrollments', 'icon' => 'clipboard', 'can' => 'inscripciones.gestionar'],
                 ['label' => 'Torneos', 'route' => 'admin.tournaments.index', 'icon' => 'flag', 'can' => 'torneos.gestionar', 'active' => 'admin.tournaments.*'],
                 ['label' => 'Vestimenta y artículos', 'route' => 'admin.extra-charges.index', 'icon' => 'tag', 'can' => 'articulos.gestionar', 'active' => 'admin.extra-charges.*'],
+            ]],
+            ['title' => 'Competencias', 'items' => [
+                ['label' => 'Mi puesto de juez', 'route' => 'admin.judge', 'icon' => 'clipboard', 'can' => 'notas.cargar'],
+                ['label' => 'Competencias', 'route' => 'admin.competitions.index', 'icon' => 'trophy', 'can' => 'competencias.gestionar', 'active' => 'admin.competitions.*'],
+                ['label' => 'Ejercicios y criterios', 'route' => 'admin.exercises', 'icon' => 'list', 'can' => 'competencias.gestionar'],
+                ['label' => 'Modificaciones de notas', 'route' => 'admin.score-changes', 'icon' => 'shield', 'can' => 'notas.autorizar',
+                    'badge' => fn () => ScoreChangeRequest::where('status', ScoreChangeStatus::Pending)->count() ?: null],
             ]],
             ['title' => 'Agenda de clases', 'items' => [
                 ['label' => 'Clases de hoy', 'route' => 'admin.lessons.today', 'icon' => 'clock', 'can' => 'agenda.ver'],
